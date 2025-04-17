@@ -1,24 +1,78 @@
 from tests.view_events import ViewEvents
+from trame_slicer.segmentation import SegmentationOpacityEnum
 
 
 def test_segmentation_opacity_can_be_toggled_by_keypress(
     a_slice_view,
-    a_segmentation_editor,
-    a_volume_node,
-    a_segmentation_model,
+    a_segmentation_node,
     render_interactive,
 ):
-    a_slice_view.set_background_volume_id(a_volume_node.GetID())
-    node = a_segmentation_editor.create_segmentation_node_from_model_node(
-        a_segmentation_model
-    )
-    a_segmentation_editor.set_active_segmentation(node, a_volume_node)
+    ViewEvents(a_slice_view).key_press("g")
+    assert a_segmentation_node.GetDisplayNode().GetOpacity() == 0.0
 
     ViewEvents(a_slice_view).key_press("g")
-    assert node.GetDisplayNode().GetOpacity() == 0.0
+    assert a_segmentation_node.GetDisplayNode().GetOpacity() == 1.0
 
-    ViewEvents(a_slice_view).key_press("g")
-    assert node.GetDisplayNode().GetOpacity() == 1.0
+    if render_interactive:
+        a_slice_view.interactor().Start()
+
+
+def test_segmentation_opacity_2d(
+    a_slice_view,
+    a_segmentation_editor,
+    a_segmentation_node,
+    render_interactive,
+):
+    display_node = a_segmentation_node.GetDisplayNode()
+    assert display_node is not None
+
+    opacity = 0.5
+    a_segmentation_editor.set_2d_opacity(opacity)
+    assert display_node.GetOpacity2DFill() == opacity
+    assert display_node.GetOpacity2DOutline() == opacity
+
+    if render_interactive:
+        a_slice_view.interactor().Start()
+
+
+def test_segmentation_opacity_3d(
+    a_slice_view,
+    a_segmentation_editor,
+    a_segmentation_node,
+    render_interactive,
+):
+    display_node = a_segmentation_node.GetDisplayNode()
+    assert display_node is not None
+
+    opacity = 0.5
+
+    a_segmentation_editor.set_3d_opacity(opacity)
+    assert display_node.GetOpacity3D() == opacity
+
+    if render_interactive:
+        a_slice_view.interactor().Start()
+
+
+def test_segmentation_opacity_mode(
+    a_slice_view,
+    a_segmentation_editor,
+    a_segmentation_node,
+    render_interactive,
+):
+    display_node = a_segmentation_node.GetDisplayNode()
+    assert display_node is not None
+
+    a_segmentation_editor.set_opacity_mode(SegmentationOpacityEnum.BOTH)
+    assert display_node.GetVisibility2DFill()
+    assert display_node.GetVisibility2DOutline()
+
+    a_segmentation_editor.set_opacity_mode(SegmentationOpacityEnum.OUTLINE)
+    assert not display_node.GetVisibility2DFill()
+    assert display_node.GetVisibility2DOutline()
+
+    a_segmentation_editor.set_opacity_mode(SegmentationOpacityEnum.FILL)
+    assert display_node.GetVisibility2DFill()
+    assert not display_node.GetVisibility2DOutline()
 
     if render_interactive:
         a_slice_view.interactor().Start()

@@ -15,7 +15,7 @@ from .segment_scissor_widget import (
     SegmentScissorWidget,
     SegmentScissorWidgetInteractor,
 )
-from .segmentation import Segmentation
+from .segmentation import Segmentation, SegmentationOpacityEnum
 from .segmentation_effects import (
     SegmentationEffect,
     SegmentationEffectID,
@@ -45,6 +45,7 @@ __all__ = [
     "SegmentationEffect",
     "SegmentationEffectID",
     "SegmentationEraseEffect",
+    "SegmentationOpacityEnum",
     "SegmentationPaintEffect",
     "SegmentationScissorEffect",
     "SegmentationWidget",

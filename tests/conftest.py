@@ -153,6 +153,13 @@ def a_volume_node(a_slicer_app, a_nrrd_volume_file_path):
     return node
 
 
+@pytest.fixture
+def a_segmentation_node(a_segmentation_editor, a_volume_node):
+    segmentation_node = a_segmentation_editor.create_empty_segmentation_node()
+    a_segmentation_editor.set_active_segmentation(segmentation_node, a_volume_node)
+    return segmentation_node
+
+
 def pytest_addoption(parser):
     parser.addoption("--render_interactive", action="store", default=0)
 
