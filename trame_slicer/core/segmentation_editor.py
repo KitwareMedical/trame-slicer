@@ -17,6 +17,7 @@ from vtkmodules.vtkCommonDataModel import vtkImageData
 
 from trame_slicer.segmentation import (
     Segmentation,
+    SegmentationOpacityEnum,
     SegmentationEffect,
     SegmentationEffectID,
     SegmentationEraseEffect,
@@ -38,6 +39,9 @@ class SegmentationEditor(SignalContainer):
     active_segment_id_changed = Signal(str)
     active_effect_name_changed = Signal(str)
     show_3d_changed = Signal(bool)
+    display_2d_changed = Signal()
+    opacity_2d_changed = Signal(float)
+    opacity_3d_changed = Signal(float)
 
     def __init__(
         self,
@@ -395,4 +399,43 @@ class SegmentationEditor(SignalContainer):
         self.active_segment_id_changed(self.active_segment_id)
         self.active_effect_name_changed(self.active_effect_name)
         self.show_3d_changed(self.is_3d_shown())
+        # TODO: emit opacity and display signals
         self.segmentation_modified()
+
+    def display_fill_only(self) -> None:
+        if not self.active_segmentation:
+            return
+        self.active_segmentation.set_opacity_mode(SegmentationOpacityEnum.FILL)
+
+    def display_outline_only(self) -> None:
+        if not self.active_segmentation:
+            return
+        self.active_segmentation.set_opacity_mode(SegmentationOpacityEnum.OUTLINE)
+
+    def display_outline_and_fill(self) -> None:
+        if not self.active_segmentation:
+            return
+        self.active_segmentation.set_opacity_mode(SegmentationOpacityEnum.FILL | SegmentationOpacityEnum.OUTLINE)
+        self.display_2d_changed()
+
+    def get_2d_opacity(self) -> None:
+        if not self.active_segmentation:
+            return
+        return self.active_segmentation.get_2d_opacity()
+
+    def set_2d_opacity(self, opacity: float) -> None:
+        if not self.active_segmentation:
+            return
+        self.active_segmentation.set_2d_opacity(opacity)
+        self.opacity_2d_changed(opacity)
+
+    def get_3d_opacity(self) -> None:
+        if not self.active_segmentation:
+            return
+        return self.active_segmentation.get_3d_opacity()
+
+    def set_3d_opacity(self, opacity: float) -> None:
+        if not self.active_segmentation:
+            return
+        self.active_segmentation.set_3d_opacity(opacity)
+        self.opacity_3d_changed(opacity)
