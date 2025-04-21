@@ -26,6 +26,17 @@ class ViewManager:
         self._scene = scene
         self._app_logic = application_logic
         self._factories: list[IViewFactory] = []
+        self._current_view_ids: list[str] = []
+
+    def set_current_view_ids(self, view_ids: list[str]) -> None:
+        """
+        Set which views are currently displayed in the application.
+        To be used by layout manager or equivalent classes.
+        """
+        self._current_view_ids = view_ids
+
+    def get_current_view_ids(self) -> list[str]:
+        return self._current_view_ids
 
     def register_factory(self, view_factory: IViewFactory) -> None:
         """
@@ -90,4 +101,16 @@ class ViewManager:
     ) -> list[T]:
         return [
             view for view in self.get_views(view_group) if isinstance(view, view_type)
+        ]
+
+    def filter_visible_views(
+        self, views: list[AbstractViewChild]
+    ) -> list[AbstractViewChild]:
+        """
+        Filter input view list by ones currently displayed in the layout.
+        """
+        if not self._current_view_ids:
+            return views
+        return [
+            view for view in views if view.get_singleton_tag() in self._current_view_ids
         ]

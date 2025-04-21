@@ -55,6 +55,7 @@ class LayoutManager:
     def _refresh_layout(self):
         layout = self._layouts.get(self._current_layout, Layout.empty_layout())
         self._create_views_if_needed(layout)
+        self._set_current_views_as_active(layout)
         with self._ui.clear():
             LayoutGrid.create_root_grid_ui(layout)
         self._save_layout_to_scene(self._current_layout, layout)
@@ -64,6 +65,11 @@ class LayoutManager:
         for view in views:
             if not self._view_manager.is_view_created(view.singleton_tag):
                 self._view_manager.create_view(view)
+
+    def _set_current_views_as_active(self, layout: Layout) -> None:
+        views = layout.get_views(is_recursive=True)
+        view_ids = [view.singleton_tag for view in views]
+        self._view_manager.set_current_view_ids(view_ids)
 
     def _save_layout_to_scene(self, layout_id: str, layout: Layout) -> None:
         self._scene_node.SetParameter("layout_id", layout_id)

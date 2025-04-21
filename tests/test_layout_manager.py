@@ -188,3 +188,25 @@ def test_layout_can_be_restored_from_scene(
     a_mock_view_manager.is_view_created.assert_called_once_with(
         a_sagittal_view.singleton_tag
     )
+
+
+def test_sets_current_layout_views_as_active(
+    a_layout_manager,
+    a_sagittal_layout,
+    a_coronal_layout,
+    a_sagittal_view,
+    a_coronal_view,
+    a_mock_view_manager,
+):
+    a_layout_manager.register_layout("L1", a_sagittal_layout)
+    a_layout_manager.register_layout("L2", a_coronal_layout)
+    a_layout_manager.set_layout("L1")
+    a_mock_view_manager.set_current_view_ids.assert_called_once_with(
+        [a_sagittal_view.singleton_tag]
+    )
+    a_mock_view_manager.set_current_view_ids.reset_mock()
+
+    a_layout_manager.set_layout("L2")
+    a_mock_view_manager.set_current_view_ids.assert_called_once_with(
+        [a_coronal_view.singleton_tag]
+    )

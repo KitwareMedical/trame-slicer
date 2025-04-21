@@ -199,6 +199,11 @@ class AbstractView:
             return 0
         return self.mrml_view_node.GetViewGroup()
 
+    def get_singleton_tag(self) -> str:
+        if not self.mrml_view_node:
+            return ""
+        return self.mrml_view_node.GetSingletonTag()
+
     @classmethod
     def _call_if_value_not_none(cls, setter, value):
         if value is not None:
