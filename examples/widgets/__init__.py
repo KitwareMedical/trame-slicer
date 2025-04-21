@@ -5,6 +5,7 @@ from .markups_button import MarkupsButton
 from .tools_strip import ToolsStrip
 from .utils import StateId, get_current_volume_node
 from .volume_property_button import VolumePropertyButton
+from .volume_window_level_slider import VolumeWindowLevelSlider
 from .vr_preset_select import VRPresetSelect
 from .vr_shift_slider import VRShiftSlider
 
@@ -18,5 +19,6 @@ __all__ = [
     "VRPresetSelect",
     "VRShiftSlider",
     "VolumePropertyButton",
+    "VolumeWindowLevelSlider",
     "get_current_volume_node",
 ]

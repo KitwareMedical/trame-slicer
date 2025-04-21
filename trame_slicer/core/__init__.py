@@ -5,6 +5,7 @@ from .segmentation_editor import SegmentationEditor
 from .slicer_app import SlicerApp
 from .view_manager import ViewManager
 from .volume_rendering import VolumeRendering
+from .volume_window_level import VolumeWindowLevel
 from .volumes_reader import VolumesReader
 
 __all__ = [
@@ -15,5 +16,6 @@ __all__ = [
     "SlicerApp",
     "ViewManager",
     "VolumeRendering",
+    "VolumeWindowLevel",
     "VolumesReader",
 ]

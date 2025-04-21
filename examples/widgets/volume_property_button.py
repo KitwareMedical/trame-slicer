@@ -5,6 +5,7 @@ from trame_vuetify.widgets.vuetify3 import VCard, VCardText, VMenu, VRow
 from trame_slicer.core import SlicerApp
 
 from .control_button import ControlButton
+from .volume_window_level_slider import VolumeWindowLevelSlider
 from .vr_crop_button import VRCropButton
 from .vr_preset_select import VRPresetSelect
 from .vr_shift_slider import VRShiftSlider
@@ -22,6 +23,8 @@ class VolumePropertyButton(VMenu):
             with VCard(), VCardText():
                 with VRow():
                     VRPresetSelect(server=server, slicer_app=slicer_app)
+                with VRow():
+                    VolumeWindowLevelSlider(server=server, slicer_app=slicer_app)
                 with VRow():
                     VRShiftSlider(server=server, slicer_app=slicer_app)
                 with VRow():
