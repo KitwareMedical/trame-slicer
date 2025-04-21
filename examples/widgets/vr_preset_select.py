@@ -21,6 +21,7 @@ class VRPresetSelect(VSelect):
         super().__init__(
             items=(StateId.vr_presets,),
             v_model=(StateId.vr_preset_value,),
+            hide_details=True,
         )
         self._server = server
         self._slicer_app = slicer_app

@@ -1,9 +1,11 @@
 from slicer import (
     vtkMRMLApplicationLogic,
+    vtkMRMLMarkupsROINode,
     vtkMRMLScene,
     vtkMRMLVolumeNode,
     vtkMRMLVolumePropertyNode,
     vtkMRMLVolumeRenderingDisplayNode,
+    vtkSlicerCropVolumeLogic,
     vtkSlicerVolumeRenderingLogic,
 )
 
@@ -21,6 +23,7 @@ class VolumeRendering:
         app_logic: vtkMRMLApplicationLogic,
         share_directory: str,
     ):
+        self._scene = scene
         self._logic = vtkSlicerVolumeRenderingLogic()
         self._logic.SetMRMLApplicationLogic(app_logic)
         self._logic.SetMRMLScene(scene)
@@ -28,6 +31,10 @@ class VolumeRendering:
             "vtkMRMLGPURayCastVolumeRenderingDisplayNode"
         )
         self._logic.SetModuleShareDirectory(share_directory)
+
+        self._crop_logic = vtkSlicerCropVolumeLogic()
+        self._crop_logic.SetMRMLApplicationLogic(app_logic)
+        self._crop_logic.SetMRMLScene(scene)
 
     def create_display_node(
         self,
@@ -146,3 +153,33 @@ class VolumeRendering:
         return VolumeProperty(
             vr_display_node.GetVolumePropertyNode() if vr_display_node else None
         )
+
+    def set_cropping_enabled(
+        self,
+        volume_node: vtkMRMLVolumeNode,
+        roi_node: vtkMRMLMarkupsROINode | None,
+        is_enabled: bool,
+    ) -> vtkMRMLMarkupsROINode | None:
+        display_node = self.get_vr_display_node(volume_node)
+        if not is_enabled:
+            display_node.CroppingEnabledOff()
+            return roi_node
+
+        # If no ROI is provided, initialize a ROI fitting the volume geometry
+        if roi_node is None:
+            roi_node = self._scene.AddNewNodeByClass("vtkMRMLMarkupsROINode")
+            roi_node.GetDisplayNode().SetPropertiesLabelVisibility(False)
+
+            crop_volume_parameters = self._scene.AddNewNodeByClass(
+                "vtkMRMLCropVolumeParametersNode"
+            )
+            crop_volume_parameters.SetInputVolumeNodeID(volume_node.GetID())
+            crop_volume_parameters.SetROINodeID(roi_node.GetID())
+            self._crop_logic.SnapROIToVoxelGrid(crop_volume_parameters)
+            self._crop_logic.FitROIToInputVolume(crop_volume_parameters)
+            self._scene.RemoveNode(crop_volume_parameters)
+
+        # Set the ROI to the display node and activate it
+        display_node.SetAndObserveROINodeID(roi_node.GetID())
+        display_node.CroppingEnabledOn()
+        return roi_node

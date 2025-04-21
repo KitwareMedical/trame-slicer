@@ -15,6 +15,7 @@ class VRShiftSlider(VSlider):
             min=(StateId.vr_slider_min,),
             max=(StateId.vr_slider_max,),
             width=250,
+            hide_details=True,
         )
         self._server = server
         self._slicer_app = slicer_app

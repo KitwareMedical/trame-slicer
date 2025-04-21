@@ -87,3 +87,18 @@ def test_volume_rendering_returns_vr_range(a_volume_node, a_volume_rendering):
     min_vr, max_vr = a_volume_rendering.get_vr_shift_range(a_volume_node)
     assert min_vr != -1
     assert max_vr != 1
+
+
+def test_a_volume_can_be_cropped(
+    a_volume_rendering, a_volume_node, a_threed_view, render_interactive
+):
+    a_volume_rendering.create_display_node(a_volume_node, "MR-Default")
+    roi_node = a_volume_rendering.set_cropping_enabled(a_volume_node, None, True)
+    assert roi_node
+    assert all(s > 0 for s in roi_node.GetSize())
+
+    display_node = a_volume_rendering.get_vr_display_node(a_volume_node)
+    assert display_node.GetCroppingEnabled()
+
+    if render_interactive:
+        a_threed_view.start_interactor()
