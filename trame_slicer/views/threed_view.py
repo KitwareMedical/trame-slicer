@@ -77,6 +77,9 @@ class ThreeDView(RenderView):
     ):
         super().__init__(*args, **kwargs)
 
+        self.renderer().SetUseDepthPeeling(True)
+        self.renderer().SetUseDepthPeelingForVolumes(True)
+
         factory = vtkMRMLThreeDViewDisplayableManagerFactory.GetInstance()
         factory.SetMRMLApplicationLogic(app_logic)
 
