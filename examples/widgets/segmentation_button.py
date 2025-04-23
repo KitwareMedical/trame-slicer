@@ -8,6 +8,7 @@ from trame.widgets.vuetify3 import (
     VListItem,
     VMenu,
     VRow,
+    VSlider,
     VTextField,
 )
 from trame_client.widgets.html import Span
@@ -18,6 +19,7 @@ from trame_slicer.core import SegmentationEditor, SlicerApp
 from trame_slicer.segmentation import (
     SegmentationEffectID,
     SegmentationEraseEffect,
+    SegmentationOpacityEnum,
     SegmentationPaintEffect,
     SegmentationScissorEffect,
     SegmentProperties,
@@ -34,6 +36,9 @@ class SegmentationId:
     current_segment_id = IdName()
     is_renaming_segment = IdName()
     segments = IdName()
+    segment_opacity_mode = IdName()
+    opacity_2d = IdName()
+    opacity_3d = IdName()
 
 
 class SegmentationRename(Template):
@@ -88,6 +93,24 @@ class SegmentationRename(Template):
         self.state[self.segment_color_id] = color_hex
 
 
+class SegmentationOpacityModeToggleButton(ControlButton):
+    def __init__(self, *args, **kwargs) -> None:
+        value_to_icon = {
+            SegmentationOpacityEnum.FILL.value: "mdi-circle-medium",
+            SegmentationOpacityEnum.OUTLINE.value: "mdi-circle-outline",
+            SegmentationOpacityEnum.BOTH.value: "mdi-circle",
+        }
+
+        super().__init__(
+            *args,
+            **kwargs,
+            icon=(f"{{{{ {value_to_icon}[{SegmentationId.segment_opacity_mode}] }}}}",),
+        )
+
+        with self:
+            pass
+
+
 class SegmentSelection(Template):
     add_segment_clicked = Signal()
     delete_current_segment_clicked = Signal()
@@ -97,6 +120,9 @@ class SegmentSelection(Template):
     erase_clicked = Signal()
     scissors_clicked = Signal()
     toggle_3d_clicked = Signal()
+    opacity_mode_clicked = Signal()
+    opacity_2d_changed = Signal()
+    opacity_3d_changed = Signal()
     undo_clicked = Signal()
     redo_clicked = Signal()
 
@@ -198,6 +224,33 @@ class SegmentSelection(Template):
                     click=self.redo_clicked,
                     disabled=(f"!{UndoStack.can_redo_changed.name}",),
                 )
+                SegmentationOpacityModeToggleButton(
+                    name="Test Opacity", size=0, click=self.opacity_mode_clicked
+                )
+            with VRow(align="center", align_content="center"):
+                Span("2D Opacity", classes="pl-5")
+                VSlider(
+                    min=0.0,
+                    max=1.0,
+                    step=0.01,
+                    track_size=2,
+                    thumb_size=11,
+                    hide_details=True,
+                    v_model=SegmentationId.opacity_2d,
+                    classes="pr-5",
+                )
+            with VRow(align="center"):
+                Span("3D Opacity", classes="pl-5")
+                VSlider(
+                    min=0.0,
+                    max=1.0,
+                    step=0.01,
+                    track_size=2,
+                    thumb_size=11,
+                    hide_details=True,
+                    v_model=SegmentationId.opacity_3d,
+                    classes="pr-5",
+                )
 
     @classmethod
     def button_active(cls, effect_cls: type | None):
@@ -219,6 +272,11 @@ class SegmentationButton(VMenu):
         self.state.setdefault(SegmentationId.current_segment_id, "")
         self.state.setdefault(SegmentationId.segments, [])
         self.state.setdefault(SegmentationId.is_renaming_segment, False)
+        self.state.setdefault(
+            SegmentationId.segment_opacity_mode, SegmentationOpacityEnum.BOTH.value
+        )
+        self.state.setdefault(SegmentationId.opacity_2d, 0.5)
+        self.state.setdefault(SegmentationId.opacity_3d, 1.0)
 
         self.connect_segmentation_editor_to_state()
         self.connect_undo_stack_to_state()
@@ -231,7 +289,7 @@ class SegmentationButton(VMenu):
                     name="Segmentation",
                 )
 
-            with VCard(), VCardText():
+            with VCard(style="height:auto; overflow: visible;"), VCardText():
                 self.rename = SegmentationRename(
                     server=server, v_if=(SegmentationId.is_renaming_segment,)
                 )
@@ -253,6 +311,7 @@ class SegmentationButton(VMenu):
         self.selection.erase_clicked.connect(self.on_erase)
         self.selection.scissors_clicked.connect(self.on_scissors)
         self.selection.toggle_3d_clicked.connect(self.on_toggle_3d)
+        self.selection.opacity_mode_clicked.connect(self.on_toggle_2d_opacity_mode)
         self.selection.undo_clicked.connect(self._undo_stack.undo)
         self.selection.redo_clicked.connect(self._undo_stack.redo)
 
@@ -304,6 +363,9 @@ class SegmentationButton(VMenu):
             self._segmentation_node,
             get_current_volume_node(self._server, self._slicer_app),
         )
+        self.segmentation_editor.set_opacity_mode(
+            SegmentationOpacityEnum(self.state[SegmentationId.segment_opacity_mode])
+        )
         self.on_add_segment()
 
     @change(SegmentationEditor.active_segment_id_changed.name)
@@ -311,6 +373,9 @@ class SegmentationButton(VMenu):
         self.segmentation_editor.set_active_segment_id(
             _kwargs[SegmentationEditor.active_segment_id_changed.name]
         )
+        # Update opacity for (potentially) new segment
+        self.on_opacity_2d_changed()
+        self.on_opacity_3d_changed()
 
     def on_paint(self):
         self.segmentation_editor.set_active_effect_id(SegmentationEffectID.Paint)
@@ -365,3 +430,17 @@ class SegmentationButton(VMenu):
         self.segmentation_editor.set_surface_representation_enabled(
             not self.segmentation_editor.is_surface_representation_enabled()
         )
+
+    def on_toggle_2d_opacity_mode(self):
+        current_opacity_mode = self.state[SegmentationId.segment_opacity_mode]
+        new_opacity_mode = SegmentationOpacityEnum(current_opacity_mode).next()
+        self.state[SegmentationId.segment_opacity_mode] = new_opacity_mode.value
+        self.segmentation_editor.set_opacity_mode(new_opacity_mode)
+
+    @change(SegmentationId.opacity_2d)
+    def on_opacity_2d_changed(self, **_kwargs):
+        self.segmentation_editor.set_2d_opacity(self.state[SegmentationId.opacity_2d])
+
+    @change(SegmentationId.opacity_3d)
+    def on_opacity_3d_changed(self, **_kwargs):
+        self.segmentation_editor.set_3d_opacity(self.state[SegmentationId.opacity_3d])

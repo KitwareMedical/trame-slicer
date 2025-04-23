@@ -20,6 +20,7 @@ from trame_slicer.segmentation import (
     SegmentationEffect,
     SegmentationEffectID,
     SegmentationEraseEffect,
+    SegmentationOpacityEnum,
     SegmentationPaintEffect,
     SegmentationScissorEffect,
     SegmentModifier,
@@ -396,3 +397,33 @@ class SegmentationEditor(SignalContainer):
         self.active_effect_name_changed(self.active_effect_name)
         self.show_3d_changed(self.is_3d_shown())
         self.segmentation_modified()
+
+    def set_opacity_mode(self, opacity_mode: SegmentationOpacityEnum):
+        if not self.active_segmentation:
+            return
+        self.active_segmentation.set_opacity_mode(opacity_mode)
+
+    def get_opacity_mode(self) -> SegmentationOpacityEnum | None:
+        if not self.active_segmentation:
+            return None
+        return self.active_segmentation.get_opacity_mode()
+
+    def get_2d_opacity(self) -> None:
+        if not self.active_segmentation:
+            return None
+        return self.active_segmentation.get_2d_opacity()
+
+    def set_2d_opacity(self, opacity: float) -> None:
+        if not self.active_segmentation:
+            return
+        self.active_segmentation.set_2d_opacity(opacity)
+
+    def get_3d_opacity(self) -> None:
+        if not self.active_segmentation:
+            return None
+        return self.active_segmentation.get_3d_opacity()
+
+    def set_3d_opacity(self, opacity: float) -> None:
+        if not self.active_segmentation:
+            return
+        self.active_segmentation.set_3d_opacity(opacity)
