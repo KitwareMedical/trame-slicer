@@ -129,7 +129,9 @@ class VolumesReader:
         return volume_files, Path(volume_files).name
 
     @classmethod
-    def load_dcm_volumes(cls, scene: vtkMRMLScene, volume_files: list[str]):
+    def load_dcm_volumes(
+        cls, scene: vtkMRMLScene, volume_files: list[vtkMRMLVolumeNode | None]
+    ):
         return [
             cls.load_single_dcm_volume(scene, volume_files)
             for volume_files in cls.split_volumes(volume_files)
