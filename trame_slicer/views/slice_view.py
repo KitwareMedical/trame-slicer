@@ -177,7 +177,7 @@ class SliceView(AbstractView):
         return self.mrml_view_node.GetOrientation()
 
     def fit_view_to_content(self) -> None:
-        self.logic.FitSliceToAll()
+        self.logic.FitSliceToBackground()
         self.logic.SnapSliceOffsetToIJK()
 
     def set_background_volume_id(self, volume_id: str | None) -> None:
