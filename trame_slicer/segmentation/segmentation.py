@@ -522,6 +522,20 @@ class Segmentation:
             self.get_segment_labelmap(segment_id, as_numpy_array=True)[:] = label_map
         self.segmentation_modified()
 
+    def set_segment_visibility(self, segment_id, visibility: bool):
+        if segment_id not in self.get_segment_ids():
+            return
+
+        display_node = self._segmentation_node.GetDisplayNode()
+        display_node.SetSegmentVisibility(segment_id, visibility)
+
+    def get_segment_visibility(self, segment_id):
+        if segment_id not in self.get_segment_ids():
+            return None
+
+        display_node = self._segmentation_node.GetDisplayNode()
+        return display_node.GetSegmentVisibility(segment_id)
+
     def set_opacity_mode(self, opacity_mode: SegmentationOpacityEnum):
         if not self._segmentation_node:
             return

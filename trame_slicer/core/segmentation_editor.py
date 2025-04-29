@@ -398,6 +398,16 @@ class SegmentationEditor(SignalContainer):
         self.show_3d_changed(self.is_3d_shown())
         self.segmentation_modified()
 
+    def set_segment_visibility(self, segment_id, visibility: bool):
+        if not self.active_segmentation:
+            return None
+        return self.active_segmentation.set_segment_visibility(segment_id, visibility)
+
+    def get_segment_visibility(self, segment_id):
+        if not self.active_segmentation:
+            return None
+        return self.active_segmentation.get_segment_visibility(segment_id)
+
     def set_opacity_mode(self, opacity_mode: SegmentationOpacityEnum):
         if not self.active_segmentation:
             return
