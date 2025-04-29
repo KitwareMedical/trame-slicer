@@ -9,10 +9,12 @@ from slicer import (
     vtkSlicerVolumeRenderingLogic,
 )
 
+from trame_slicer.utils import SlicerWrapper
+
 from .volume_property import VolumeProperty, VRShiftMode
 
 
-class VolumeRendering:
+class VolumeRendering(SlicerWrapper):
     """
     Simple facade for volume rendering logic.
     """
@@ -23,8 +25,8 @@ class VolumeRendering:
         app_logic: vtkMRMLApplicationLogic,
         share_directory: str,
     ):
+        super().__init__(slicer_obj=vtkSlicerVolumeRenderingLogic())
         self._scene = scene
-        self._logic = vtkSlicerVolumeRenderingLogic()
         self._logic.SetMRMLApplicationLogic(app_logic)
         self._logic.SetMRMLScene(scene)
         self._logic.ChangeVolumeRenderingMethod(
@@ -35,6 +37,10 @@ class VolumeRendering:
         self._crop_logic = vtkSlicerCropVolumeLogic()
         self._crop_logic.SetMRMLApplicationLogic(app_logic)
         self._crop_logic.SetMRMLScene(scene)
+
+    @property
+    def _logic(self) -> vtkSlicerVolumeRenderingLogic:
+        return self._slicer_obj
 
     def create_display_node(
         self,
@@ -62,6 +68,23 @@ class VolumeRendering:
         display.GetVolumePropertyNode().Copy(
             self.get_preset_property(preset_name).property_node
         )
+
+    def set_volume_node_property(
+        self, volume_node: vtkMRMLVolumeNode, property_node: vtkMRMLVolumePropertyNode
+    ):
+        self.apply_vr_node_property(
+            self.get_vr_display_node(volume_node), property_node
+        )
+
+    @staticmethod
+    def apply_vr_node_property(
+        display: vtkMRMLVolumeRenderingDisplayNode,
+        property_node: vtkMRMLVolumePropertyNode,
+    ):
+        if not display:
+            return
+
+        display.GetVolumePropertyNode().Copy(property_node)
 
     def get_preset_property(self, preset_name) -> VolumeProperty:
         preset_names = self.preset_names()
@@ -103,7 +126,7 @@ class VolumeRendering:
     def set_absolute_vr_shift_from_preset(
         self,
         volume_node: vtkMRMLVolumeNode,
-        preset_name: str,
+        preset_name: str | None,
         shift: float,
         shift_mode: VRShiftMode = VRShiftMode.BOTH,
     ) -> None:
@@ -117,8 +140,15 @@ class VolumeRendering:
         See also:
             :ref: `set_relative_vr_shift`
         """
+        preset_prop = None
+        if preset_name is not None:
+            preset_prop = self.get_preset_property(preset_name)
         vr_prop = self.get_volume_node_property(volume_node)
-        vr_prop.set_vr_shift(shift, shift_mode, self.get_preset_property(preset_name))
+        vr_prop.set_vr_shift(
+            shift,
+            shift_mode,
+            preset_prop,
+        )
 
     def set_relative_vr_shift(
         self,
@@ -132,8 +162,12 @@ class VolumeRendering:
         See also:
             :ref: `set_absolute_vr_shift_from_preset`
         """
-        vr_prop = self._get_vr_volume_property(self.get_vr_display_node(volume_node))
-        vr_prop.set_vr_shift(shift, shift_mode)
+        self.set_absolute_vr_shift_from_preset(
+            volume_node=volume_node,
+            shift=shift,
+            shift_mode=shift_mode,
+            preset_name=None,
+        )
 
     def get_vr_shift_range(self, volume_node: vtkMRMLVolumeNode) -> tuple[float, float]:
         return self.get_volume_node_property(volume_node).get_effective_range()

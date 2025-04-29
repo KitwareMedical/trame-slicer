@@ -6,6 +6,8 @@ from slicer import vtkMRMLVolumePropertyNode
 from vtkmodules.vtkCommonDataModel import vtkPiecewiseFunction
 from vtkmodules.vtkRenderingCore import vtkColorTransferFunction, vtkVolumeProperty
 
+from trame_slicer.utils import SlicerWrapper
+
 
 class VRShiftMode(Flag):
     OPACITY = auto()
@@ -13,22 +15,22 @@ class VRShiftMode(Flag):
     BOTH = OPACITY | COLOR
 
 
-class VolumeProperty:
+class VolumeProperty(SlicerWrapper):
     """
     Thin facade for volume property node.
     Allows more pythonic access to the scalar / opacity properties of a volume rendering display node.
     """
 
     def __init__(self, volume_property_node: vtkMRMLVolumePropertyNode | None):
-        self._property_node = volume_property_node or vtkMRMLVolumePropertyNode()
+        super().__init__(slicer_obj=volume_property_node or vtkMRMLVolumePropertyNode())
 
     @property
     def volume_property(self) -> vtkVolumeProperty:
-        return self._property_node.GetVolumeProperty() or vtkVolumeProperty()
+        return self._slicer_obj.GetVolumePropertyNode() or vtkVolumeProperty()
 
     @property
-    def property_node(self):
-        return self._property_node
+    def property_node(self) -> vtkMRMLVolumePropertyNode:
+        return self._slicer_obj
 
     @property
     def opacity_map(self) -> vtkPiecewiseFunction:
@@ -67,10 +69,10 @@ class VolumeProperty:
         self.set_opacity_values(self.shift_values(self.get_opacity_map_values(), shift))
 
     def get_effective_range(self) -> tuple[float, float]:
-        if not self._property_node.CalculateEffectiveRange():
+        if not self.CalculateEffectiveRange():
             return -1, 1
 
-        effective_range = self._property_node.GetEffectiveRange()
+        effective_range = self.GetEffectiveRange()
         transfer_function_width = effective_range[1] - effective_range[0]
         return -transfer_function_width, transfer_function_width
 

@@ -9,7 +9,6 @@ from slicer import (
     vtkMRMLSliceViewDisplayableManagerFactory,
     vtkMRMLThreeDViewDisplayableManagerFactory,
     vtkSlicerApplicationLogic,
-    vtkSlicerMarkupsLogic,
     vtkSlicerSegmentationsModuleLogic,
     vtkSlicerSubjectHierarchyModuleLogic,
     vtkSlicerTerminologiesModuleLogic,
@@ -19,6 +18,7 @@ from vtkmodules.vtkCommonCore import vtkCollection, vtkOutputWindow
 
 from .display_manager import DisplayManager
 from .io_manager import IOManager
+from .markups_logic import MarkupsLogic
 from .segmentation_editor import SegmentationEditor
 from .view_manager import ViewManager
 from .volume_rendering import VolumeRendering
@@ -82,10 +82,7 @@ class SlicerApp:
         )
 
         # Create markups logic
-        self.markups_logic = vtkSlicerMarkupsLogic()
-        self.markups_logic.SetMRMLApplicationLogic(self.app_logic)
-        self.markups_logic.SetMRMLScene(self.scene)
-        self.app_logic.SetModuleLogic("Markups", self.markups_logic)
+        self.markups_logic = MarkupsLogic(self.scene, self.app_logic)
 
         # Initialize volumes logic
         self.volumes_logic = vtkSlicerVolumesLogic()
