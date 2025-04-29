@@ -1,6 +1,26 @@
 # CHANGELOG
 
 
+## v0.5.0 (2025-04-29)
+
+### Bug Fixes
+
+- **segmentation**: Fix wrong segmentation typehints
+  ([`015d43e`](https://github.com/KitwareMedical/trame-slicer/commit/015d43ef7baf362e97042af64fd9f2de87520c68))
+
+### Chores
+
+- **pre-commit**: Add commit lint rule
+  ([`0ebbfc4`](https://github.com/KitwareMedical/trame-slicer/commit/0ebbfc4b94bfa1f1930c418e86da2b6b3bc98be8))
+
+- Add pre-commit commit lint - Add github action commit lint
+
+### Features
+
+- **segmentation**: Add segments visibility control
+  ([`af7f1bc`](https://github.com/KitwareMedical/trame-slicer/commit/af7f1bceb228b09a56deefda97f7c75713ef8a6a))
+
+
 ## v0.4.0 (2025-04-24)
 
 ### Bug Fixes
