@@ -3,6 +3,7 @@ from trame.widgets.vuetify3 import (
     Template,
     VCard,
     VCardText,
+    VCheckbox,
     VColorPicker,
     VIcon,
     VListItem,
@@ -120,6 +121,7 @@ class SegmentSelection(Template):
     erase_clicked = Signal()
     scissors_clicked = Signal()
     toggle_3d_clicked = Signal()
+    segment_visibility_toggled = Signal(str, bool)
     opacity_mode_clicked = Signal()
     opacity_2d_changed = Signal()
     opacity_3d_changed = Signal()
@@ -147,7 +149,16 @@ class SegmentSelection(Template):
                     VListItem(v_bind="props", color=""),
                     Template(v_slot_prepend=""),
                 ):
-                    VIcon("mdi-square", color=("props.color_hex",))
+                    VCheckbox(
+                        v_model=("props.visibility",),
+                        color=("props.color_hex",),
+                        base_color=("props.color_hex",),
+                        hide_details=True,
+                        click="$event.stopPropagation();",
+                        update_modelValue=f"""
+                            trigger('{self.server.trigger_name(self.segment_visibility_toggled)}', [props.segment_id, $event]);
+                        """,
+                    )
                 with Template(v_slot_selection="{item}"):
                     VIcon("mdi-square", color=("item.props.color_hex",))
                     Span("{{item.title}}", classes="pl-2")
@@ -225,7 +236,9 @@ class SegmentSelection(Template):
                     disabled=(f"!{UndoStack.can_redo_changed.name}",),
                 )
                 SegmentationOpacityModeToggleButton(
-                    name="Test Opacity", size=0, click=self.opacity_mode_clicked
+                    name="Toggle Opacity mode (fill, outline, both)",
+                    size=0,
+                    click=self.opacity_mode_clicked,
                 )
             with VRow(align="center", align_content="center"):
                 Span("2D Opacity", classes="pl-5")
@@ -311,6 +324,9 @@ class SegmentationButton(VMenu):
         self.selection.erase_clicked.connect(self.on_erase)
         self.selection.scissors_clicked.connect(self.on_scissors)
         self.selection.toggle_3d_clicked.connect(self.on_toggle_3d)
+        self.selection.segment_visibility_toggled.connect(
+            self.on_toggle_segment_visibility
+        )
         self.selection.opacity_mode_clicked.connect(self.on_toggle_2d_opacity_mode)
         self.selection.undo_clicked.connect(self._undo_stack.undo)
         self.selection.redo_clicked.connect(self._undo_stack.redo)
@@ -421,7 +437,13 @@ class SegmentationButton(VMenu):
         self.state[SegmentationId.segments] = [
             {
                 "title": segment_properties.name,
-                "props": {"segment_id": segment_id, **segment_properties.to_dict()},
+                "props": {
+                    "segment_id": segment_id,
+                    "visibility": self.segmentation_editor.get_segment_visibility(
+                        segment_id
+                    ),
+                    **segment_properties.to_dict(),
+                },
             }
             for segment_id, segment_properties in self.segmentation_editor.get_all_segment_properties().items()
         ]
@@ -430,6 +452,10 @@ class SegmentationButton(VMenu):
         self.segmentation_editor.set_surface_representation_enabled(
             not self.segmentation_editor.is_surface_representation_enabled()
         )
+
+    def on_toggle_segment_visibility(self, segment_id, visibility):
+        self.segmentation_editor.set_segment_visibility(segment_id, visibility)
+        self._update_segment_properties()
 
     def on_toggle_2d_opacity_mode(self):
         current_opacity_mode = self.state[SegmentationId.segment_opacity_mode]

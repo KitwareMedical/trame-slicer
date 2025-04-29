@@ -76,3 +76,26 @@ def test_segmentation_opacity_mode(
 
     if render_interactive:
         a_slice_view.interactor().Start()
+
+
+def test_segment_visibility(
+    a_slice_view,
+    a_segmentation_editor,
+    a_segmentation_node,
+    render_interactive,
+):
+    display_node = a_segmentation_node.GetDisplayNode()
+    assert display_node is not None
+
+    a_segmentation_editor.add_empty_segment()
+    segment_id = a_segmentation_editor.add_empty_segment()
+    assert segment_id != ""
+
+    a_segmentation_editor.set_segment_visibility(segment_id, False)
+    assert not display_node.GetSegmentVisibility(segment_id)
+
+    a_segmentation_editor.set_segment_visibility(segment_id, True)
+    assert display_node.GetSegmentVisibility(segment_id)
+
+    if render_interactive:
+        a_slice_view.interactor().Start()
