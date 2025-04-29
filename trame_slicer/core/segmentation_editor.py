@@ -398,17 +398,17 @@ class SegmentationEditor(SignalContainer):
         self.show_3d_changed(self.is_3d_shown())
         self.segmentation_modified()
 
-    def set_segment_visibility(self, segment_id, visibility: bool):
+    def set_segment_visibility(self, segment_id, visibility: bool) -> None:
         if not self.active_segmentation:
             return None
         return self.active_segmentation.set_segment_visibility(segment_id, visibility)
 
-    def get_segment_visibility(self, segment_id):
+    def get_segment_visibility(self, segment_id) -> bool | None:
         if not self.active_segmentation:
             return None
         return self.active_segmentation.get_segment_visibility(segment_id)
 
-    def set_opacity_mode(self, opacity_mode: SegmentationOpacityEnum):
+    def set_opacity_mode(self, opacity_mode: SegmentationOpacityEnum) -> None:
         if not self.active_segmentation:
             return
         self.active_segmentation.set_opacity_mode(opacity_mode)
@@ -418,7 +418,7 @@ class SegmentationEditor(SignalContainer):
             return None
         return self.active_segmentation.get_opacity_mode()
 
-    def get_2d_opacity(self) -> None:
+    def get_2d_opacity(self) -> float | None:
         if not self.active_segmentation:
             return None
         return self.active_segmentation.get_2d_opacity()
@@ -428,7 +428,7 @@ class SegmentationEditor(SignalContainer):
             return
         self.active_segmentation.set_2d_opacity(opacity)
 
-    def get_3d_opacity(self) -> None:
+    def get_3d_opacity(self) -> float | None:
         if not self.active_segmentation:
             return None
         return self.active_segmentation.get_3d_opacity()

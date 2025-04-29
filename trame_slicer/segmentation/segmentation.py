@@ -522,21 +522,21 @@ class Segmentation:
             self.get_segment_labelmap(segment_id, as_numpy_array=True)[:] = label_map
         self.segmentation_modified()
 
-    def set_segment_visibility(self, segment_id, visibility: bool):
+    def set_segment_visibility(self, segment_id, visibility: bool) -> None:
         if segment_id not in self.get_segment_ids():
             return
 
         display_node = self._segmentation_node.GetDisplayNode()
         display_node.SetSegmentVisibility(segment_id, visibility)
 
-    def get_segment_visibility(self, segment_id):
+    def get_segment_visibility(self, segment_id) -> bool | None:
         if segment_id not in self.get_segment_ids():
             return None
 
         display_node = self._segmentation_node.GetDisplayNode()
         return display_node.GetSegmentVisibility(segment_id)
 
-    def set_opacity_mode(self, opacity_mode: SegmentationOpacityEnum):
+    def set_opacity_mode(self, opacity_mode: SegmentationOpacityEnum) -> None:
         if not self._segmentation_node:
             return
         display_node = self._segmentation_node.GetDisplayNode()
@@ -545,7 +545,7 @@ class Segmentation:
             SegmentationOpacityEnum.OUTLINE in opacity_mode
         )
 
-    def get_opacity_mode(self):
+    def get_opacity_mode(self) -> SegmentationOpacityEnum | None:
         if not self._segmentation_node:
             return None
         display_node = self._segmentation_node.GetDisplayNode()
@@ -557,7 +557,7 @@ class Segmentation:
             return SegmentationOpacityEnum.FILL
         return SegmentationOpacityEnum.FILL | SegmentationOpacityEnum.OUTLINE
 
-    def get_2d_opacity(self) -> None:
+    def get_2d_opacity(self) -> float | None:
         if not self._segmentation_node:
             return None
         display_node = self._segmentation_node.GetDisplayNode()
@@ -570,7 +570,7 @@ class Segmentation:
         display_node.SetOpacity2DFill(opacity)
         display_node.SetOpacity2DOutline(opacity)
 
-    def get_3d_opacity(self) -> None:
+    def get_3d_opacity(self) -> float | None:
         if not self._segmentation_node:
             return None
         display_node = self._segmentation_node.GetDisplayNode()
