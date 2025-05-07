@@ -1,6 +1,25 @@
 # CHANGELOG
 
 
+## v0.6.0 (2025-05-07)
+
+### Bug Fixes
+
+- **views**: Fix 3d picking logic
+  ([`727f77f`](https://github.com/KitwareMedical/trame-slicer/commit/727f77fa5564d7d5468689f49e65c3474c6a434c))
+
+- Remove renderer SafeGetZ which would result in crash when placing markups nodes - Fix 3D pick
+  position when using segmentation 3d paint - Factorize picking logic
+
+### Features
+
+- **core**: Add markups logic
+  ([`4dce7ba`](https://github.com/KitwareMedical/trame-slicer/commit/4dce7ba556fb724bcd9c1825047bc11ca9f8f8bc))
+
+- Add class to simplify markups placement in the scene - Add helper class to simplify Slicer object
+  wrapping and delegate to wrapped object automatically.
+
+
 ## v0.5.0 (2025-04-29)
 
 ### Bug Fixes
