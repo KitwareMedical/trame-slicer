@@ -1,14 +1,19 @@
 from typing import TYPE_CHECKING
 
-from vtkmodules.vtkCommonCore import vtkCommand
-from vtkmodules.vtkMRMLDisplayableManager import vtkMRMLInteractionEventData
-from vtkmodules.vtkRenderingCore import vtkRenderer
+from slicer import vtkMRMLInteractionEventData
+from vtkmodules.vtkCommonCore import vtkCommand, vtkMath, vtkPoints
+from vtkmodules.vtkRenderingCore import (
+    vtkAbstractPropPicker,
+    vtkActor,
+    vtkCamera,
+    vtkHardwarePicker,
+    vtkRenderer,
+)
 from vtkmodules.vtkRenderingVolume import vtkVolumePicker
 
 if TYPE_CHECKING:
     from .threed_view import ThreeDView
 
-import numpy as np
 
 from .view_interaction_dispatch import ViewInteractionDispatch
 
@@ -20,8 +25,12 @@ class ThreedViewInteractionDispatch(ViewInteractionDispatch):
         # Use hardware picker in through vtkWorldPointPicker, this may be slightly slower
         # for generic cases, but way more efficient for some use cases (e.g. segmentation widget)
         # since we won't have to pick multiple times.
-        self._quick_volume_picker = vtkVolumePicker()
-        self._quick_volume_picker.SetPickFromList(True)  # will only pick volumes
+        self._volume_picker = vtkVolumePicker()
+        self._volume_picker.SetPickFromList(True)  # will only pick volumes
+
+        self._actors_picker = vtkHardwarePicker()
+        self._actors_picker.SetPickFromList(True)
+
         self._last_world_position = [0.0, 0.0, 0.0]
         self._last_pick_hit = None
 
@@ -41,80 +50,99 @@ class ThreedViewInteractionDispatch(ViewInteractionDispatch):
 
     def _quick_pick(
         self, display_position: tuple[int, int], poked_renderer: vtkRenderer
-    ) -> tuple[bool, tuple[float, float, float]]:
-        hit_surface, surface_position = self._pick_world_point(
-            display_position, poked_renderer
-        )
-
-        # _pick_world_point ignores volume-rendered images, do a volume picking, too.
+    ) -> tuple[bool, tuple[float, float, float]] | None:
         camera_node = self._view.get_camera_node()
-        if camera_node is not None:
-            # Set picklist to volume actors to restrict the volume picker to only pick volumes
-            # (otherwise it would also perform cell picking on meshes, which can take a long time).
-            pick_list = self._quick_volume_picker.GetPickList()
-            pick_list.RemoveAllItems()
-            props = poked_renderer.GetViewProps()
-            props.InitTraversal()
-            prop = props.GetNextProp()
-            while prop is not None:
-                prop.GetVolumes(pick_list)
-                prop = props.GetNextProp()
+        no_pick = False, [0, 0, 0]
+        if camera_node is None:
+            return no_pick
 
-            if pick_list.GetNumberOfItems() > 0 and self._quick_volume_picker.Pick(
-                display_position[0], display_position[1], 0, poked_renderer
-            ):
-                volume_position = self._quick_volume_picker.GetPickPosition()
-                if not hit_surface:
-                    return True, volume_position
+        # Pick at display position with actor and volume picker
+        self._pick(self._volume_picker, display_position, poked_renderer, True)
+        self._pick(self._actors_picker, display_position, poked_renderer, False)
 
-                camera_position = np.array(camera_node.GetPosition())
-                # Use QuickVolumePicker result instead of QuickPicker result if picked volume point
-                # is closer to the camera (or QuickPicker did not find anything).
-                surface_distance = np.linalg.norm(
-                    camera_position - np.array(surface_position)
-                )
-                volume_distance = np.linalg.norm(
-                    camera_position - np.array(volume_position)
-                )
-                if volume_distance < surface_distance:
-                    return True, volume_position
+        # Filter the closest position to the camera as the latest world position value
+        position = self._closest_pick_position_to_camera(
+            self._get_picked_positions(),
+            camera_node.GetCamera(),
+        )
+        if position is not None:
+            return True, position
+        return no_pick
 
-        return hit_surface, surface_position
+    def _get_picked_positions(self):
+        positions = self._volume_picker.GetPickedPositions()
+        if self._actors_picker.GetActor():
+            positions.InsertNextPoint(self._actors_picker.GetPickPosition())
+        return positions
 
     @staticmethod
-    def _pick_world_point(
-        display_position: tuple[int, int], poked_renderer: vtkRenderer
-    ) -> tuple[bool, tuple[float, float, float]]:
-        # Unlike Slicer that uses a vtkWorldPointPicker directly, we copy most of its logic
-        # to check if something has been picked.
-        # This is useful for some interaction, since this remove the need for an additional
-        # picker to check if we are interacting with something.
-        # This assumes that GetZ() == 1.0 means nothing has been picked
-        z = poked_renderer.GetZ(display_position[0], display_position[1])
-        hit = True
+    def _pick(
+        picker: vtkAbstractPropPicker,
+        display_position: tuple[int, int],
+        poked_renderer: vtkRenderer,
+        is_volume: bool,
+    ) -> None:
+        """
+        Handles the process of picking objects from a scene based on a display position.
+        The method filters the objects in the renderer's view according to their type
+        and instructs the picker to identify picked objects. Supports both volume picking
+        and actor picking modes and clears any prior pick list before execution.
 
-        # if z is 1.0, we assume the user has picked a point on the
-        # screen that has not been rendered into. Use the camera's focal
-        # point for the z value.
-        if z > 0.9999:
-            hit = False
-            # Get camera focal point and position. Convert to display (screen)
-            # coordinates. We need a depth value for z-buffer.
-            camera = poked_renderer.GetActiveCamera()
-            focal_point = camera.GetFocalPoint()
-            poked_renderer.SetWorldPoint(
-                focal_point[0], focal_point[1], focal_point[2], 1.0
-            )
-            poked_renderer.WorldToDisplay()
-            display_point = poked_renderer.GetDisplayPoint()
-            z = display_point[2]
+        :param picker: An instance of vtkAbstractPropPicker responsible for picking
+            objects in the render window.
+        :param display_position: A tuple representing the x, y, position in display coordinates
+            where the picker will pick.
+        :param poked_renderer: An instance of vtkRenderer representing the renderer
+            containing the props to be picked.
+        :param is_volume: A boolean indicating whether the picking process is focusing on
+            volumes (if True) or actors (if False).
+        :return: None
+        """
+        pick_list = picker.GetPickList()
+        pick_list.RemoveAllItems()
 
-        # now convert the display point to world coordinates
-        poked_renderer.SetDisplayPoint(
-            float(display_position[0]), float(display_position[1]), z
-        )
-        poked_renderer.DisplayToWorld()
-        world = poked_renderer.GetWorldPoint()
-        world_point = (world[0] / world[3], world[1] / world[3], world[2] / world[3])
+        props = poked_renderer.GetViewProps()
+        props.InitTraversal()
+        prop = props.GetNextProp()
+        while prop is not None:
+            if is_volume:
+                prop.GetVolumes(pick_list)
+            elif isinstance(prop, vtkActor):
+                prop.GetActors(pick_list)
+            prop = props.GetNextProp()
 
-        return hit, world_point
+        picker.Pick(display_position[0], display_position[1], 0, poked_renderer)
+
+    @staticmethod
+    def _closest_pick_position_to_camera(
+        picked_positions: vtkPoints, camera: vtkCamera
+    ) -> list[float] | None:
+        """
+        Finds the closest picked position to the camera.
+
+        This method computes the closest position among the provided `picked_positions` to the
+        position of the given `camera`. The distance is calculated using the square of the
+        Euclidean distance between points. If there are no picked positions, the method
+        returns `None`.
+
+        :param picked_positions: A `vtkPoints` instance containing the positions to be
+            evaluated for closeness to the camera.
+        :param camera: A `vtkCamera` object whose position is used as a reference to
+            compute the closest point.
+        :return: The closest position to the camera as a tuple of coordinates. Returns
+            `None` if no positions are provided.
+        """
+        n_pts = picked_positions.GetNumberOfPoints()
+        if n_pts < 1:
+            return None
+
+        camera_pos = camera.GetPosition()
+        closest_pos = picked_positions.GetPoint(0)
+        min_dist = vtkMath.Distance2BetweenPoints(closest_pos, camera_pos)
+        for i_pt in range(1, n_pts):
+            pos = picked_positions.GetPoint(i_pt)
+            dist = vtkMath.Distance2BetweenPoints(pos, camera_pos)
+            if dist < min_dist:
+                min_dist, closest_pos = dist, pos
+
+        return closest_pos

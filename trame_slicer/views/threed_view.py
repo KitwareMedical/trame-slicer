@@ -103,7 +103,7 @@ class ThreeDView(RenderView):
 
         self.displayable_manager_group.Initialize(factory, self.renderer())
         self.interactor().SetInteractorStyle(vtkInteractorStyle3D())
-        self.renderer().SetSafeGetZ(True)
+        self.renderer().SetSafeGetZ(False)
 
         self.name = name
         self.logic = vtkMRMLViewLogic()

@@ -48,6 +48,7 @@ def test_paint_effect_adds_segmentation_to_selected_segment(
     assert array.max() == 2
 
     if render_interactive:
+        a_segmentation_editor.show_3d(True)
         view.interactor().Start()
 
 
