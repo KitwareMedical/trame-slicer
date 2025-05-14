@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from dataclasses import asdict, dataclass
-from typing import Optional
 
 import vtk
 from slicer import vtkSegment
@@ -15,7 +16,7 @@ class SegmentProperties:
     terminology_tag: str
 
     @classmethod
-    def from_segment(cls, segment: vtkSegment) -> Optional["SegmentProperties"]:
+    def from_segment(cls, segment: vtkSegment) -> SegmentProperties | None:
         if segment is None:
             return None
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from trame.app import get_server
 from trame.app.testing import enable_testing
 from trame.decorators import TrameApp

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .rca_view_factory import (
     RemoteSliceViewFactory,
     RemoteThreeDViewFactory,

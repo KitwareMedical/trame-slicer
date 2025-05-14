@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from trame.widgets import html
 from trame_client.ui.core import AbstractLayout
 from trame_server import Server

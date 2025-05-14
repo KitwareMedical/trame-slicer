@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from tests.view_events import ViewEvents
 from trame_slicer.segmentation import SegmentationOpacityEnum
 

@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import Enum, auto
 from itertools import chain
-from typing import Protocol, Union, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from trame.widgets import client, html
 
@@ -21,7 +23,7 @@ class View(Protocol):
 @dataclass
 class Layout:
     direction: LayoutDirection
-    items: list[Union["Layout", View]]
+    items: list[Layout | View]
     flex_sizes: list[str] | None = None
 
     def get_views(self, is_recursive: bool) -> list[View]:
@@ -56,7 +58,7 @@ class LayoutGrid:
 
     def __init__(
         self,
-        layout_items: list[Union["Layout", View]],
+        layout_items: list[Layout | View],
         layout_direction: LayoutDirection,
         layout_flex_sizes: list[str] | None = None,
     ):

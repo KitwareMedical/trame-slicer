@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .callback_undo_command import CallbackUndoCommand
 from .convert_colors import hex_to_rgb_float, rgb_float_to_hex
 from .file_access import write_client_files_to_dir

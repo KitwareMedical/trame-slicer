@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .segment_modifier import ModificationMode, SegmentModifier, vtk_image_to_np
 from .segment_paint_widget import BrushModel, BrushShape, SegmentPaintWidget
 from .segment_paint_widget_2d import (

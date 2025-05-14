@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from slicer import vtkMRMLInteractionEventData
@@ -19,7 +21,7 @@ from .view_interaction_dispatch import ViewInteractionDispatch
 
 
 class ThreedViewInteractionDispatch(ViewInteractionDispatch):
-    def __init__(self, view: "ThreeDView"):
+    def __init__(self, view: ThreeDView):
         super().__init__(view)
 
         # Use hardware picker in through vtkWorldPointPicker, this may be slightly slower

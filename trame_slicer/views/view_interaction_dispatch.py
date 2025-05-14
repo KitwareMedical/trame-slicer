@@ -1,11 +1,12 @@
+from __future__ import annotations
+
 from sys import float_info
 from typing import TYPE_CHECKING, TypeVar
 
-from slicer import vtkMRMLAbstractDisplayableManager
+from slicer import vtkMRMLAbstractDisplayableManager, vtkMRMLInteractionEventData
 from vtkmodules import vtkRenderingCore
 from vtkmodules.vtkCommonCore import reference as vtkref
 from vtkmodules.vtkCommonCore import vtkCommand
-from vtkmodules.vtkMRMLDisplayableManager import vtkMRMLInteractionEventData
 
 from .abstract_view_interactor import AbstractViewInteractor
 
@@ -24,7 +25,7 @@ class ViewInteractionDispatch:
     If the user interactors can handle the events, no event is sent to the displayable managers.
     """
 
-    def __init__(self, view: "AbstractViewChild"):
+    def __init__(self, view: AbstractViewChild):
         self._view = view
         self._user_interactor: list[AbstractViewInteractor] = []
         self._focused_displayable_manager: vtkMRMLAbstractDisplayableManager | None = (

@@ -1,8 +1,10 @@
+from __future__ import annotations
+
+from slicer import vtkMRMLMarkupsNode
 from trame_client.widgets.core import Template
 from trame_client.widgets.html import Div
 from trame_server import Server
 from trame_vuetify.widgets.vuetify3 import VCard, VCardText, VMenu, VRow
-from vtkmodules.vtkSlicerMarkupsModuleMRML import vtkMRMLMarkupsNode
 
 from trame_slicer.core import SlicerApp
 from trame_slicer.core.markups_logic import MarkupsLogic

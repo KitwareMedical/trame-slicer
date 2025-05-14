@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from slicer import vtkMRMLVolumeNode
 from trame_server import Server
 

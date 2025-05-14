@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .control_button import ControlButton
 from .layout_button import LayoutButton
 from .load_client_volume_files_button import LoadClientVolumeFilesButton

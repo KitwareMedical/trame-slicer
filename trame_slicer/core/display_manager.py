@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from slicer import vtkMRMLDisplayableNode, vtkMRMLVolumeNode
 
 from .view_manager import ViewManager

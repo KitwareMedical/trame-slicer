@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 from typing import TYPE_CHECKING
 
@@ -24,7 +26,7 @@ class ScheduledRenderStrategy:
     def did_render(self):
         pass
 
-    def set_abstract_view(self, abstract_view: "AbstractView"):
+    def set_abstract_view(self, abstract_view: AbstractView):
         self.abstract_view = abstract_view
 
 

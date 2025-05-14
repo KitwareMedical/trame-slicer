@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import vtkmodules.util.numpy_support as vtk_np
 from numpy.typing import NDArray
 from vtkmodules.vtkCommonDataModel import vtkImageData

@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 def rgb_float_to_hex(rgb_float: list[float]) -> str:
     return "#{:02x}{:02x}{:02x}".format(*(int(c * 255) for c in rgb_float))
 

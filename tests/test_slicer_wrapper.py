@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 
 from trame_slicer.utils import SlicerWrapper, wrap

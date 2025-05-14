@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from _weakref import ref
 from collections.abc import Callable
 from itertools import count

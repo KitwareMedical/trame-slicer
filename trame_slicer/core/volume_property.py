@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 from collections.abc import Callable
 from enum import Flag, auto
-from typing import Optional
 
 from slicer import vtkMRMLVolumePropertyNode
 from vtkmodules.vtkCommonDataModel import vtkPiecewiseFunction
@@ -85,7 +86,7 @@ class VolumeProperty(SlicerWrapper):
         self,
         shift: float,
         shift_mode: VRShiftMode,
-        ref_prop: Optional["VolumeProperty"] = None,
+        ref_prop: VolumeProperty | None = None,
     ):
         ref_prop = ref_prop or self
         if shift_mode & VRShiftMode.COLOR:

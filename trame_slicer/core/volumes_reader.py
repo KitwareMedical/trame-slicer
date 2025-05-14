@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import defaultdict
 from functools import lru_cache
 from pathlib import Path
@@ -299,7 +301,7 @@ class VolumesReader:
         scene: vtkMRMLScene,
         volume_files: list[str],
         name: str,
-        image_io_backend: "VolumesReader._dcm_io_backend",
+        image_io_backend: VolumesReader._dcm_io_backend,
         grayscale=True,
     ):
         if grayscale:

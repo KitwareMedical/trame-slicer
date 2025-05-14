@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from slicer import vtkMRMLVolumeDisplayNode, vtkMRMLVolumeNode
 from vtkmodules.vtkImagingStatistics import vtkImageHistogramStatistics
 

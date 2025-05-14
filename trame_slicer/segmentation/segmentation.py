@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import defaultdict
 from contextlib import contextmanager
 from copy import deepcopy
@@ -37,7 +39,7 @@ class SegmentationOpacityEnum(Flag):
 
 
 class SegmentationRemoveUndoCommand(UndoCommand):
-    def __init__(self, segmentation: "Segmentation", segment_id):
+    def __init__(self, segmentation: Segmentation, segment_id):
         super().__init__()
         self._segmentation = segmentation
         self.segment_id = segment_id
@@ -63,7 +65,7 @@ class SegmentationRemoveUndoCommand(UndoCommand):
 class SegmentationAddUndoCommand(UndoCommand):
     def __init__(
         self,
-        segmentation: "Segmentation",
+        segmentation: Segmentation,
         segment_id,
         segment_name,
         segment_color,
@@ -89,7 +91,7 @@ class SegmentationAddUndoCommand(UndoCommand):
             self._segmentation.get_segment(self.segment_id)
         )
 
-    def merge_with(self, command: "UndoCommand") -> bool:
+    def merge_with(self, command: UndoCommand) -> bool:
         if not isinstance(command, SegmentationRemoveUndoCommand):
             return False
 
@@ -99,7 +101,7 @@ class SegmentationAddUndoCommand(UndoCommand):
         self._is_obsolete = True
         return True
 
-    def do_try_merge(self, command: "UndoCommand") -> bool:
+    def do_try_merge(self, command: UndoCommand) -> bool:
         return isinstance(command, SegmentationRemoveUndoCommand)
 
 
@@ -111,7 +113,7 @@ class SegmentPropertyChangeUndoCommand(UndoCommand):
 
     def __init__(
         self,
-        segmentation: "Segmentation",
+        segmentation: Segmentation,
         segment_id: str,
         segment_properties: SegmentProperties,
     ):
@@ -139,7 +141,7 @@ class SegmentPropertyChangeUndoCommand(UndoCommand):
     def _segment(self):
         return self._segmentation.get_segment(self._segment_id)
 
-    def merge_with(self, command: "UndoCommand") -> bool:
+    def merge_with(self, command: UndoCommand) -> bool:
         if not isinstance(command, SegmentPropertyChangeUndoCommand):
             return False
 
@@ -153,7 +155,7 @@ class SegmentPropertyChangeUndoCommand(UndoCommand):
 class SegmentationLabelMapUndoCommand(UndoCommand):
     def __init__(
         self,
-        segmentation: "Segmentation",
+        segmentation: Segmentation,
         prev_label_map_dict: dict[str, vtkImageData],
         next_label_map_dict: dict[str, vtkImageData],
     ):
@@ -176,7 +178,7 @@ class SegmentationLabelMapUndoCommand(UndoCommand):
 
     @classmethod
     @contextmanager
-    def push_state_change(cls, segmentation: "Segmentation"):
+    def push_state_change(cls, segmentation: Segmentation):
         if not segmentation.undo_stack or not segmentation.first_segment_id:
             yield
             return
@@ -193,7 +195,7 @@ class SegmentationLabelMapUndoCommand(UndoCommand):
         segmentation.undo_stack.push(cls(segmentation, prev_label_map, next_label_map))
 
     @classmethod
-    def copy_label_map(cls, segmentation: "Segmentation") -> dict[str, vtkImageData]:
+    def copy_label_map(cls, segmentation: Segmentation) -> dict[str, vtkImageData]:
         """
         Copy labelmap values as dict of segment_id to labelmap.
         If all segment ids map to the same labelmap, only keep one labelmap.
@@ -486,9 +488,7 @@ class Segmentation:
         labelmap_extents = self._get_segment_labelmap(self.first_segment_id).GetExtent()
         return not all(
             v_extent == l_extent
-            for v_extent, l_extent in zip(
-                volume_extents, labelmap_extents, strict=False
-            )
+            for v_extent, l_extent in zip(volume_extents, labelmap_extents)
         )
 
     def trigger_modified(self):

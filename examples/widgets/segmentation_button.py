@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from trame.decorators import TrameApp, change
 from trame.widgets.vuetify3 import (
     Template,

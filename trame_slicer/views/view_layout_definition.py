@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import Enum, unique
 
@@ -20,7 +22,7 @@ class ViewLayoutDefinition:
         return f'<view class="{self.type.value}" singletontag="{self.singleton_tag}">{self.properties.to_xml()}</view>'
 
     @classmethod
-    def from_xml(cls, xml_str: str) -> "ViewLayoutDefinition":
+    def from_xml(cls, xml_str: str) -> ViewLayoutDefinition:
         from lxml import etree
 
         elt = etree.fromstring(xml_str)
@@ -33,7 +35,7 @@ class ViewLayoutDefinition:
         )
 
     @classmethod
-    def slice_view(cls, orientation: ViewOrientation) -> "ViewLayoutDefinition":
+    def slice_view(cls, orientation: ViewOrientation) -> ViewLayoutDefinition:
         return cls(
             orientation,
             ViewType.SLICE_VIEW,
@@ -41,15 +43,15 @@ class ViewLayoutDefinition:
         )
 
     @classmethod
-    def axial_view(cls) -> "ViewLayoutDefinition":
+    def axial_view(cls) -> ViewLayoutDefinition:
         return cls.slice_view("Axial")
 
     @classmethod
-    def coronal_view(cls) -> "ViewLayoutDefinition":
+    def coronal_view(cls) -> ViewLayoutDefinition:
         return cls.slice_view("Coronal")
 
     @classmethod
-    def sagittal_view(cls) -> "ViewLayoutDefinition":
+    def sagittal_view(cls) -> ViewLayoutDefinition:
         return cls.slice_view("Sagittal")
 
     @classmethod

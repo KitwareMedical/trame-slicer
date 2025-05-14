@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Literal
 
 from slicer import (
@@ -34,7 +36,7 @@ class SliceRendererManager(vtkMRMLLightBoxRendererManagerProxy):
     :see: qMRMLSliceControllerWidget.cxx
     """
 
-    def __init__(self, view: "SliceView"):
+    def __init__(self, view: SliceView):
         super().__init__()
         self.view = view
 

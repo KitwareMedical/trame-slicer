@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .display_manager import DisplayManager
 from .io_manager import IOManager
 from .layout_manager import LayoutManager

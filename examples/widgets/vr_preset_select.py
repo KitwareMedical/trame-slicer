@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from trame.decorators import TrameApp, change
 from trame_client.widgets.core import Template
 from trame_client.widgets.html import Span

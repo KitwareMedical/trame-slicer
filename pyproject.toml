@@ -22,7 +22,7 @@ dependencies = [
     "py-undo-stack",
 ]
 
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 readme = "README.md"
 license = { text = "Apache 2.0 License" }
 keywords = [

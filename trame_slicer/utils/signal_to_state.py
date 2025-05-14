@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from trame_server.state import State
 from trame_server.utils.asynchronous import create_task
 from undo_stack import Signal, SignalContainer
