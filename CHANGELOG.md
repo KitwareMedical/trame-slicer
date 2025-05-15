@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+## v0.7.0 (2025-05-15)
+
+### Code Style
+
+- Update format line length
+  ([`3c0f912`](https://github.com/KitwareMedical/trame-slicer/commit/3c0f912ca6f130d62a9a2ca05d785ece368f7459))
+
+- Update default line length to 120 - Update pre-commit ruff version
+
+### Features
+
+- **python-version**: Add support for Python 3.9
+  ([`b90e449`](https://github.com/KitwareMedical/trame-slicer/commit/b90e449a98de40e7179701d6cab061243dce70d1))
+
+
 ## v0.6.0 (2025-05-07)
 
 ### Bug Fixes
