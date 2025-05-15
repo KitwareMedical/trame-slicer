@@ -197,3 +197,22 @@ def test_3d_view_factory_has_reset_camera_button(
     vuetify_view_str = str(view.vuetify_view)
     assert "VBtn" in vuetify_view_str
     a_server.start()
+
+
+@pytest.mark.parametrize(
+    ("view_definition", "scene_id", "name"),
+    [
+        (ViewLayoutDefinition.axial_view, "vtkMRMLSliceNodeRed", "Red"),
+        (ViewLayoutDefinition.coronal_view, "vtkMRMLSliceNodeGreen", "Green"),
+        (ViewLayoutDefinition.sagittal_view, "vtkMRMLSliceNodeYellow", "Yellow"),
+    ],
+)
+def test_default_slice_views_names_are_consistent_with_slicer(
+    a_view_manager, a_server, view_definition, scene_id, name
+):
+    a_view_manager.register_factory(RemoteSliceViewFactory(a_server))
+    view = a_view_manager.create_view(view_definition())
+    assert view
+    assert view.mrml_view_node.GetID() == scene_id
+    assert view.mrml_view_node.GetName() == name
+    assert view.mrml_view_node.GetSingletonTag() == name
