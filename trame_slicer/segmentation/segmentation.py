@@ -43,19 +43,13 @@ class SegmentationRemoveUndoCommand(UndoCommand):
         super().__init__()
         self._segmentation = segmentation
         self.segment_id = segment_id
-        self._segment_properties = SegmentProperties.from_segment(
-            segmentation.get_segment(segment_id)
-        )
-        self._label_map = deepcopy(
-            self._segmentation.get_segment_labelmap(segment_id, as_numpy_array=True)
-        )
+        self._segment_properties = SegmentProperties.from_segment(segmentation.get_segment(segment_id))
+        self._label_map = deepcopy(self._segmentation.get_segment_labelmap(segment_id, as_numpy_array=True))
         self.redo()
 
     def undo(self) -> None:
         self._segmentation.segmentation.AddEmptySegment(self.segment_id)
-        self._segment_properties.to_segment(
-            self._segmentation.get_segment(self.segment_id)
-        )
+        self._segment_properties.to_segment(self._segmentation.get_segment(self.segment_id))
         self._segmentation.set_segment_labelmap(self.segment_id, self._label_map)
 
     def redo(self) -> None:
@@ -74,9 +68,7 @@ class SegmentationAddUndoCommand(UndoCommand):
         super().__init__()
         self._segmentation = segmentation
 
-        self.segment_id = self._segmentation.segmentation.AddEmptySegment(
-            segment_id, segment_name, segment_color
-        )
+        self.segment_id = self._segmentation.segmentation.AddEmptySegment(segment_id, segment_name, segment_color)
         segment = self._segmentation.get_segment(self.segment_id)
         if segment_value is not None:
             segment.SetLabelValue(segment_value)
@@ -87,9 +79,7 @@ class SegmentationAddUndoCommand(UndoCommand):
 
     def redo(self) -> None:
         self._segmentation.segmentation.AddEmptySegment(self.segment_id)
-        self._segment_properties.to_segment(
-            self._segmentation.get_segment(self.segment_id)
-        )
+        self._segment_properties.to_segment(self._segmentation.get_segment(self.segment_id))
 
     def merge_with(self, command: UndoCommand) -> bool:
         if not isinstance(command, SegmentationRemoveUndoCommand):
@@ -202,9 +192,7 @@ class SegmentationLabelMapUndoCommand(UndoCommand):
         """
         labelmap_dict = defaultdict(list)
         for segment_id in segmentation.get_segment_ids():
-            labelmap_dict[segmentation.get_segment_labelmap(segment_id)].append(
-                segment_id
-            )
+            labelmap_dict[segmentation.get_segment_labelmap(segment_id)].append(segment_id)
 
         out_dict = {}
         for image, segment_ids in labelmap_dict.items():
@@ -259,11 +247,7 @@ class Segmentation:
 
     @property
     def segmentation(self) -> vtkSegmentation | None:
-        return (
-            self._segmentation_node.GetSegmentation()
-            if self._segmentation_node
-            else None
-        )
+        return self._segmentation_node.GetSegmentation() if self._segmentation_node else None
 
     @property
     def segmentation_node(self) -> vtkMRMLSegmentationNode | None:
@@ -296,19 +280,13 @@ class Segmentation:
         if not self.segmentation:
             return []
 
-        return [
-            self.segmentation.GetNthSegment(i_segment).GetName()
-            for i_segment in range(self.n_segments)
-        ]
+        return [self.segmentation.GetNthSegment(i_segment).GetName() for i_segment in range(self.n_segments)]
 
     def get_segment_colors(self) -> list[list[float]]:
         if not self.segmentation:
             return []
 
-        return [
-            self.segmentation.GetNthSegment(i_segment).GetColor()
-            for i_segment in range(self.n_segments)
-        ]
+        return [self.segmentation.GetNthSegment(i_segment).GetColor() for i_segment in range(self.n_segments)]
 
     @property
     def n_segments(self) -> int:
@@ -360,17 +338,13 @@ class Segmentation:
         self.push_undo(SegmentationRemoveUndoCommand(self, segment_id))
         self.segmentation_modified()
 
-    def get_segment_labelmap(
-        self, segment_id, *, as_numpy_array=False, do_sanitize=True
-    ) -> NDArray | vtkImageData:
+    def get_segment_labelmap(self, segment_id, *, as_numpy_array=False, do_sanitize=True) -> NDArray | vtkImageData:
         if do_sanitize and self._needs_sanitize():
             self.sanitize_segmentation(self.segmentation_node, self.volume_node)
 
         return self._get_segment_labelmap(segment_id, as_numpy_array=as_numpy_array)
 
-    def _get_segment_labelmap(
-        self, segment_id, *, as_numpy_array=False
-    ) -> NDArray | vtkImageData:
+    def _get_segment_labelmap(self, segment_id, *, as_numpy_array=False) -> NDArray | vtkImageData:
         def empty():
             return vtkImageData() if not as_numpy_array else np.array([])
 
@@ -381,9 +355,7 @@ class Segmentation:
         if not segment:
             return empty()
 
-        labelmap = segment.GetRepresentation(
-            vtkSegmentationConverter.GetBinaryLabelmapRepresentationName()
-        )
+        labelmap = segment.GetRepresentation(vtkSegmentationConverter.GetBinaryLabelmapRepresentationName())
         return labelmap if not as_numpy_array else vtk_image_to_np(labelmap)
 
     @property
@@ -425,11 +397,7 @@ class Segmentation:
         if not display_node:
             return []
 
-        return [
-            segment_id
-            for segment_id in self.get_segment_ids()
-            if display_node.GetSegmentVisibility(segment_id)
-        ]
+        return [segment_id for segment_id in self.get_segment_ids() if display_node.GetSegmentVisibility(segment_id)]
 
     def get_segment_value(self, segment_id) -> int:
         segment = self.get_segment(segment_id)
@@ -486,10 +454,7 @@ class Segmentation:
 
         volume_extents = self.volume_node.GetImageData().GetExtent()
         labelmap_extents = self._get_segment_labelmap(self.first_segment_id).GetExtent()
-        return not all(
-            v_extent == l_extent
-            for v_extent, l_extent in zip(volume_extents, labelmap_extents)
-        )
+        return not all(v_extent == l_extent for v_extent, l_extent in zip(volume_extents, labelmap_extents))
 
     def trigger_modified(self):
         self.segmentation.Modified()
@@ -500,9 +465,7 @@ class Segmentation:
         return SegmentProperties.from_segment(segment) if segment is not None else None
 
     def set_segment_properties(self, segment_id, segment_properties: SegmentProperties):
-        self.push_undo(
-            SegmentPropertyChangeUndoCommand(self, segment_id, segment_properties)
-        )
+        self.push_undo(SegmentPropertyChangeUndoCommand(self, segment_id, segment_properties))
         self.segmentation_modified()
 
     def push_undo(self, cmd):
@@ -541,9 +504,7 @@ class Segmentation:
             return
         display_node = self._segmentation_node.GetDisplayNode()
         display_node.SetVisibility2DFill(SegmentationOpacityEnum.FILL in opacity_mode)
-        display_node.SetVisibility2DOutline(
-            SegmentationOpacityEnum.OUTLINE in opacity_mode
-        )
+        display_node.SetVisibility2DOutline(SegmentationOpacityEnum.OUTLINE in opacity_mode)
 
     def get_opacity_mode(self) -> SegmentationOpacityEnum | None:
         if not self._segmentation_node:

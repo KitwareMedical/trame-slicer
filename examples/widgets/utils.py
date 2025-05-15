@@ -26,9 +26,7 @@ class StateId:
     vr_preset_value = IdName()
 
 
-def get_current_volume_node(
-    server: Server, slicer_app: SlicerApp
-) -> vtkMRMLVolumeNode | None:
+def get_current_volume_node(server: Server, slicer_app: SlicerApp) -> vtkMRMLVolumeNode | None:
     node_id = server.state[StateId.current_volume_node_id]
     if not node_id:
         return None

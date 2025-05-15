@@ -82,10 +82,7 @@ class VolumesReader:
         if cls.contains_dcm_volume(volume_files):
             volume_nodes = cls.load_dcm_volumes(scene, volume_files)
         else:
-            volume_nodes = [
-                cls.load_single_file_volume(scene, app_logic, volume_file)
-                for volume_file in volume_files
-            ]
+            volume_nodes = [cls.load_single_file_volume(scene, app_logic, volume_file) for volume_file in volume_files]
 
         return cls._filter_none(volume_nodes)
 
@@ -122,22 +119,15 @@ class VolumesReader:
     def _is_grayscale(cls, volume_files: list[str]) -> bool:
         if not volume_files:
             return False
-        return "MONOCHROME" in cls._dcm_read_tag(
-            volume_files[0], _DCMTag.photometricInterpretation
-        )
+        return "MONOCHROME" in cls._dcm_read_tag(volume_files[0], _DCMTag.photometricInterpretation)
 
     @classmethod
     def _file_name_from_volume_path(cls, volume_files: str) -> tuple[str, str]:
         return volume_files, Path(volume_files).name
 
     @classmethod
-    def load_dcm_volumes(
-        cls, scene: vtkMRMLScene, volume_files: list[vtkMRMLVolumeNode | None]
-    ):
-        return [
-            cls.load_single_dcm_volume(scene, volume_files)
-            for volume_files in cls.split_volumes(volume_files)
-        ]
+    def load_dcm_volumes(cls, scene: vtkMRMLScene, volume_files: list[vtkMRMLVolumeNode | None]):
+        return [cls.load_single_dcm_volume(scene, volume_files) for volume_files in cls.split_volumes(volume_files)]
 
     @classmethod
     def split_volumes(cls, volume_files: list[str]) -> list[list[str]]:
@@ -223,21 +213,11 @@ class VolumesReader:
 
     @classmethod
     def _filter_dcm_files(cls, volume_files: list[str]) -> list[str]:
-        return sorted(
-            [
-                volume_file
-                for volume_file in volume_files
-                if cls.is_dcm_file(volume_file)
-            ]
-        )
+        return sorted([volume_file for volume_file in volume_files if cls.is_dcm_file(volume_file)])
 
     @classmethod
     def _filter_files_without_pixel_values(cls, volume_files: list[str]) -> list[str]:
-        return [
-            volume_file
-            for volume_file in volume_files
-            if cls._has_pixel_data(volume_file)
-        ]
+        return [volume_file for volume_file in volume_files if cls._has_pixel_data(volume_file)]
 
     @classmethod
     def _filter_unreadable_dcm_files(cls, volume_files: list[str]) -> list[str]:
@@ -246,11 +226,7 @@ class VolumesReader:
             excluded = {"1.2.840.10008.5.1.4.1.1.66.4", "1.2.840.10008.5.1.4.1.1.481.3"}
             return sop_uuid in excluded if sop_uuid is not None else False
 
-        return [
-            volume_file
-            for volume_file in volume_files
-            if not unreadable_sop_class(volume_file)
-        ]
+        return [volume_file for volume_file in volume_files if not unreadable_sop_class(volume_file)]
 
     @classmethod
     def _has_pixel_data(cls, volume_file: str) -> bool:
@@ -258,15 +234,11 @@ class VolumesReader:
         return bool(dcm.get(_DCMTag.pixelData))
 
     @classmethod
-    def _filter_none(
-        cls, volume_nodes: list[vtkMRMLVolumeNode | None]
-    ) -> list[vtkMRMLVolumeNode]:
+    def _filter_none(cls, volume_nodes: list[vtkMRMLVolumeNode | None]) -> list[vtkMRMLVolumeNode]:
         return list(filter(None, volume_nodes))
 
     @classmethod
-    def load_single_dcm_volume(
-        cls, scene: vtkMRMLScene, volume_files: list[str]
-    ) -> vtkMRMLVolumeNode | None:
+    def load_single_dcm_volume(cls, scene: vtkMRMLScene, volume_files: list[str]) -> vtkMRMLVolumeNode | None:
         # Get name and grayscale values
         is_gray_scale = cls._is_grayscale(volume_files)
         name = cls._dcm_series_name(volume_files)
@@ -275,9 +247,7 @@ class VolumesReader:
         volume_files = cls._get_sorted_image_files(volume_files)
 
         for backend in get_args(VolumesReader._dcm_io_backend):
-            volume = cls._load_dcm_volume_with_backend(
-                scene, volume_files, name, backend, is_gray_scale
-            )
+            volume = cls._load_dcm_volume_with_backend(scene, volume_files, name, backend, is_gray_scale)
             if volume is not None:
                 return volume
         return None
@@ -344,13 +314,9 @@ class VolumesReader:
         image_change_information.Update()
 
         name = scene.GenerateUniqueName(name)
-        node_type = (
-            "vtkMRMLScalarVolumeNode" if grayscale else "vtkMRMLVectorVolumeNode"
-        )
+        node_type = "vtkMRMLScalarVolumeNode" if grayscale else "vtkMRMLVectorVolumeNode"
         volume_node = scene.AddNewNodeByClass(node_type, name)
-        volume_node.SetAndObserveImageData(
-            image_change_information.GetOutputDataObject(0)
-        )
+        volume_node.SetAndObserveImageData(image_change_information.GetOutputDataObject(0))
         vtkMRMLVolumeArchetypeStorageNode.SetMetaDataDictionaryFromReader(
             volume_node,
             reader,

@@ -21,9 +21,7 @@ class ToolsStrip(Div):
         layout_manager: LayoutManager,
         **kwargs,
     ):
-        super().__init__(
-            classes="bg-grey-darken-4 d-flex flex-column align-center", **kwargs
-        )
+        super().__init__(classes="bg-grey-darken-4 d-flex flex-column align-center", **kwargs)
 
         with self:
             LoadClientVolumeFilesButton(server=server, slicer_app=slicer_app)

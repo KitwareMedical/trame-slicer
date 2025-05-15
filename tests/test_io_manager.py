@@ -52,9 +52,7 @@ def test_an_io_manager_can_load_a_volume_in_dcm_format(
     a_slicer_app,
     mr_head_dcm_volume_file_paths,
 ):
-    volumes = an_io_manager.load_volumes(
-        [p.as_posix() for p in mr_head_dcm_volume_file_paths]
-    )
+    volumes = an_io_manager.load_volumes([p.as_posix() for p in mr_head_dcm_volume_file_paths])
     assert volumes
     assert isinstance(volumes[0], vtkMRMLVolumeNode)
     assert a_slicer_app.scene.GetNodeByID(volumes[0].GetID()) is not None
@@ -64,10 +62,7 @@ def test_can_split_multiple_dcm_volumes(
     ct_chest_dcm_volume_file_paths,
     mr_head_dcm_volume_file_paths,
 ):
-    volume_files = [
-        p.as_posix()
-        for p in chain(mr_head_dcm_volume_file_paths, ct_chest_dcm_volume_file_paths)
-    ]
+    volume_files = [p.as_posix() for p in chain(mr_head_dcm_volume_file_paths, ct_chest_dcm_volume_file_paths)]
     split_volumes = VolumesReader.split_volumes(volume_files)
     assert len(split_volumes) == 2
 
@@ -86,10 +81,7 @@ def test_can_load_multiple_volumes_in_dcm_format(
     ct_chest_dcm_volume_file_paths,
     mr_head_dcm_volume_file_paths,
 ):
-    volume_files = [
-        p.as_posix()
-        for p in chain(mr_head_dcm_volume_file_paths, ct_chest_dcm_volume_file_paths)
-    ]
+    volume_files = [p.as_posix() for p in chain(mr_head_dcm_volume_file_paths, ct_chest_dcm_volume_file_paths)]
 
     volumes = an_io_manager.load_volumes(volume_files)
     assert len(volumes) == 2
@@ -111,9 +103,7 @@ def test_an_io_manager_can_load_segmentations_in_nifti_format(
     a_segmentation_nifti_file_path,
     a_slicer_app,
 ):
-    segmentation_node = an_io_manager.load_segmentation(
-        a_segmentation_nifti_file_path.as_posix()
-    )
+    segmentation_node = an_io_manager.load_segmentation(a_segmentation_nifti_file_path.as_posix())
     assert isinstance(segmentation_node, vtkMRMLSegmentationNode)
     assert a_slicer_app.scene.GetNodeByID(segmentation_node.GetID()) is not None
     segmentation: vtkSegmentation = segmentation_node.GetSegmentation()
@@ -125,9 +115,7 @@ def test_an_io_manager_can_load_segmentations_in_stl_format(
     a_segmentation_stl_file_path,
     a_slicer_app,
 ):
-    segmentation_node = an_io_manager.load_segmentation(
-        a_segmentation_stl_file_path.as_posix()
-    )
+    segmentation_node = an_io_manager.load_segmentation(a_segmentation_stl_file_path.as_posix())
     assert isinstance(segmentation_node, vtkMRMLSegmentationNode)
     assert a_slicer_app.scene.GetNodeByID(segmentation_node.GetID()) is not None
     segmentation: vtkSegmentation = segmentation_node.GetSegmentation()
@@ -144,12 +132,8 @@ def test_an_io_manager_can_write_models(an_io_manager, a_model_node, tmpdir):
     assert read_model.GetPolyData().GetNumberOfPoints() == src_n_points
 
 
-def test_an_io_manager_can_write_segmentation_as_nifti(
-    an_io_manager, a_segmentation_stl_file_path, tmpdir
-):
-    segmentation_node = an_io_manager.load_segmentation(
-        a_segmentation_stl_file_path.as_posix()
-    )
+def test_an_io_manager_can_write_segmentation_as_nifti(an_io_manager, a_segmentation_stl_file_path, tmpdir):
+    segmentation_node = an_io_manager.load_segmentation(a_segmentation_stl_file_path.as_posix())
     out_path = Path(tmpdir, "out.nii.gz")
     an_io_manager.write_segmentation(segmentation_node, out_path)
     assert out_path.exists()
@@ -170,16 +154,12 @@ def read_stl_file_points_as_numpy(stl_file):
     return get_np_points(stl_reader.GetOutput())
 
 
-def test_an_io_manager_can_load_save_models_without_changing_their_ref(
-    an_io_manager, a_model_file_path, tmpdir
-):
+def test_an_io_manager_can_load_save_models_without_changing_their_ref(an_io_manager, a_model_file_path, tmpdir):
     # Load using STL reader
     exp_points = read_stl_file_points_as_numpy(a_model_file_path)
 
     # Load in slicer with conversion disabled
-    model = an_io_manager.load_model(
-        a_model_file_path, do_convert_to_slicer_coord=False
-    )
+    model = an_io_manager.load_model(a_model_file_path, do_convert_to_slicer_coord=False)
     model_poly = model.GetPolyData()
     act_points = get_np_points(model_poly)
 
@@ -195,9 +175,7 @@ def test_an_io_manager_can_load_save_models_without_changing_their_ref(
     np.testing.assert_allclose(act_points, exp_points)
 
 
-def test_an_io_manager_by_default_loads_and_saves_models_as_lps(
-    an_io_manager, a_model_file_path, tmpdir
-):
+def test_an_io_manager_by_default_loads_and_saves_models_as_lps(an_io_manager, a_model_file_path, tmpdir):
     # Load using STL reader
     exp_points = read_stl_file_points_as_numpy(a_model_file_path)
 
@@ -220,9 +198,7 @@ def test_an_io_manager_by_default_loads_and_saves_models_as_lps(
 
 
 @pytest.mark.parametrize("scene_name", ["scene.mrml", "scene.mrb"])
-def test_an_io_manager_can_read_write_scene(
-    an_io_manager, a_slicer_app, scene_name, a_volume_node, tmpdir
-):
+def test_an_io_manager_can_read_write_scene(an_io_manager, a_slicer_app, scene_name, a_volume_node, tmpdir):
     file_path = Path(tmpdir) / scene_name
     an_io_manager.save_scene(file_path)
     assert file_path.is_file()

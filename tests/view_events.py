@@ -26,14 +26,10 @@ class ViewEvents:
         self.interactor.SetEventPosition(x, y)
         self.interactor.InvokeEvent("MouseMoveEvent")
 
-    def _mouse_button_event(
-        self, mouse_button: MouseButton | str, button_event: ButtonEvent | str
-    ):
+    def _mouse_button_event(self, mouse_button: MouseButton | str, button_event: ButtonEvent | str):
         mouse_button = MouseButton(mouse_button)
         button_event = ButtonEvent(button_event)
-        self.interactor.InvokeEvent(
-            f"{mouse_button.name}Button{button_event.name}Event"
-        )
+        self.interactor.InvokeEvent(f"{mouse_button.name}Button{button_event.name}Event")
 
     def mouse_press_event(self, mouse_button: MouseButton | str = MouseButton.Left):
         self._mouse_button_event(mouse_button, ButtonEvent.Press)
@@ -41,9 +37,7 @@ class ViewEvents:
     def mouse_release_event(self, mouse_button: MouseButton | str = MouseButton.Left):
         self._mouse_button_event(mouse_button, ButtonEvent.Release)
 
-    def click_at_coordinate(
-        self, x, y, *, mouse_button: MouseButton | str = MouseButton.Left
-    ):
+    def click_at_coordinate(self, x, y, *, mouse_button: MouseButton | str = MouseButton.Left):
         self.mouse_move_to(x, y)
         self.mouse_press_event(mouse_button)
         self.mouse_release_event(mouse_button)

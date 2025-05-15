@@ -26,10 +26,8 @@ def test_abstract_view_can_render_a_simple_cone():
 
 
 def test_displayable_manager_group_can_use_displayable_string_instantiation():
-    ruler_displayable_manager = (
-        vtkMRMLDisplayableManagerGroup.InstantiateDisplayableManager(
-            "vtkMRMLRulerDisplayableManager"
-        )
+    ruler_displayable_manager = vtkMRMLDisplayableManagerGroup.InstantiateDisplayableManager(
+        "vtkMRMLRulerDisplayableManager"
     )
     assert ruler_displayable_manager is not None
 

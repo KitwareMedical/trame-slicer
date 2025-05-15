@@ -45,9 +45,7 @@ class IOManager:
         self.vtk_io_manager_logic = vtkDataIOManagerLogic()
         self.vtk_io_manager_logic.SetMRMLScene(scene)
         self.vtk_io_manager_logic.SetMRMLApplicationLogic(app_logic)
-        self.vtk_io_manager_logic.SetAndObserveDataIOManager(
-            self.remote_io.GetDataIOManager()
-        )
+        self.vtk_io_manager_logic.SetAndObserveDataIOManager(self.remote_io.GetDataIOManager())
         self.remote_io.AddDataIOToScene()
 
         self.segmentation_editor: SegmentationEditor = segmentation_editor
@@ -70,21 +68,15 @@ class IOManager:
         storage_node = vtkMRMLModelStorageNode()
         storage_node.SetFileName(model_file.as_posix())
         model_name = model_file.stem
-        model_node: vtkMRMLModelNode = self.scene.AddNewNodeByClass(
-            "vtkMRMLModelNode", model_name
-        )
+        model_node: vtkMRMLModelNode = self.scene.AddNewNodeByClass("vtkMRMLModelNode", model_name)
         storage_node.ReadData(model_node)
 
         # Check if RAS / LPS conversion is required
         # Slicer will read coordinates in the file header during load regarding of preferred load format
         # Check if coordinate change occurred to rollback change if requested
-        did_convert_coord = (
-            storage_node.GetCoordinateSystem() != vtkMRMLStorageNode.CoordinateSystemRAS
-        )
+        did_convert_coord = storage_node.GetCoordinateSystem() != vtkMRMLStorageNode.CoordinateSystemRAS
         if not do_convert_to_slicer_coord and did_convert_coord:
-            storage_node.ConvertBetweenRASAndLPS(
-                model_node.GetPolyData(), model_node.GetPolyData()
-            )
+            storage_node.ConvertBetweenRASAndLPS(model_node.GetPolyData(), model_node.GetPolyData())
 
         model_node.CreateDefaultDisplayNodes()
         return model_node
@@ -109,20 +101,14 @@ class IOManager:
         if Path(segmentation_file).suffix in [".obj", ".stl", ".ply"]:
             model = self.load_model(segmentation_file, do_convert_to_slicer_coord)
             try:
-                return (
-                    self.segmentation_editor.create_segmentation_node_from_model_node(
-                        model
-                    )
-                )
+                return self.segmentation_editor.create_segmentation_node_from_model_node(model)
             finally:
                 self.scene.RemoveNode(model)
 
         return self.segmentation_editor.load_segmentation_from_file(segmentation_file)
 
     def write_segmentation(self, segmentation_node, segmentation_file: str | Path):
-        self.segmentation_editor.export_segmentation_to_file(
-            segmentation_node, segmentation_file
-        )
+        self.segmentation_editor.export_segmentation_to_file(segmentation_node, segmentation_file)
 
     @classmethod
     def write_node(

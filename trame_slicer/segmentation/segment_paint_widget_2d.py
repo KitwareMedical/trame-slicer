@@ -48,17 +48,11 @@ class Brush2D(AbstractBrush):
 
         self._world_to_slice_transform = vtkTransform()
         self._brush_world_to_slice_transformer = vtkTransformPolyDataFilter()
-        self._brush_world_to_slice_transformer.SetTransform(
-            self._world_to_slice_transform
-        )
-        self._brush_world_to_slice_transformer.SetInputConnection(
-            self._brush_cutter.GetOutputPort()
-        )
+        self._brush_world_to_slice_transformer.SetTransform(self._world_to_slice_transform)
+        self._brush_world_to_slice_transformer.SetInputConnection(self._brush_cutter.GetOutputPort())
 
         self._brush_mapper = vtkPolyDataMapper2D()
-        self._brush_mapper.SetInputConnection(
-            self._brush_world_to_slice_transformer.GetOutputPort()
-        )
+        self._brush_mapper.SetInputConnection(self._brush_world_to_slice_transformer.GetOutputPort())
         self._brush_actor = vtkActor2D()
         self._brush_actor.SetMapper(self._brush_mapper)
         self._brush_actor.VisibilityOff()
@@ -104,9 +98,7 @@ class BrushScaleMode(Enum):
 
 
 class SegmentPaintWidget2D(SegmentPaintWidget):
-    def __init__(
-        self, view: SliceView, modifier: SegmentModifier, brush_model: BrushModel
-    ):
+    def __init__(self, view: SliceView, modifier: SegmentModifier, brush_model: BrushModel):
         # brush
         brush = Brush2D()
         brush.set_input_connection(brush_model.get_output_port())
@@ -116,9 +108,7 @@ class SegmentPaintWidget2D(SegmentPaintWidget):
         feedback_points_poly_data = vtkPolyData()
         feedback_glyph_filter = vtkGlyph3D()
         feedback_glyph_filter.SetInputData(feedback_points_poly_data)
-        feedback_glyph_filter.SetSourceConnection(
-            brush_model.get_untransformed_output_port()
-        )
+        feedback_glyph_filter.SetSourceConnection(brush_model.get_untransformed_output_port())
         brush_feedback = Brush2D()
         brush_feedback.set_input_connection(feedback_glyph_filter.GetOutputPort())
         brush_feedback.get_property().SetColor(0.7, 0.7, 0.0)
@@ -131,14 +121,10 @@ class SegmentPaintWidget2D(SegmentPaintWidget):
         self._brush = brush
         self._brush_feedback = brush_feedback
         relative_brush_size = 5
-        self._brush_diameter_pix = (
-            relative_brush_size / 100
-        ) * self._vertical_screen_size()
+        self._brush_diameter_pix = (relative_brush_size / 100) * self._vertical_screen_size()
 
         feedback_points_poly_data.SetPoints(self.paint_coordinates_world)
-        self.view.mrml_view_node.AddObserver(
-            vtkCommand.ModifiedEvent, self._on_slice_changed, -1.0
-        )
+        self.view.mrml_view_node.AddObserver(vtkCommand.ModifiedEvent, self._on_slice_changed, -1.0)
 
         self._on_slice_changed(None, None)
         self.enable_brush()
@@ -156,9 +142,7 @@ class SegmentPaintWidget2D(SegmentPaintWidget):
         if self._brush_scale_mode == BrushScaleMode.ScreenInvariant:
             return self._brush_diameter_pix
 
-        return self._compute_brush_pixel_diameter_from_absolute(
-            self._brush_diameter_pix
-        )
+        return self._compute_brush_pixel_diameter_from_absolute(self._brush_diameter_pix)
 
     def _get_mm_per_pixel(self):
         xy_to_slice: vtkMatrix4x4 = self.view.mrml_view_node.GetXYToSlice()
@@ -187,16 +171,12 @@ class SegmentPaintWidget2D(SegmentPaintWidget):
 
         self.update_brush_diameter()
         xy_to_ras: vtkMatrix4x4 = self.view.mrml_view_node.GetXYToRAS()
-        world_pos = list(
-            xy_to_ras.MultiplyPoint((float(position[0]), float(position[1]), 0.0, 1.0))
-        )
+        world_pos = list(xy_to_ras.MultiplyPoint((float(position[0]), float(position[1]), 0.0, 1.0)))
         self._update_brush_position(world_pos[0:3], xy_to_ras)
         if self.is_painting():
             self.add_point_to_selection(world_pos[:3])
 
-    def _update_brush_position(
-        self, world_pos: list[float], xy_to_ras: vtkMatrix4x4
-    ) -> None:
+    def _update_brush_position(self, world_pos: list[float], xy_to_ras: vtkMatrix4x4) -> None:
         self._brush_model.set_shape(BrushShape.Cylinder)
 
         # brush is rotated to the slice widget plane
@@ -208,9 +188,7 @@ class SegmentPaintWidget2D(SegmentPaintWidget):
 
         # cylinder's long axis is the Y axis, we need to rotate it to Z axis
         self._brush_model.brush_to_world_origin_transform.Identity()
-        self._brush_model.brush_to_world_origin_transform.Concatenate(
-            brush_to_world_origin_transform_matrix
-        )
+        self._brush_model.brush_to_world_origin_transform.Concatenate(brush_to_world_origin_transform_matrix)
         self._brush_model.brush_to_world_origin_transform.RotateX(90)
 
         self._brush_model.world_origin_to_world_transform.Identity()
@@ -218,9 +196,7 @@ class SegmentPaintWidget2D(SegmentPaintWidget):
 
     def _on_slice_changed(self, _caller, _ev) -> None:
         self._brush.update_slice_position(self.view.mrml_view_node.GetXYToRAS())
-        self._brush_feedback.update_slice_position(
-            self.view.mrml_view_node.GetXYToRAS()
-        )
+        self._brush_feedback.update_slice_position(self.view.mrml_view_node.GetXYToRAS())
         self.update_brush_diameter()
 
 

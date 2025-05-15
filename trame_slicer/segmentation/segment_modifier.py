@@ -38,9 +38,7 @@ def _clamp_extent(extent: list[int], limits: list[int]) -> list[int]:
     ]
 
 
-def _sub_extent_to_slices(
-    extent: list[int], sub_extent: list[int]
-) -> tuple[slice, slice, slice]:
+def _sub_extent_to_slices(extent: list[int], sub_extent: list[int]) -> tuple[slice, slice, slice]:
     """
     Convert a vtkImageData sub extent to NumPy slices
     """
@@ -105,9 +103,7 @@ class SegmentModifier:
 
     @mask.setter
     def mask(self, val: NDArray[np.bool] | None):
-        if val is not None and tuple(val.shape) != tuple(
-            reversed(self.volume_node.GetImageData().GetDimensions())
-        ):
+        if val is not None and tuple(val.shape) != tuple(reversed(self.volume_node.GetImageData().GetDimensions())):
             _error_msg = "mask extent must match source volume extent"
             raise ValueError(_error_msg)
 
@@ -178,24 +174,16 @@ class SegmentModifier:
         world_to_segmentation_transform_matrix.SetElement(2, 3, 0)
 
         world_origin_to_modifier_labelmap_ijk_transform = vtkTransform()
-        world_origin_to_modifier_labelmap_ijk_transform.Concatenate(
-            world_to_ijk_transform_matrix
-        )
-        world_origin_to_modifier_labelmap_ijk_transform.Concatenate(
-            world_to_segmentation_transform_matrix
-        )
+        world_origin_to_modifier_labelmap_ijk_transform.Concatenate(world_to_ijk_transform_matrix)
+        world_origin_to_modifier_labelmap_ijk_transform.Concatenate(world_to_segmentation_transform_matrix)
 
         world_origin_to_modifier_labelmap_ijk_transformer = vtkTransformPolyDataFilter()
-        world_origin_to_modifier_labelmap_ijk_transformer.SetTransform(
-            world_origin_to_modifier_labelmap_ijk_transform
-        )
+        world_origin_to_modifier_labelmap_ijk_transformer.SetTransform(world_origin_to_modifier_labelmap_ijk_transform)
         world_origin_to_modifier_labelmap_ijk_transformer.SetInputData(poly)
         world_origin_to_modifier_labelmap_ijk_transformer.Update()
 
         # Pre-rotated polydata
-        brush_model: vtkPolyData = (
-            world_origin_to_modifier_labelmap_ijk_transformer.GetOutput()
-        )
+        brush_model: vtkPolyData = world_origin_to_modifier_labelmap_ijk_transformer.GetOutput()
 
         modifier_labelmap = self._poly_to_modifier_labelmap(brush_model)
         original_extent = modifier_labelmap.GetExtent()
@@ -215,9 +203,7 @@ class SegmentModifier:
                     original_extent[4] + int(position[2]),
                     original_extent[5] + int(position[2]),
                 ]
-                self._apply_binary_labelmap(
-                    np_modifier_labelmap, extent, do_trigger_segmentation_modified=False
-                )
+                self._apply_binary_labelmap(np_modifier_labelmap, extent, do_trigger_segmentation_modified=False)
 
         self.trigger_active_segment_modified()
 
@@ -239,16 +225,10 @@ class SegmentModifier:
 
         with SegmentationLabelMapUndoCommand.push_state_change(self.segmentation):
             np_modifier_labelmap = vtk_image_to_np(modifier_labelmap) > 0
-            self._apply_binary_labelmap(
-                np_modifier_labelmap, list(modifier_labelmap.GetExtent())
-            )
+            self._apply_binary_labelmap(np_modifier_labelmap, list(modifier_labelmap.GetExtent()))
 
-    def get_segment_labelmap(
-        self, segment_id, *, as_numpy_array=False
-    ) -> NDArray | vtkImageData:
-        return self._segmentation.get_segment_labelmap(
-            segment_id=segment_id, as_numpy_array=as_numpy_array
-        )
+    def get_segment_labelmap(self, segment_id, *, as_numpy_array=False) -> NDArray | vtkImageData:
+        return self._segmentation.get_segment_labelmap(segment_id=segment_id, as_numpy_array=as_numpy_array)
 
     def _apply_binary_labelmap(
         self,
@@ -273,9 +253,7 @@ class SegmentModifier:
 
         np_labelmap = vtk_image_to_np(labelmap)
         labelmap_slices = _sub_extent_to_slices(common_extent, modifier_extent)
-        modifier_labelmap_slices = _sub_extent_to_slices(
-            base_modifier_extent, modifier_extent
-        )
+        modifier_labelmap_slices = _sub_extent_to_slices(base_modifier_extent, modifier_extent)
 
         if any(s.stop - s.start <= 0 for s in labelmap_slices) or any(
             s.stop - s.start <= 0 for s in modifier_labelmap_slices
@@ -283,11 +261,7 @@ class SegmentModifier:
             # nothing to do, affected labelmap area is empty or out of labelmap range
             return
 
-        label_value = (
-            segment.GetLabelValue()
-            if self.modification_mode == ModificationMode.Paint
-            else 0
-        )
+        label_value = segment.GetLabelValue() if self.modification_mode == ModificationMode.Paint else 0
         active_label_value = segment.GetLabelValue()
 
         # Apply effect
@@ -333,12 +307,12 @@ class SegmentModifier:
 
         bounds = filled_poly.GetBounds()
         extent = [
-            int(math.floor(bounds[0])) - 1,
-            int(math.ceil(bounds[1])) + 1,
-            int(math.floor(bounds[2])) - 1,
-            int(math.ceil(bounds[3])) + 1,
-            int(math.floor(bounds[4])) - 1,
-            int(math.ceil(bounds[5])) + 1,
+            math.floor(bounds[0]) - 1,
+            math.ceil(bounds[1]) + 1,
+            math.floor(bounds[2]) - 1,
+            math.ceil(bounds[3]) + 1,
+            math.floor(bounds[4]) - 1,
+            math.ceil(bounds[5]) + 1,
         ]
         brush_poly_data_to_stencil = vtkPolyDataToImageStencil()
         brush_poly_data_to_stencil.SetInputData(filled_poly)

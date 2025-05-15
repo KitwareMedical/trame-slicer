@@ -74,11 +74,7 @@ def create_vertical_view_gutter_ui(
     with (
         Div(
             classes="view-gutter",
-            style="position: absolute;"
-            "top: 0;"
-            "left: 0;"
-            "background-color: transparent;"
-            "height: 100%;",
+            style="position: absolute;top: 0;left: 0;background-color: transparent;height: 100%;",
         ),
         Div(classes="view-gutter-content d-flex flex-column fill-height pa-2"),
     ):
@@ -131,11 +127,7 @@ def create_vertical_slice_view_gutter_ui(
 
     with Div(
         classes="slice-slider-gutter",
-        style="position: absolute;"
-        "bottom: 0;"
-        "left: 0;"
-        "background-color: transparent;"
-        "width: 100%;",
+        style="position: absolute;bottom: 0;left: 0;background-color: transparent;width: 100%;",
     ):
         slider_id = connect_slice_view_slider_to_state(server, view, view_id)
 

@@ -17,9 +17,7 @@ def test_slice_view_can_display_volume(
     a_slice_view.set_orientation("Coronal")
     a_slice_view.fit_view_to_content()
 
-    np.testing.assert_array_almost_equal(
-        a_slice_view.get_slice_range(), [-121.1, 133.9], decimal=1
-    )
+    np.testing.assert_array_almost_equal(a_slice_view.get_slice_range(), [-121.1, 133.9], decimal=1)
     assert a_slice_view.get_slice_step() == 1
     assert a_slice_view.get_slice_value() == pytest.approx(6.9, 0.1)
 

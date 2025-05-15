@@ -62,9 +62,7 @@ class VolumeProperty(SlicerWrapper):
         )
 
     def shift_color_map(self, shift: float) -> None:
-        self.set_color_map_values(
-            self.shift_values(self.get_opacity_map_values(), shift)
-        )
+        self.set_color_map_values(self.shift_values(self.get_opacity_map_values(), shift))
 
     def shift_opacity_map(self, shift: float) -> None:
         self.set_opacity_values(self.shift_values(self.get_opacity_map_values(), shift))
@@ -90,14 +88,10 @@ class VolumeProperty(SlicerWrapper):
     ):
         ref_prop = ref_prop or self
         if shift_mode & VRShiftMode.COLOR:
-            self.set_color_map_values(
-                self.shift_values(ref_prop.get_color_map_values(), shift)
-            )
+            self.set_color_map_values(self.shift_values(ref_prop.get_color_map_values(), shift))
 
         if shift_mode & VRShiftMode.OPACITY:
-            self.set_opacity_values(
-                self.shift_values(ref_prop.get_opacity_map_values(), shift)
-            )
+            self.set_opacity_values(self.shift_values(ref_prop.get_opacity_map_values(), shift))
 
     @classmethod
     def _get_map_values(cls, transfer_fun, array_size: int) -> list[list] | None:

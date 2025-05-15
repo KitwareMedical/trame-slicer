@@ -84,11 +84,7 @@ class ViewManager:
 
     def get_views(self, view_group: int | None = None) -> list[AbstractView]:
         views = list(chain(*[factory.get_views() for factory in self._factories]))
-        return [
-            view
-            for view in views
-            if (view_group is None or view.get_view_group() == view_group)
-        ]
+        return [view for view in views if (view_group is None or view.get_view_group() == view_group)]
 
     def get_slice_views(self, view_group: int | None = None) -> list[SliceView]:
         return self._get_view_type(SliceView, view_group)
@@ -101,18 +97,12 @@ class ViewManager:
         view_type: type[T],
         view_group: int | None = None,
     ) -> list[T]:
-        return [
-            view for view in self.get_views(view_group) if isinstance(view, view_type)
-        ]
+        return [view for view in self.get_views(view_group) if isinstance(view, view_type)]
 
-    def filter_visible_views(
-        self, views: list[AbstractViewChild]
-    ) -> list[AbstractViewChild]:
+    def filter_visible_views(self, views: list[AbstractViewChild]) -> list[AbstractViewChild]:
         """
         Filter input view list by ones currently displayed in the layout.
         """
         if not self._current_view_ids:
             return views
-        return [
-            view for view in views if view.get_singleton_tag() in self._current_view_ids
-        ]
+        return [view for view in views if view.get_singleton_tag() in self._current_view_ids]

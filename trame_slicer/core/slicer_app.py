@@ -65,12 +65,8 @@ class SlicerApp:
         self.app_logic.SetViewLogics(vtkCollection())
 
         # Connect 3D and 2D view displayable manager factories
-        vtkMRMLThreeDViewDisplayableManagerFactory.GetInstance().SetMRMLApplicationLogic(
-            self.app_logic
-        )
-        vtkMRMLSliceViewDisplayableManagerFactory.GetInstance().SetMRMLApplicationLogic(
-            self.app_logic
-        )
+        vtkMRMLThreeDViewDisplayableManagerFactory.GetInstance().SetMRMLApplicationLogic(self.app_logic)
+        vtkMRMLSliceViewDisplayableManagerFactory.GetInstance().SetMRMLApplicationLogic(self.app_logic)
 
         # Create colors logic
         self.color_logic = vtkMRMLColorLogic()
@@ -79,9 +75,7 @@ class SlicerApp:
         self.app_logic.SetModuleLogic("Colors", self.color_logic)
 
         # Create volume rendering
-        self.volume_rendering = VolumeRendering(
-            self.scene, self.app_logic, self.share_directory.as_posix()
-        )
+        self.volume_rendering = VolumeRendering(self.scene, self.app_logic, self.share_directory.as_posix())
 
         # Create markups logic
         self.markups_logic = MarkupsLogic(self.scene, self.app_logic)
@@ -94,9 +88,7 @@ class SlicerApp:
 
         # Set up Terminologies logic (needed for subject hierarchy tree view color/terminology selector)
         self.terminologies_logic = vtkSlicerTerminologiesModuleLogic()
-        self.terminologies_logic.SetModuleShareDirectory(
-            self.share_directory.joinpath("terminologies").as_posix()
-        )
+        self.terminologies_logic.SetModuleShareDirectory(self.share_directory.joinpath("terminologies").as_posix())
         self.terminologies_logic.SetMRMLScene(self.scene)
         self.terminologies_logic.SetMRMLApplicationLogic(self.app_logic)
         self.app_logic.SetModuleLogic("Terminologies", self.terminologies_logic)
@@ -126,14 +118,10 @@ class SlicerApp:
         self.display_manager = DisplayManager(self.view_manager, self.volume_rendering)
 
         # Initialize segmentation editor
-        self.segmentation_editor = SegmentationEditor(
-            self.scene, self.segmentation_logic, self.view_manager
-        )
+        self.segmentation_editor = SegmentationEditor(self.scene, self.segmentation_logic, self.view_manager)
 
         # Initialize IO manager
-        self.io_manager = IOManager(
-            self.scene, self.app_logic, self.segmentation_editor
-        )
+        self.io_manager = IOManager(self.scene, self.app_logic, self.segmentation_editor)
 
     @vtk.calldata_type(vtk.VTK_OBJECT)
     def _remove_attached_displayable_nodes(self, scene, _event_id, node):

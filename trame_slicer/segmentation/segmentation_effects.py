@@ -52,9 +52,7 @@ class _SegmentationPaintEraseEffect(SegmentationEffect):
     def __init__(self, modifier: SegmentModifier, mode: ModificationMode) -> None:
         super().__init__(modifier, mode)
         self._brush_model = BrushModel(BrushShape.Sphere)
-        self._interactors: dict[
-            ThreeDView | SliceView, SegmentPaintWidgetInteractor
-        ] = {}
+        self._interactors: dict[ThreeDView | SliceView, SegmentPaintWidgetInteractor] = {}
 
     @property
     def brush_size_pix(self) -> float:
@@ -92,11 +90,7 @@ class _SegmentationPaintEraseEffect(SegmentationEffect):
     def _create_view_interactor(self, view: SliceView | ThreeDView):
         is_2d_view = isinstance(view, SliceView)
         widget_klass = SegmentPaintWidget2D if is_2d_view else SegmentPaintWidget3D
-        interactor_klass = (
-            SegmentPaintWidget2DInteractor
-            if is_2d_view
-            else SegmentPaintWidget3DInteractor
-        )
+        interactor_klass = SegmentPaintWidget2DInteractor if is_2d_view else SegmentPaintWidget3DInteractor
 
         widget = widget_klass(view, self._modifier, self._brush_model)
         interactor = interactor_klass(widget)

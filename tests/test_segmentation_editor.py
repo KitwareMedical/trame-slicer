@@ -31,9 +31,7 @@ def editor_spy(editor):
     return SignalContainerSpy(editor)
 
 
-def test_segmentation_editor_can_add_segments(
-    editor, a_volume_node, active_segmentation_node
-):
+def test_segmentation_editor_can_add_segments(editor, a_volume_node, active_segmentation_node):
     assert editor.get_segment_ids() == []
 
     editor.set_active_segmentation(active_segmentation_node, a_volume_node)
@@ -53,9 +51,7 @@ def test_segmentation_editor_can_add_segments(
     assert editor.get_segment_names() == ["SegmentName", "SegmentName2"]
 
 
-def test_segmentation_can_sanitize_an_empty_initial_label_map(
-    editor, a_volume_node, active_segmentation_node
-):
+def test_segmentation_can_sanitize_an_empty_initial_label_map(editor, a_volume_node, active_segmentation_node):
     assert active_segmentation_node
     segment_id = editor.add_empty_segment()
     labelmap = editor.get_segment_labelmap(segment_id)
@@ -63,19 +59,13 @@ def test_segmentation_can_sanitize_an_empty_initial_label_map(
 
 
 def test_segmentation_can_enable_3d_repr(editor, a_volume_node, a_segmentation_model):
-    segmentation_node = editor.create_segmentation_node_from_model_node(
-        a_segmentation_model
-    )
+    segmentation_node = editor.create_segmentation_node_from_model_node(a_segmentation_model)
     editor.set_surface_representation_enabled(True)
     editor.set_active_segmentation(segmentation_node, a_volume_node)
-    assert segmentation_node.GetSegmentation().ContainsRepresentation(
-        editor.active_segmentation._surface_repr_name
-    )
+    assert segmentation_node.GetSegmentation().ContainsRepresentation(editor.active_segmentation._surface_repr_name)
 
     editor.set_surface_representation_enabled(False)
-    assert not segmentation_node.GetSegmentation().ContainsRepresentation(
-        editor.active_segmentation._surface_repr_name
-    )
+    assert not segmentation_node.GetSegmentation().ContainsRepresentation(editor.active_segmentation._surface_repr_name)
 
 
 def test_segmentation_can_undo_modifications(
@@ -116,45 +106,33 @@ def segmentation_with_two_segments(editor, undo_stack, active_segmentation_node)
     return segment_id_1, segment_id_2
 
 
-def test_modifying_segmentation_label_can_be_undo_redo(
-    editor, undo_stack, segmentation_with_two_segments
-):
+def test_modifying_segmentation_label_can_be_undo_redo(editor, undo_stack, segmentation_with_two_segments):
     segment_id_1, segment_id_2 = segmentation_with_two_segments
-    post = editor.get_segment_labelmap(
-        segment_id_1, as_numpy_array=True, do_sanitize=False
-    )
+    post = editor.get_segment_labelmap(segment_id_1, as_numpy_array=True, do_sanitize=False)
     assert post.sum() == 3
 
     assert undo_stack.can_undo()
     undo_stack.undo()
 
-    post = editor.get_segment_labelmap(
-        segment_id_1, as_numpy_array=True, do_sanitize=False
-    )
+    post = editor.get_segment_labelmap(segment_id_1, as_numpy_array=True, do_sanitize=False)
     assert post.sum() == 1
 
     while undo_stack.can_undo():
         undo_stack.undo()
 
     undo_stack.redo()
-    post = editor.get_segment_labelmap(
-        segment_id_1, as_numpy_array=True, do_sanitize=False
-    )
+    post = editor.get_segment_labelmap(segment_id_1, as_numpy_array=True, do_sanitize=False)
     assert post.sum() == 0
 
     assert undo_stack.can_redo()
     while undo_stack.can_redo():
         undo_stack.redo()
 
-    post = editor.get_segment_labelmap(
-        segment_id_1, as_numpy_array=True, do_sanitize=False
-    )
+    post = editor.get_segment_labelmap(segment_id_1, as_numpy_array=True, do_sanitize=False)
     assert post.sum() == 3
 
 
-def test_undo_redo_keeps_labelmap_merged(
-    editor, undo_stack, segmentation_with_two_segments
-):
+def test_undo_redo_keeps_labelmap_merged(editor, undo_stack, segmentation_with_two_segments):
     segment_id_1, segment_id_2 = segmentation_with_two_segments
 
     labelmap_1 = editor.get_segment_labelmap(segment_id_1)
@@ -172,9 +150,7 @@ def test_undo_redo_keeps_labelmap_merged(
     assert labelmap_1 == labelmap_2
 
 
-def test_undo_redo_keeps_labelmap_merged_after_remove(
-    editor, undo_stack, segmentation_with_two_segments
-):
+def test_undo_redo_keeps_labelmap_merged_after_remove(editor, undo_stack, segmentation_with_two_segments):
     segment_id_1, segment_id_2 = segmentation_with_two_segments
 
     editor.remove_segment(segment_id_2)
@@ -201,9 +177,7 @@ def test_notifies_changes_on_new_segmentation(editor, a_volume_node, editor_spy)
     editor_spy[editor.active_segment_id_changed].assert_called_with(segment_id)
 
     effect = editor.set_active_effect_id(SegmentationEffectID.Scissors)
-    editor_spy[editor.active_effect_name_changed].assert_called_with(
-        effect.class_name()
-    )
+    editor_spy[editor.active_effect_name_changed].assert_called_with(effect.class_name())
 
     editor_spy.reset()
     editor.remove_segment(segment_id)

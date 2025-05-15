@@ -35,15 +35,7 @@ class Layout:
         if not is_recursive:
             return views
 
-        sub_views = list(
-            chain(
-                *[
-                    item.get_views(is_recursive)
-                    for item in self.items
-                    if isinstance(item, Layout)
-                ]
-            )
-        )
+        sub_views = list(chain(*[item.get_views(is_recursive) for item in self.items if isinstance(item, Layout)]))
         return views + sub_views
 
     @classmethod
@@ -62,11 +54,7 @@ class LayoutGrid:
         layout_direction: LayoutDirection,
         layout_flex_sizes: list[str] | None = None,
     ):
-        layout_class = (
-            "flex-row"
-            if layout_direction == LayoutDirection.Horizontal
-            else "flex-column"
-        )
+        layout_class = "flex-row" if layout_direction == LayoutDirection.Horizontal else "flex-column"
 
         with html.Div(
             classes=f"layout-grid-container d-flex {layout_class}",
@@ -74,9 +62,7 @@ class LayoutGrid:
         ):
             for i_item, item in enumerate(layout_items):
                 flex_size = (
-                    f"{layout_flex_sizes[i_item]}"
-                    if layout_flex_sizes and len(layout_flex_sizes) > i_item
-                    else "1"
+                    f"{layout_flex_sizes[i_item]}" if layout_flex_sizes and len(layout_flex_sizes) > i_item else "1"
                 )
 
                 with html.Div(classes="d-flex", style=f"flex: {flex_size};"):
@@ -111,9 +97,7 @@ def vue_layout_to_slicer(layout: Layout):
 
     item: Layout | ViewLayoutDefinition
     for item in layout.items:
-        item_xml = (
-            vue_layout_to_slicer(item) if isinstance(item, Layout) else item.to_xml()
-        )
+        item_xml = vue_layout_to_slicer(item) if isinstance(item, Layout) else item.to_xml()
         layout_str += f"<item>{item_xml}</item>"
 
     layout_str += "</layout>"

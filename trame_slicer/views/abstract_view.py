@@ -45,9 +45,7 @@ class ViewProps:
             self.group = int(self.group)
 
     def to_xml(self) -> str:
-        property_map = {
-            key: getattr(self, value) for key, value in self.xml_name_map().items()
-        }
+        property_map = {key: getattr(self, value) for key, value in self.xml_name_map().items()}
 
         return "".join(
             f'<property name="{name}" action="default">{value}</property>'
@@ -100,9 +98,7 @@ class AbstractView:
 
         self.displayable_manager_group = vtkMRMLDisplayableManagerGroup()
         self.displayable_manager_group.SetRenderer(self._renderer)
-        self.displayable_manager_group.AddObserver(
-            vtkCommand.UpdateEvent, self.schedule_render
-        )
+        self.displayable_manager_group.AddObserver(vtkCommand.UpdateEvent, self.schedule_render)
         self.mrml_scene: vtkMRMLScene | None = None
         self.mrml_view_node: vtkMRMLAbstractViewNode | None = None
 
@@ -124,9 +120,7 @@ class AbstractView:
     def remove_user_interactor(self, observer: AbstractViewInteractor):
         self._view_interaction_dispatch.remove_user_interactor(observer)
 
-    def set_scheduled_render(
-        self, scheduled_render_strategy: ScheduledRenderStrategy
-    ) -> None:
+    def set_scheduled_render(self, scheduled_render_strategy: ScheduledRenderStrategy) -> None:
         self._scheduled_render = scheduled_render_strategy or DirectRendering()
         self._scheduled_render.set_abstract_view(self)
 
@@ -175,9 +169,7 @@ class AbstractView:
             self.mrml_view_node = node
             self.displayable_manager_group.SetMRMLDisplayableNode(node)
             self._reset_node_view_properties()
-            self._mrml_node_obs_id = self._modified_dispatcher.attach_vtk_observer(
-                node, "ModifiedEvent"
-            )
+            self._mrml_node_obs_id = self._modified_dispatcher.attach_vtk_observer(node, "ModifiedEvent")
 
     def set_view_properties(self, view_properties: ViewProps):
         self._view_properties = view_properties
@@ -188,9 +180,7 @@ class AbstractView:
             return
 
         with self.trigger_modified_once():
-            self._call_if_value_not_none(
-                self.mrml_view_node.SetViewGroup, self._view_properties.group
-            )
+            self._call_if_value_not_none(self.mrml_view_node.SetViewGroup, self._view_properties.group)
             self._call_if_value_not_none(
                 self.set_background_color_from_string,
                 self._view_properties.background_color,
@@ -245,9 +235,7 @@ class AbstractView:
     def set_background_color(self, rgb_int_color: list[int]) -> None:
         self.set_background_gradient_color(rgb_int_color, rgb_int_color)
 
-    def set_background_gradient_color(
-        self, color1_rgb_int: list[int], color2_rgb_int: list[int]
-    ) -> None:
+    def set_background_gradient_color(self, color1_rgb_int: list[int], color2_rgb_int: list[int]) -> None:
         self.first_renderer().SetBackground(*self._to_float_color(color1_rgb_int))
         self.first_renderer().SetBackground2(*self._to_float_color(color2_rgb_int))
 
@@ -256,9 +244,7 @@ class AbstractView:
             c1 = c2 = color
         else:
             c1, c2 = color
-        self.set_background_gradient_color(
-            self._str_to_color(c1), (self._str_to_color(c2))
-        )
+        self.set_background_gradient_color(self._str_to_color(c1), (self._str_to_color(c2)))
 
     @staticmethod
     def _to_float_color(rgb_int_color: list[int]) -> list[float]:

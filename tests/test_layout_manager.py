@@ -163,9 +163,7 @@ def test_current_layout_is_stored_in_scene(
     node = nodes.GetItemAsObject(0)
     assert node is not None
     assert node.GetParameter("layout_id") == "L1"
-    assert pretty_xml(node.GetParameter("layout_description")) == pretty_xml(
-        vue_layout_to_slicer(a_sagittal_layout)
-    )
+    assert pretty_xml(node.GetParameter("layout_description")) == pretty_xml(vue_layout_to_slicer(a_sagittal_layout))
 
 
 def test_layout_can_be_restored_from_scene(
@@ -187,9 +185,7 @@ def test_layout_can_be_restored_from_scene(
     assert a_layout_manager.has_layout("L1")
     assert a_layout_manager.get_layout("L1") == a_sagittal_layout
     a_mock_ui.clear.assert_called_once()
-    a_mock_view_manager.is_view_created.assert_called_once_with(
-        a_sagittal_view.singleton_tag
-    )
+    a_mock_view_manager.is_view_created.assert_called_once_with(a_sagittal_view.singleton_tag)
 
 
 def test_sets_current_layout_views_as_active(
@@ -203,12 +199,8 @@ def test_sets_current_layout_views_as_active(
     a_layout_manager.register_layout("L1", a_sagittal_layout)
     a_layout_manager.register_layout("L2", a_coronal_layout)
     a_layout_manager.set_layout("L1")
-    a_mock_view_manager.set_current_view_ids.assert_called_once_with(
-        [a_sagittal_view.singleton_tag]
-    )
+    a_mock_view_manager.set_current_view_ids.assert_called_once_with([a_sagittal_view.singleton_tag])
     a_mock_view_manager.set_current_view_ids.reset_mock()
 
     a_layout_manager.set_layout("L2")
-    a_mock_view_manager.set_current_view_ids.assert_called_once_with(
-        [a_coronal_view.singleton_tag]
-    )
+    a_mock_view_manager.set_current_view_ids.assert_called_once_with([a_coronal_view.singleton_tag])

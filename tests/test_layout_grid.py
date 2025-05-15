@@ -202,9 +202,7 @@ def a_vue_layout(a_red_view, a_green_view, a_yellow_view, a_3d_view):
     )
 
 
-def test_layout_can_return_their_views_recursively(
-    a_vue_layout, a_red_view, a_green_view, a_yellow_view, a_3d_view
-):
+def test_layout_can_return_their_views_recursively(a_vue_layout, a_red_view, a_green_view, a_yellow_view, a_3d_view):
     assert a_vue_layout.get_views(is_recursive=True) == [
         a_red_view,
         a_3d_view,
@@ -213,9 +211,7 @@ def test_layout_can_return_their_views_recursively(
     ]
 
 
-def test_layout_can_return_only_direct_views(
-    a_red_view, a_green_view, a_yellow_view, a_3d_view
-):
+def test_layout_can_return_only_direct_views(a_red_view, a_green_view, a_yellow_view, a_3d_view):
     layout = Layout(
         LayoutDirection.Vertical,
         [

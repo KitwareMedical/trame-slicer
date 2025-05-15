@@ -35,31 +35,19 @@ def test_volume_rendering_can_apply_preset(a_volume_node, a_volume_rendering):
 def test_volume_rendering_can_shift_vr_from_preset(a_volume_node, a_volume_rendering):
     a_volume_rendering.create_display_node(a_volume_node, "MR-Default")
     prop = a_volume_rendering.get_volume_node_property(a_volume_node)
-    exp_colors = [
-        [color[0] + 42.0, *color[1:]] for color in prop.get_color_map_values()
-    ]
-    exp_opacities = [
-        [opacity[0] + 42.0, *opacity[1:]] for opacity in prop.get_opacity_map_values()
-    ]
+    exp_colors = [[color[0] + 42.0, *color[1:]] for color in prop.get_color_map_values()]
+    exp_opacities = [[opacity[0] + 42.0, *opacity[1:]] for opacity in prop.get_opacity_map_values()]
 
-    a_volume_rendering.set_absolute_vr_shift_from_preset(
-        a_volume_node, "MR-Default", 42.0
-    )
+    a_volume_rendering.set_absolute_vr_shift_from_preset(a_volume_node, "MR-Default", 42.0)
     assert np.allclose(exp_colors, prop.get_color_map_values())
     assert np.allclose(exp_opacities, prop.get_opacity_map_values())
 
 
-def test_volume_rendering_can_shift_vr_relative_to_current(
-    a_volume_node, a_volume_rendering
-):
+def test_volume_rendering_can_shift_vr_relative_to_current(a_volume_node, a_volume_rendering):
     a_volume_rendering.create_display_node(a_volume_node, "MR-Default")
     prop = a_volume_rendering.get_volume_node_property(a_volume_node)
-    exp_colors = [
-        [color[0] + 100.0, *color[1:]] for color in prop.get_color_map_values()
-    ]
-    exp_opacities = [
-        [opacity[0] + 100.0, *opacity[1:]] for opacity in prop.get_opacity_map_values()
-    ]
+    exp_colors = [[color[0] + 100.0, *color[1:]] for color in prop.get_color_map_values()]
+    exp_opacities = [[opacity[0] + 100.0, *opacity[1:]] for opacity in prop.get_opacity_map_values()]
 
     a_volume_rendering.set_relative_vr_shift(a_volume_node, 42.0)
     a_volume_rendering.set_relative_vr_shift(a_volume_node, 58.0)
@@ -71,9 +59,7 @@ def test_volume_rendering_can_shift_vr_independently(a_volume_node, a_volume_ren
     a_volume_rendering.create_display_node(a_volume_node, "MR-Default")
     prop = a_volume_rendering.get_volume_node_property(a_volume_node)
     opacities = deepcopy(prop.get_opacity_map_values())
-    exp_colors = [
-        [color[0] + 42.0, *color[1:]] for color in prop.get_color_map_values()
-    ]
+    exp_colors = [[color[0] + 42.0, *color[1:]] for color in prop.get_color_map_values()]
 
     a_volume_rendering.set_relative_vr_shift(a_volume_node, 42.0, VRShiftMode.COLOR)
     assert np.allclose(exp_colors, prop.get_color_map_values())
@@ -91,9 +77,7 @@ def test_volume_rendering_returns_vr_range(a_volume_node, a_volume_rendering):
     assert max_vr != 1
 
 
-def test_a_volume_can_be_cropped(
-    a_volume_rendering, a_volume_node, a_threed_view, render_interactive
-):
+def test_a_volume_can_be_cropped(a_volume_rendering, a_volume_node, a_threed_view, render_interactive):
     a_volume_rendering.create_display_node(a_volume_node, "MR-Default")
     roi_node = a_volume_rendering.set_cropping_enabled(a_volume_node, None, True)
     assert roi_node

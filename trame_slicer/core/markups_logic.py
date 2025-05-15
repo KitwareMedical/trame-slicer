@@ -49,6 +49,4 @@ class MarkupsLogic(SlicerWrapper):
 
     def disable_place_mode(self):
         self._raise_if_invalid_interaction_node()
-        self.interaction_node.SetCurrentInteractionMode(
-            vtkMRMLInteractionNode.ViewTransform
-        )
+        self.interaction_node.SetCurrentInteractionMode(vtkMRMLInteractionNode.ViewTransform)

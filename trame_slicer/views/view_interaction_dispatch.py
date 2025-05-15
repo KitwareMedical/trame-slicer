@@ -14,9 +14,7 @@ if TYPE_CHECKING:
     from .abstract_view import AbstractViewChild
 
 
-ViewInteractionDispatchChild = TypeVar(
-    "ViewInteractionDispatchChild", bound="ViewInteractionDispatch"
-)
+ViewInteractionDispatchChild = TypeVar("ViewInteractionDispatchChild", bound="ViewInteractionDispatch")
 
 
 class ViewInteractionDispatch:
@@ -28,9 +26,7 @@ class ViewInteractionDispatch:
     def __init__(self, view: AbstractViewChild):
         self._view = view
         self._user_interactor: list[AbstractViewInteractor] = []
-        self._focused_displayable_manager: vtkMRMLAbstractDisplayableManager | None = (
-            None
-        )
+        self._focused_displayable_manager: vtkMRMLAbstractDisplayableManager | None = None
 
         self._add_observers()
 
@@ -42,14 +38,10 @@ class ViewInteractionDispatch:
 
     def process_event_data(self, event_data: vtkMRMLInteractionEventData):
         position = self._view.interactor().GetEventPosition()
-        poked_renderer = self._view.interactor().FindPokedRenderer(
-            position[0], position[1]
-        )
+        poked_renderer = self._view.interactor().FindPokedRenderer(position[0], position[1])
         origin = poked_renderer.GetOrigin()
 
-        event_data.SetDisplayPosition(
-            [position[0] - origin[0], position[1] - origin[1]]
-        )
+        event_data.SetDisplayPosition([position[0] - origin[0], position[1] - origin[1]])
         event_data.SetMouseMovedSinceButtonDown(True)
         event_data.SetAttributesFromInteractor(self._view.interactor())
         event_data.SetRenderer(poked_renderer)
@@ -106,16 +98,12 @@ class ViewInteractionDispatch:
             if interactor.process_event(event_data):
                 return
 
-        processed = self._delegate_interaction_event_data_to_displayable_managers(
-            event_data
-        )
+        processed = self._delegate_interaction_event_data_to_displayable_managers(event_data)
         iren_state = self._view.interactor().GetInteractorStyle().GetState()
         if not processed or iren_state != vtkRenderingCore.VTKIS_NONE:
             self._process_events(event_id)
 
-    def _delegate_interaction_event_data_to_displayable_managers(
-        self, event_data: vtkMRMLInteractionEventData
-    ):
+    def _delegate_interaction_event_data_to_displayable_managers(self, event_data: vtkMRMLInteractionEventData):
         dm_group = self._view.displayable_manager_group
         manager_count = dm_group.GetDisplayableManagerCount()
         if manager_count == 0:
@@ -177,9 +165,7 @@ class ViewInteractionDispatch:
             int(vtkCommand.RightButtonDoubleClickEvent): style.OnRightButtonDoubleClick,
             int(vtkCommand.RightButtonPressEvent): style.OnRightButtonDown,
             int(vtkCommand.RightButtonReleaseEvent): style.OnRightButtonUp,
-            int(
-                vtkCommand.MiddleButtonDoubleClickEvent
-            ): style.OnMiddleButtonDoubleClick,
+            int(vtkCommand.MiddleButtonDoubleClickEvent): style.OnMiddleButtonDoubleClick,
             int(vtkCommand.MiddleButtonPressEvent): style.OnMiddleButtonDown,
             int(vtkCommand.MiddleButtonReleaseEvent): style.OnMiddleButtonUp,
             int(vtkCommand.LeftButtonDoubleClickEvent): style.OnLeftButtonDoubleClick,

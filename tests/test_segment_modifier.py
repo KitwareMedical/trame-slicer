@@ -14,9 +14,7 @@ from trame_slicer.segmentation import (
 
 @pytest.fixture
 def a_simple_volume(a_slicer_app, a_data_folder):
-    return a_slicer_app.io_manager.load_volumes(
-        a_data_folder.joinpath("simple_volume.nii").as_posix()
-    )[-1]
+    return a_slicer_app.io_manager.load_volumes(a_data_folder.joinpath("simple_volume.nii").as_posix())[-1]
 
 
 @pytest.fixture
@@ -56,9 +54,7 @@ def test_segmentation_modifier(a_segment_modifier, a_segmentation_editor):
 
 
 def test_segmentation_modifier_with_mask(a_segment_modifier, a_segmentation_editor):
-    a_segment_modifier.mask = np.array(
-        [[[True, False], [True, False]], [[True, False], [False, False]]], dtype=np.bool
-    )
+    a_segment_modifier.mask = np.array([[[True, False], [True, False]], [[True, False], [False, False]]], dtype=np.bool)
     segment_id = a_segmentation_editor.add_empty_segment()
     a_segment_modifier.active_segment_id = segment_id
 
@@ -76,9 +72,7 @@ def test_segmentation_modifier_with_mask(a_segment_modifier, a_segmentation_edit
     np.testing.assert_array_equal(labelmap, [[[0, 0], [0, 0]], [[2, 0], [0, 0]]])
 
 
-def test_segment_modifier_only_erases_active_segment_with_erase_mode(
-    a_segment_modifier, a_segmentation_editor
-):
+def test_segment_modifier_only_erases_active_segment_with_erase_mode(a_segment_modifier, a_segmentation_editor):
     s1 = a_segmentation_editor.add_empty_segment()
     a_segmentation_editor.add_empty_segment()
     s3 = a_segmentation_editor.add_empty_segment()
@@ -100,9 +94,7 @@ def test_segment_modifier_only_erases_active_segment_with_erase_mode(
     np.testing.assert_array_equal(labelmap, [[[1, 2], [0, 2]], [[1, 0], [1, 0]]])
 
 
-def test_segment_modifier_erases_all_segments_in_erase_all(
-    a_segment_modifier, a_segmentation_editor
-):
+def test_segment_modifier_erases_all_segments_in_erase_all(a_segment_modifier, a_segmentation_editor):
     s1 = a_segmentation_editor.add_empty_segment()
     a_segmentation_editor.add_empty_segment()
     s3 = a_segmentation_editor.add_empty_segment()
@@ -124,9 +116,7 @@ def test_segment_modifier_erases_all_segments_in_erase_all(
     np.testing.assert_array_equal(labelmap, np.zeros_like(labelmap))
 
 
-def test_region_mask_with_every_where_returns_array_of_true(
-    a_region_mask, a_segment_modifier, a_segmentation_editor
-):
+def test_region_mask_with_every_where_returns_array_of_true(a_region_mask, a_segment_modifier, a_segmentation_editor):
     segment_id = a_segmentation_editor.add_empty_segment()
     labelmap = a_segment_modifier.get_segment_labelmap(segment_id, as_numpy_array=True)
 
@@ -138,16 +128,12 @@ def test_region_mask_with_every_where_returns_array_of_true(
 @pytest.fixture
 def a_segmentation_with_5_ids(a_segmentation_editor):
     segment_ids = [a_segmentation_editor.add_empty_segment() for _ in range(5)]
-    labelmap = a_segmentation_editor.get_segment_labelmap(
-        segment_ids[0], as_numpy_array=True
-    )
+    labelmap = a_segmentation_editor.get_segment_labelmap(segment_ids[0], as_numpy_array=True)
     labelmap[:] = [[[0, 1], [2, 3]], [[4, 0], [1, 2]]]
     return segment_ids, labelmap
 
 
-def test_region_mask_with_selected_segment_ids_returns_only_selected(
-    a_region_mask, a_segmentation_with_5_ids
-):
+def test_region_mask_with_selected_segment_ids_returns_only_selected(a_region_mask, a_segmentation_with_5_ids):
     segment_ids, labelmap = a_segmentation_with_5_ids
     a_region_mask.selected_ids = [segment_ids[1], segment_ids[2]]
     a_region_mask.masked_region = MaskedRegion.InsideSelectedSegments
@@ -163,27 +149,21 @@ def test_region_outside_selected(a_region_mask, a_segmentation_with_5_ids):
     np.testing.assert_array_equal(mask, [[[1, 1], [0, 0]], [[1, 1], [1, 0]]])
 
 
-def test_region_mask_with_all_segment_returns_not_empty(
-    a_region_mask, a_segmentation_with_5_ids
-):
+def test_region_mask_with_all_segment_returns_not_empty(a_region_mask, a_segmentation_with_5_ids):
     segment_ids, labelmap = a_segmentation_with_5_ids
     a_region_mask.masked_region = MaskedRegion.InsideAllSegments
     mask = a_region_mask.get_masked_region(labelmap)
     np.testing.assert_array_equal(mask, [[[0, 1], [1, 1]], [[1, 0], [1, 1]]])
 
 
-def test_region_mask_outside_all_segment_returns_empty(
-    a_region_mask, a_segmentation_with_5_ids
-):
+def test_region_mask_outside_all_segment_returns_empty(a_region_mask, a_segmentation_with_5_ids):
     segment_ids, labelmap = a_segmentation_with_5_ids
     a_region_mask.masked_region = MaskedRegion.OutsideAllSegments
     mask = a_region_mask.get_masked_region(labelmap)
     np.testing.assert_array_equal(mask, [[[1, 0], [0, 0]], [[0, 1], [0, 0]]])
 
 
-def test_region_mask_can_filter_visible_segments(
-    a_region_mask, a_segmentation_with_5_ids, a_simple_segmentation
-):
+def test_region_mask_can_filter_visible_segments(a_region_mask, a_segmentation_with_5_ids, a_simple_segmentation):
     segment_ids, labelmap = a_segmentation_with_5_ids
     display_node = a_simple_segmentation.GetDisplayNode()
     display_node.SetSegmentVisibility(segment_ids[0], False)

@@ -61,12 +61,7 @@ class SegmentRegionMask:
             segment_ids = self._segmentation.get_segment_ids()
 
         if self.masked_region & MaskedRegion.VisibleOnly:
-            segment_ids = list(
-                set(segment_ids) & set(self._segmentation.get_visible_segment_ids())
-            )
+            segment_ids = list(set(segment_ids) & set(self._segmentation.get_visible_segment_ids()))
 
-        segment_values = [
-            self._segmentation.get_segment_value(segment_id)
-            for segment_id in segment_ids
-        ]
+        segment_values = [self._segmentation.get_segment_value(segment_id) for segment_id in segment_ids]
         return np.isin(labelmap, segment_values)

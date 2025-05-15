@@ -30,9 +30,7 @@ class MyTrameSlicerApp:
             self._server.ui.layout_grid,
         )
 
-        self._layout_manager.register_layout_dict(
-            LayoutManager.default_grid_configuration()
-        )
+        self._layout_manager.register_layout_dict(LayoutManager.default_grid_configuration())
 
         # Build the trame UI with the widgets available in the widget package
         self._build_ui()

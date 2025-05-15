@@ -44,9 +44,7 @@ class LoadClientVolumeFilesButton(Div):
                 click=lambda: server.js_call(ref=files_input_ref, method="click"),
                 v_if=(f"!{StateId.file_loading_busy}",),
             )
-            VProgressCircular(
-                v_if=(StateId.file_loading_busy,), indeterminate=True, size=24
-            )
+            VProgressCircular(v_if=(StateId.file_loading_busy,), indeterminate=True, size=24)
 
     def _create_load_local_files_task(self, *args, **kwargs):
         self.state[StateId.file_loading_busy] = True
@@ -67,17 +65,13 @@ class LoadClientVolumeFilesButton(Div):
             return
 
         # Remove previous volume nodes
-        vol_nodes: vtkCollection = self._slicer_app.scene.GetNodesByClass(
-            "vtkMRMLVolumeNode"
-        )
+        vol_nodes: vtkCollection = self._slicer_app.scene.GetNodesByClass("vtkMRMLVolumeNode")
         for i_vol in range(vol_nodes.GetNumberOfItems()):
             self._slicer_app.scene.RemoveNode(vol_nodes.GetItemAsObject(i_vol))
 
         # Load new volumes and display the first one
         with TemporaryDirectory() as tmp_dir:
-            volumes = self._slicer_app.io_manager.load_volumes(
-                write_client_files_to_dir(files, tmp_dir)
-            )
+            volumes = self._slicer_app.io_manager.load_volumes(write_client_files_to_dir(files, tmp_dir))
             if not volumes:
                 return
 

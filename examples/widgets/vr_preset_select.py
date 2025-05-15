@@ -59,9 +59,7 @@ class VRPresetSelect(VSelect):
 
     @change(StateId.vr_preset_value)
     def on_vr_preset_change(self, **kwargs):
-        vr_node = self._volume_rendering.get_vr_display_node(
-            get_current_volume_node(self.server, self._slicer_app)
-        )
+        vr_node = self._volume_rendering.get_vr_display_node(get_current_volume_node(self.server, self._slicer_app))
         preset_name = kwargs[StateId.vr_preset_value]
         self._volume_rendering.apply_preset(vr_node, preset_name)
         self._update_vr_range(preset_name)

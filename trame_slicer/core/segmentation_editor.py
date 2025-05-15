@@ -78,11 +78,7 @@ class SegmentationEditor(SignalContainer):
 
     @property
     def active_segmentation_node(self):
-        return (
-            self.active_segmentation.segmentation_node
-            if self.active_segmentation
-            else None
-        )
+        return self.active_segmentation.segmentation_node if self.active_segmentation else None
 
     @property
     def active_volume_node(self) -> vtkMRMLVolumeNode | None:
@@ -102,9 +98,7 @@ class SegmentationEditor(SignalContainer):
         if self._modified_obs is not None:
             self._active_modifier.segmentation_modified.disconnect(self._modified_obs)
 
-        self._active_modifier = SegmentModifier(
-            Segmentation(segmentation_node, volume_node)
-        )
+        self._active_modifier = SegmentModifier(Segmentation(segmentation_node, volume_node))
 
         self.active_segmentation.sanitize_active_segmentation()
         self._active_modifier.segmentation_modified.connect(self.segmentation_modified)
@@ -128,9 +122,7 @@ class SegmentationEditor(SignalContainer):
         segmentation_node.CreateDefaultDisplayNodes()
         segmentation_node.SetDisplayVisibility(True)
 
-    def create_segmentation_node_from_model_node(
-        self, model_node: vtkMRMLModelNode
-    ) -> vtkMRMLSegmentationNode:
+    def create_segmentation_node_from_model_node(self, model_node: vtkMRMLModelNode) -> vtkMRMLSegmentationNode:
         segmentation_node = self.create_empty_segmentation_node()
         self._logic.ImportModelToSegmentationNode(model_node, segmentation_node, "")
         segmentation_node.SetName(model_node.GetName())
@@ -140,25 +132,19 @@ class SegmentationEditor(SignalContainer):
         self, labelmap_node: vtkMRMLLabelMapVolumeNode
     ) -> vtkMRMLSegmentationNode:
         segmentation_node = self.create_empty_segmentation_node()
-        self._logic.ImportLabelmapToSegmentationNode(
-            labelmap_node, segmentation_node, ""
-        )
+        self._logic.ImportLabelmapToSegmentationNode(labelmap_node, segmentation_node, "")
         segmentation_node.SetName(labelmap_node.GetName())
         return segmentation_node
 
     def create_empty_segmentation_node(self) -> vtkMRMLSegmentationNode:
-        segmentation_node: vtkMRMLSegmentationNode = self._scene.AddNewNodeByClass(
-            "vtkMRMLSegmentationNode"
-        )
+        segmentation_node: vtkMRMLSegmentationNode = self._scene.AddNewNodeByClass("vtkMRMLSegmentationNode")
         self._initialize_segmentation_node(segmentation_node)
         return segmentation_node
 
     def set_active_effect_id(
         self, effect: SegmentationEffectID, view_group: list[int] | None = None
     ) -> SegmentationEffect | None:
-        return self.set_active_effect(
-            self._builtin_effects[effect](self._active_modifier), view_group
-        )
+        return self.set_active_effect(self._builtin_effects[effect](self._active_modifier), view_group)
 
     def set_active_effect(
         self,
@@ -176,9 +162,7 @@ class SegmentationEditor(SignalContainer):
         if self._active_effect:
             self._active_effect.activate(self._view_manager.get_views(view_group))
 
-        self.active_effect_name_changed(
-            self._active_effect.class_name() if self._active_effect else ""
-        )
+        self.active_effect_name_changed(self._active_effect.class_name() if self._active_effect else "")
         return self._active_effect
 
     @property
@@ -189,25 +173,15 @@ class SegmentationEditor(SignalContainer):
         self.set_active_effect(None)
 
     def get_segment_ids(self) -> list[str]:
-        return (
-            self.active_segmentation.get_segment_ids()
-            if self.active_segmentation
-            else []
-        )
+        return self.active_segmentation.get_segment_ids() if self.active_segmentation else []
 
     def get_segment_names(self) -> list[str]:
-        return (
-            self.active_segmentation.get_segment_names()
-            if self.active_segmentation
-            else []
-        )
+        return self.active_segmentation.get_segment_names() if self.active_segmentation else []
 
     def get_all_segment_properties(self) -> dict[str, SegmentProperties]:
         if not self.active_segmentation:
             return {}
-        return {
-            s_id: self.get_segment_properties(s_id) for s_id in self.get_segment_ids()
-        }
+        return {s_id: self.get_segment_properties(s_id) for s_id in self.get_segment_ids()}
 
     def get_segment_properties(self, segment_id):
         if not self.active_segmentation:
@@ -224,25 +198,13 @@ class SegmentationEditor(SignalContainer):
         return self.active_segmentation.n_segments if self.active_segmentation else 0
 
     def get_nth_segment(self, i_segment: int) -> vtkSegment | None:
-        return (
-            self.active_segmentation.get_nth_segment(i_segment)
-            if self.active_segmentation
-            else None
-        )
+        return self.active_segmentation.get_nth_segment(i_segment) if self.active_segmentation else None
 
     def get_nth_segment_id(self, i_segment: int) -> str:
-        return (
-            self.active_segmentation.get_nth_segment_id(i_segment)
-            if self.active_segmentation
-            else ""
-        )
+        return self.active_segmentation.get_nth_segment_id(i_segment) if self.active_segmentation else ""
 
     def get_segment(self, segment_id: str) -> vtkSegment | None:
-        return (
-            self.active_segmentation.get_segment(segment_id)
-            if self.active_segmentation
-            else None
-        )
+        return self.active_segmentation.get_segment(segment_id) if self.active_segmentation else None
 
     def add_empty_segment(
         self,
@@ -307,17 +269,13 @@ class SegmentationEditor(SignalContainer):
         segmentation_node: vtkMRMLSegmentationNode,
         labelmap: vtkMRMLLabelMapVolumeNode = None,
     ) -> vtkMRMLLabelMapVolumeNode:
-        labelmap = labelmap or self._scene.AddNewNodeByClass(
-            "vtkMRMLLabelMapVolumeNode"
-        )
+        labelmap = labelmap or self._scene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode")
         self._logic.ExportAllSegmentsToLabelmapNode(
             segmentation_node, labelmap, vtkSegmentation.EXTENT_REFERENCE_GEOMETRY
         )
         return labelmap
 
-    def export_segmentation_to_file(
-        self, segmentation_node: vtkMRMLSegmentationNode, file_path: str
-    ) -> None:
+    def export_segmentation_to_file(self, segmentation_node: vtkMRMLSegmentationNode, file_path: str) -> None:
         from .io_manager import IOManager
 
         labelmap = self.export_segmentation_to_labelmap(segmentation_node)
@@ -331,9 +289,7 @@ class SegmentationEditor(SignalContainer):
         finally:
             self._scene.RemoveNode(labelmap)
 
-    def export_segmentation_to_models(
-        self, segmentation_node: vtkMRMLSegmentationNode, folder_item_id: int
-    ) -> None:
+    def export_segmentation_to_models(self, segmentation_node: vtkMRMLSegmentationNode, folder_item_id: int) -> None:
         self._logic.ExportAllSegmentsToModels(segmentation_node, folder_item_id)
 
     def export_segmentation_to_stl(
@@ -342,21 +298,15 @@ class SegmentationEditor(SignalContainer):
         out_folder: str,
         segment_ids: list[str] | None = None,
     ) -> None:
-        self._logic.ExportSegmentsClosedSurfaceRepresentationToFiles(
-            out_folder, segmentation_node, segment_ids
-        )
+        self._logic.ExportSegmentsClosedSurfaceRepresentationToFiles(out_folder, segmentation_node, segment_ids)
 
-    def load_segmentation_from_file(
-        self, segmentation_file: str
-    ) -> vtkMRMLSegmentationNode | None:
+    def load_segmentation_from_file(self, segmentation_file: str) -> vtkMRMLSegmentationNode | None:
         segmentation_file = Path(segmentation_file).resolve()
         if not segmentation_file.is_file():
             return None
 
         node_name = segmentation_file.stem
-        return self._logic.LoadSegmentationFromFile(
-            segmentation_file.as_posix(), True, node_name
-        )
+        return self._logic.LoadSegmentationFromFile(segmentation_file.as_posix(), True, node_name)
 
     def set_surface_representation_enabled(self, is_enabled: bool) -> None:
         if not self.active_segmentation:
@@ -365,11 +315,7 @@ class SegmentationEditor(SignalContainer):
         self.show_3d_changed(is_enabled)
 
     def is_surface_representation_enabled(self) -> bool:
-        return (
-            self.active_segmentation.is_surface_representation_enabled()
-            if self.active_segmentation
-            else False
-        )
+        return self.active_segmentation.is_surface_representation_enabled() if self.active_segmentation else False
 
     def show_3d(self, show_3d: bool):
         self.set_surface_representation_enabled(show_3d)
@@ -378,11 +324,7 @@ class SegmentationEditor(SignalContainer):
         return self.is_surface_representation_enabled()
 
     def create_modifier_labelmap(self) -> vtkImageData | None:
-        return (
-            self.active_segmentation.create_modifier_labelmap()
-            if self.active_segmentation
-            else None
-        )
+        return self.active_segmentation.create_modifier_labelmap() if self.active_segmentation else None
 
     def apply_labelmap(self, labelmap) -> None:
         if not self.active_segment_modifier:

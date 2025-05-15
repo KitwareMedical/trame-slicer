@@ -178,19 +178,13 @@ class SegmentScissorWidget(SegmentationWidget):
             return self._display_to_world_slice(display_coords, self._view)
         return self._display_to_world_generic(display_coords, dc_to_wc)
 
-    def _display_to_world_slice(
-        self, display_coords: list[float], view: SliceView
-    ) -> tuple[list[float], list[float]]:
+    def _display_to_world_slice(self, display_coords: list[float], view: SliceView) -> tuple[list[float], list[float]]:
         xy_to_slice: vtkMatrix4x4 = view.logic.GetSliceNode().GetXYToRAS()
 
         max_dim = max(self.modifier.volume_node.GetImageData().GetBounds())
 
-        near = xy_to_slice.MultiplyPoint(
-            [display_coords[0], display_coords[1], -max_dim, 1.0]
-        )
-        far = xy_to_slice.MultiplyPoint(
-            [display_coords[0], display_coords[1], max_dim, 1.0]
-        )
+        near = xy_to_slice.MultiplyPoint([display_coords[0], display_coords[1], -max_dim, 1.0])
+        far = xy_to_slice.MultiplyPoint([display_coords[0], display_coords[1], max_dim, 1.0])
 
         return list(near), list(far)
 

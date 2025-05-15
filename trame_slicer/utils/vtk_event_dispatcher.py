@@ -69,8 +69,6 @@ class VtkEventDispatcher:
         if self._is_blocked:
             return
 
-        observers = [obs() for obs in self._weak_obs if obs() is not None] + list(
-            self._inst_obs
-        )
+        observers = [obs() for obs in self._weak_obs if obs() is not None] + list(self._inst_obs)
         for obs in observers:
             obs(*self._trigger_args, **self._trigger_kwargs)

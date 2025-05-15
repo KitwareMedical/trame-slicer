@@ -31,9 +31,7 @@ class VolumeRendering(SlicerWrapper):
         self._scene = scene
         self._logic.SetMRMLApplicationLogic(app_logic)
         self._logic.SetMRMLScene(scene)
-        self._logic.ChangeVolumeRenderingMethod(
-            "vtkMRMLGPURayCastVolumeRenderingDisplayNode"
-        )
+        self._logic.ChangeVolumeRenderingMethod("vtkMRMLGPURayCastVolumeRenderingDisplayNode")
         self._logic.SetModuleShareDirectory(share_directory)
 
         self._crop_logic = vtkSlicerCropVolumeLogic()
@@ -67,16 +65,10 @@ class VolumeRendering(SlicerWrapper):
         if not display:
             return
 
-        display.GetVolumePropertyNode().Copy(
-            self.get_preset_property(preset_name).property_node
-        )
+        display.GetVolumePropertyNode().Copy(self.get_preset_property(preset_name).property_node)
 
-    def set_volume_node_property(
-        self, volume_node: vtkMRMLVolumeNode, property_node: vtkMRMLVolumePropertyNode
-    ):
-        self.apply_vr_node_property(
-            self.get_vr_display_node(volume_node), property_node
-        )
+    def set_volume_node_property(self, volume_node: vtkMRMLVolumeNode, property_node: vtkMRMLVolumePropertyNode):
+        self.apply_vr_node_property(self.get_vr_display_node(volume_node), property_node)
 
     @staticmethod
     def apply_vr_node_property(
@@ -177,18 +169,12 @@ class VolumeRendering(SlicerWrapper):
     def get_preset_vr_shift_range(self, preset_name: str) -> tuple[float, float]:
         return self.get_preset_property(preset_name).get_effective_range()
 
-    def get_volume_node_property(
-        self, volume_node: vtkMRMLVolumeNode
-    ) -> VolumeProperty:
+    def get_volume_node_property(self, volume_node: vtkMRMLVolumeNode) -> VolumeProperty:
         return self._get_vr_volume_property(self.get_vr_display_node(volume_node))
 
     @classmethod
-    def _get_vr_volume_property(
-        cls, vr_display_node: vtkMRMLVolumeRenderingDisplayNode | None
-    ) -> VolumeProperty:
-        return VolumeProperty(
-            vr_display_node.GetVolumePropertyNode() if vr_display_node else None
-        )
+    def _get_vr_volume_property(cls, vr_display_node: vtkMRMLVolumeRenderingDisplayNode | None) -> VolumeProperty:
+        return VolumeProperty(vr_display_node.GetVolumePropertyNode() if vr_display_node else None)
 
     def set_cropping_enabled(
         self,
@@ -206,9 +192,7 @@ class VolumeRendering(SlicerWrapper):
             roi_node = self._scene.AddNewNodeByClass("vtkMRMLMarkupsROINode")
             roi_node.GetDisplayNode().SetPropertiesLabelVisibility(False)
 
-            crop_volume_parameters = self._scene.AddNewNodeByClass(
-                "vtkMRMLCropVolumeParametersNode"
-            )
+            crop_volume_parameters = self._scene.AddNewNodeByClass("vtkMRMLCropVolumeParametersNode")
             crop_volume_parameters.SetInputVolumeNodeID(volume_node.GetID())
             crop_volume_parameters.SetROINodeID(roi_node.GetID())
             self._crop_logic.SnapROIToVoxelGrid(crop_volume_parameters)

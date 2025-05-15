@@ -95,24 +95,13 @@ def test_a_display_manager_can_show_node_in_given_view_group(
     slice_view_group_0[0].set_foreground_volume_id(a_volume_node.GetID())
     display_man.show_volume(a_volume_node, view_group=0)
 
-    assert all(
-        slice_view.get_background_volume_id() == a_volume_node.GetID()
-        for slice_view in slice_view_group_0
-    )
+    assert all(slice_view.get_background_volume_id() == a_volume_node.GetID() for slice_view in slice_view_group_0)
 
-    assert all(
-        slice_view.get_foreground_volume_id() is None
-        for slice_view in slice_view_group_0
-    )
+    assert all(slice_view.get_foreground_volume_id() is None for slice_view in slice_view_group_0)
 
-    assert all(
-        slice_view.get_background_volume_id() is None
-        for slice_view in slice_view_group_1
-    )
+    assert all(slice_view.get_background_volume_id() is None for slice_view in slice_view_group_1)
 
-    display = a_slicer_app_with_two_groups.volume_rendering.get_vr_display_node(
-        a_volume_node
-    )
+    display = a_slicer_app_with_two_groups.volume_rendering.get_vr_display_node(a_volume_node)
     assert display
     assert threed_view_group_0[0].get_view_node_id() in display.GetViewNodeIDs()
     assert threed_view_group_1[0].get_view_node_id() not in display.GetViewNodeIDs()
@@ -130,12 +119,6 @@ def test_a_display_manager_can_show_node_to_slice_foreground(
     )
     display_man.show_volume_in_slice_foreground(a_volume_node, view_group=0)
 
-    assert all(
-        slice_view.get_foreground_volume_id() == a_volume_node.GetID()
-        for slice_view in slice_view_group_0
-    )
+    assert all(slice_view.get_foreground_volume_id() == a_volume_node.GetID() for slice_view in slice_view_group_0)
 
-    assert all(
-        slice_view.get_foreground_volume_id() is None
-        for slice_view in slice_view_group_1
-    )
+    assert all(slice_view.get_foreground_volume_id() is None for slice_view in slice_view_group_1)

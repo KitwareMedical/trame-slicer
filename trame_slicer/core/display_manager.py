@@ -68,9 +68,7 @@ class DisplayManager:
         node: vtkMRMLDisplayableNode,
         view_group: int | None = None,
     ):
-        view_node_ids = [
-            view.get_view_node_id() for view in self._view_manager.get_views(view_group)
-        ]
+        view_node_ids = [view.get_view_node_id() for view in self._view_manager.get_views(view_group)]
 
         for i_display in range(node.GetNumberOfDisplayNodes()):
             display = node.GetNthDisplayNode(i_display)

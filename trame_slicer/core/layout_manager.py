@@ -35,9 +35,7 @@ class LayoutManager:
         self._view_manager = view_manager
         self._ui = layout_ui_node
         self._current_layout: str | None = None
-        self._scene_node = scene.AddNewNodeByClass(
-            "vtkMRMLScriptedModuleNode", "layout_node"
-        )
+        self._scene_node = scene.AddNewNodeByClass("vtkMRMLScriptedModuleNode", "layout_node")
 
     def get_layout_ids(self) -> list[str]:
         return list(self._layouts.keys())
@@ -75,9 +73,7 @@ class LayoutManager:
 
     def _save_layout_to_scene(self, layout_id: str, layout: Layout) -> None:
         self._scene_node.SetParameter("layout_id", layout_id)
-        self._scene_node.SetParameter(
-            "layout_description", pretty_xml(vue_layout_to_slicer(layout))
-        )
+        self._scene_node.SetParameter("layout_description", pretty_xml(vue_layout_to_slicer(layout)))
 
     def set_layout_from_node(self, node: vtkMRMLScriptedModuleNode) -> None:
         if not node:

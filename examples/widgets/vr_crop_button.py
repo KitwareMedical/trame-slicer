@@ -43,9 +43,7 @@ class VRCropButton(Div):
         display_node = self._volume_rendering.get_vr_display_node(volume_node)
         roi_node = display_node.GetROINode()
 
-        roi_node = self._volume_rendering.set_cropping_enabled(
-            volume_node, roi_node, True
-        )
+        roi_node = self._volume_rendering.set_cropping_enabled(volume_node, roi_node, True)
         is_active = not was_active
         roi_node.SetDisplayVisibility(is_active)
         self.state[self.volume_crop_active] = is_active

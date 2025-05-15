@@ -36,9 +36,7 @@ def test_paint_effect_adds_segmentation_to_selected_segment(
     a_segmentation_editor.set_active_segmentation(segmentation_node, a_volume_node)
     a_segmentation_editor.add_empty_segment()
     segment_id = a_segmentation_editor.add_empty_segment()
-    paint_effect: SegmentationPaintEffect = a_segmentation_editor.set_active_effect_id(
-        SegmentationEffectID.Paint
-    )
+    paint_effect: SegmentationPaintEffect = a_segmentation_editor.set_active_effect_id(SegmentationEffectID.Paint)
 
     assert view in paint_effect._interactors
     paint_effect._brush_model.set_shape(BrushShape.Cylinder)
@@ -67,21 +65,15 @@ def test_erase_effect_removes_segmentation_from_selected_segment(
     view = request.getfixturevalue(view.__name__)
     a_slicer_app.display_manager.show_volume(a_volume_node, vr_preset="MR-Default")
 
-    segmentation_node = a_segmentation_editor.create_segmentation_node_from_model_node(
-        model_node=a_model_node
-    )
+    segmentation_node = a_segmentation_editor.create_segmentation_node_from_model_node(model_node=a_model_node)
     a_segmentation_editor.set_active_segmentation(segmentation_node, a_volume_node)
     segment_id = a_segmentation_editor.get_active_segment_id()
-    paint_effect: SegmentationPaintEffect = a_segmentation_editor.set_active_effect_id(
-        SegmentationEffectID.Erase
-    )
+    paint_effect: SegmentationPaintEffect = a_segmentation_editor.set_active_effect_id(SegmentationEffectID.Erase)
     a_segmentation_editor.set_surface_representation_enabled(False)
 
     paint_effect._brush_model.set_shape(BrushShape.Cylinder)
 
-    prev_sum = a_segmentation_editor.get_segment_labelmap(
-        segment_id, as_numpy_array=True
-    ).sum()
+    prev_sum = a_segmentation_editor.get_segment_labelmap(segment_id, as_numpy_array=True).sum()
     ViewEvents(view).click_at_center()
     array = a_segmentation_editor.get_segment_labelmap(segment_id, as_numpy_array=True)
     assert array.sum() < prev_sum

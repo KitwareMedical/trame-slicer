@@ -48,9 +48,7 @@ def a_view_manager(a_slicer_app, a_view_factory):
 @pytest.fixture
 def a_threed_view(a_view_manager, render_interactive):
     three_d_view = a_view_manager.create_view(
-        ViewLayoutDefinition(
-            singleton_tag="ThreeD", type=ViewType.THREE_D_VIEW, properties=ViewProps()
-        )
+        ViewLayoutDefinition(singleton_tag="ThreeD", type=ViewType.THREE_D_VIEW, properties=ViewProps())
     )
     if render_interactive:
         three_d_view.render_window().ShowWindowOn()
@@ -126,9 +124,7 @@ def a_model_node(a_slicer_app, a_model_file_path):
 def load_model_node(file_path, a_slicer_app):
     storage_node = vtkMRMLModelStorageNode()
     storage_node.SetFileName(file_path)
-    model_node: vtkMRMLModelNode = a_slicer_app.scene.AddNewNodeByClass(
-        "vtkMRMLModelNode"
-    )
+    model_node: vtkMRMLModelNode = a_slicer_app.scene.AddNewNodeByClass("vtkMRMLModelNode")
     storage_node.ReadData(model_node)
     model_node.CreateDefaultDisplayNodes()
     return model_node

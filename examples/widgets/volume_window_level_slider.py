@@ -48,9 +48,7 @@ class VolumeWindowLevelSlider(Div):
         if not self._volume_node:
             return
 
-        min_value, max_value = VolumeWindowLevel.get_volume_scalar_range(
-            self._volume_node
-        )
+        min_value, max_value = VolumeWindowLevel.get_volume_scalar_range(self._volume_node)
         self.state[self.volume_min_range] = min_value
         self.state[self.volume_max_range] = max_value
         self.on_auto_window_level()
@@ -60,14 +58,10 @@ class VolumeWindowLevelSlider(Div):
             return
 
         min_value, max_value = self.state[self.volume_display_range]
-        VolumeWindowLevel.set_volume_node_display_min_max_range(
-            self._volume_node, min_value, max_value
-        )
+        VolumeWindowLevel.set_volume_node_display_min_max_range(self._volume_node, min_value, max_value)
 
     def on_auto_window_level(self):
         if not self._volume_node:
             return
 
-        self.state[self.volume_display_range] = list(
-            VolumeWindowLevel.get_volume_auto_min_max_range(self._volume_node)
-        )
+        self.state[self.volume_display_range] = list(VolumeWindowLevel.get_volume_auto_min_max_range(self._volume_node))

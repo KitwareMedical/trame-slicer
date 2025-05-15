@@ -51,11 +51,11 @@ class SlicerWrapper:
             return super().__getattribute__(attr)
         except SlicerWrappingAttributeError as e:
             # If attribute is present in the class but raised because of the wrapping, inform of the error
-            _error_msg = f"Failed to access attribute '{attr}' of class '{class_name}' due to the following error : {e}."
+            _error_msg = (
+                f"Failed to access attribute '{attr}' of class '{class_name}' due to the following error : {e}."
+            )
             if self._slicer_obj is None:
-                _error_msg += (
-                    " This error is likely due to the wrapped Slicer object being None."
-                )
+                _error_msg += " This error is likely due to the wrapped Slicer object being None."
             raise AttributeError(_error_msg) from e
         except AttributeError:
             # Return slicer attr if present either in snake_case or CamelCaseCase
@@ -74,9 +74,7 @@ class SlicerWrapper:
 
     def __dir__(self):
         """Return all attributes for IDE autocompletion"""
-        slicer_obj_dir = dir(self._slicer_obj) + list(
-            map(_to_snake_case, dir(self._slicer_obj))
-        )
+        slicer_obj_dir = dir(self._slicer_obj) + list(map(_to_snake_case, dir(self._slicer_obj)))
         self_dir = list(self.__dict__) + list(dir(type(self)))
         return self_dir + slicer_obj_dir
 

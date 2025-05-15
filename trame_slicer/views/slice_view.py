@@ -88,9 +88,7 @@ class SliceView(AbstractView):
         self.render_window().SetAlphaBitPlanes(1)
 
         # Observe interactor resize event as window resize event is triggered before the window is actually resized.
-        self.interactor().AddObserver(
-            vtkCommand.WindowResizeEvent, self._update_slice_size
-        )
+        self.interactor().AddObserver(vtkCommand.WindowResizeEvent, self._update_slice_size)
 
         # Add Render manager
         self.render_manager = SliceRendererManager(self)
@@ -116,18 +114,14 @@ class SliceView(AbstractView):
             if not factory.IsDisplayableManagerRegistered(manager):
                 factory.RegisterDisplayableManager(manager)
 
-        self.displayable_manager_group.SetLightBoxRendererManagerProxy(
-            self.render_manager
-        )
+        self.displayable_manager_group.SetLightBoxRendererManagerProxy(self.render_manager)
         self.displayable_manager_group.Initialize(factory, self.renderer())
         self.name = name
 
         # Create slice logic
         self.logic = vtkMRMLSliceLogic()
         self.logic.SetMRMLApplicationLogic(app_logic)
-        self.logic.AddObserver(
-            vtkCommand.ModifiedEvent, self._on_slice_logic_modified_event
-        )
+        self.logic.AddObserver(vtkCommand.ModifiedEvent, self._on_slice_logic_modified_event)
         self._modified_dispatcher.attach_vtk_observer(self.logic, "ModifiedEvent")
         app_logic.GetSliceLogics().AddItem(self.logic)
 
@@ -141,9 +135,7 @@ class SliceView(AbstractView):
             return
 
         with self.trigger_modified_once():
-            self._call_if_value_not_none(
-                self.mrml_view_node.SetOrientation, self._view_properties.orientation
-            )
+            self._call_if_value_not_none(self.mrml_view_node.SetOrientation, self._view_properties.orientation)
             self.mrml_view_node.SetOrientationToDefault()
             self.logic.RotateSliceToLowestVolumeAxes(False)
 
@@ -239,9 +231,7 @@ class SliceView(AbstractView):
             return
 
         current_fov = self.mrml_view_node.GetFieldOfView()
-        self.mrml_view_node.SetFieldOfView(
-            current_fov[0] * fov_factor, current_fov[1] * fov_factor, current_fov[2]
-        )
+        self.mrml_view_node.SetFieldOfView(current_fov[0] * fov_factor, current_fov[1] * fov_factor, current_fov[2])
 
     def zoom_in(self):
         self.zoom(0.2)

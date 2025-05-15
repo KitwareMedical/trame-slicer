@@ -18,9 +18,7 @@ class VolumePropertyButton(VMenu):
         super().__init__(location="end", close_on_content_click=False)
         with self:
             with Template(v_slot_activator="{ props }"):
-                ControlButton(
-                    name="Volume Properties", icon="mdi-tune-variant", v_bind="props"
-                )
+                ControlButton(name="Volume Properties", icon="mdi-tune-variant", v_bind="props")
 
             with VCard(), VCardText():
                 with VRow():

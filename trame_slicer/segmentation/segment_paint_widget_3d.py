@@ -88,9 +88,7 @@ class BrushFeedback3D(AbstractBrush):
 
 
 class SegmentPaintWidget3D(SegmentPaintWidget):
-    def __init__(
-        self, view: ThreeDView, modifier: SegmentModifier, brush_model: BrushModel
-    ):
+    def __init__(self, view: ThreeDView, modifier: SegmentModifier, brush_model: BrushModel):
         # brush
         brush = Brush3D()
         brush.set_input_connection(brush_model.get_output_port())
@@ -101,9 +99,7 @@ class SegmentPaintWidget3D(SegmentPaintWidget):
 
         # Feedback brush
         brush_feedback = BrushFeedback3D()
-        brush_feedback.set_source_connection(
-            brush_model.get_untransformed_output_port()
-        )
+        brush_feedback.set_source_connection(brush_model.get_untransformed_output_port())
         brush_feedback.set_input_data(feedback_points_poly_data)
         brush_feedback.get_property().SetColor(1.0, 0.7, 0.0)
 
@@ -198,10 +194,7 @@ class SegmentPaintWidget3D(SegmentPaintWidget):
         for i_pt in range(n_points_to_add):
             weight = float(i_pt + 1) / float(n_points_to_add + 1)
 
-            weighted_point = [
-                weight * self._last_position[i] + (1.0 - weight) * position[i]
-                for i in range(3)
-            ]
+            weighted_point = [weight * self._last_position[i] + (1.0 - weight) * position[i] for i in range(3)]
             self.add_point_to_selection(weighted_point)
 
 

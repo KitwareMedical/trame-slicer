@@ -36,24 +36,16 @@ class BrushModel:
 
         self._brush_to_world_origin_transform = vtkTransform()
         self._brush_to_world_origin_transformer = vtkTransformPolyDataFilter()
-        self._brush_to_world_origin_transformer.SetTransform(
-            self._brush_to_world_origin_transform
-        )
+        self._brush_to_world_origin_transformer.SetTransform(self._brush_to_world_origin_transform)
 
         self._brush_poly_data_normals = vtkPolyDataNormals()
-        self._brush_poly_data_normals.SetInputConnection(
-            self._brush_to_world_origin_transformer.GetOutputPort()
-        )
+        self._brush_poly_data_normals.SetInputConnection(self._brush_to_world_origin_transformer.GetOutputPort())
         self._brush_poly_data_normals.AutoOrientNormalsOn()
 
         self._world_origin_to_world_transform = vtkTransform()
         self._world_origin_to_world_transformer = vtkTransformPolyDataFilter()
-        self._world_origin_to_world_transformer.SetTransform(
-            self._world_origin_to_world_transform
-        )
-        self._world_origin_to_world_transformer.SetInputConnection(
-            self._brush_poly_data_normals.GetOutputPort()
-        )
+        self._world_origin_to_world_transformer.SetTransform(self._world_origin_to_world_transform)
+        self._world_origin_to_world_transformer.SetInputConnection(self._brush_poly_data_normals.GetOutputPort())
 
         self._shape = None  # force shape update
         self.set_shape(shape)
@@ -73,20 +65,14 @@ class BrushModel:
         self._shape = shape
         self._brush_to_world_origin_transform.Identity()
         if shape == BrushShape.Sphere:
-            self._brush_to_world_origin_transformer.SetInputConnection(
-                self._sphere_source.GetOutputPort()
-            )
+            self._brush_to_world_origin_transformer.SetInputConnection(self._sphere_source.GetOutputPort())
         elif shape == BrushShape.Cylinder:
-            self._brush_to_world_origin_transformer.SetInputConnection(
-                self._cylinder_source.GetOutputPort()
-            )
+            self._brush_to_world_origin_transformer.SetInputConnection(self._cylinder_source.GetOutputPort())
         else:
             _error_msg = f"Invalid shape value {shape}"
             raise Exception(_error_msg)
 
-    def set_sphere_parameters(
-        self, radius: float, phi_resolution: int, theta_resolution: int
-    ):
+    def set_sphere_parameters(self, radius: float, phi_resolution: int, theta_resolution: int):
         self._sphere_source.SetPhiResolution(phi_resolution)
         self._sphere_source.SetThetaResolution(theta_resolution)
         self._sphere_source.SetRadius(radius)

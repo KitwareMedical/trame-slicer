@@ -28,9 +28,7 @@ def test_scissors_effect_can_erase_all_segmentations(
 ):
     view = request.getfixturevalue(view.__name__)
     a_segmentation_model.SetDisplayVisibility(False)
-    segmentation_node = a_segmentation_editor.create_segmentation_node_from_model_node(
-        a_segmentation_model
-    )
+    segmentation_node = a_segmentation_editor.create_segmentation_node_from_model_node(a_segmentation_model)
     a_segmentation_editor.set_active_segmentation(segmentation_node, a_volume_node)
 
     labelmap = a_segmentation_editor.get_segment_labelmap(

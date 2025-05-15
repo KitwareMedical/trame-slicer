@@ -287,9 +287,7 @@ class SegmentationButton(VMenu):
         self.state.setdefault(SegmentationId.current_segment_id, "")
         self.state.setdefault(SegmentationId.segments, [])
         self.state.setdefault(SegmentationId.is_renaming_segment, False)
-        self.state.setdefault(
-            SegmentationId.segment_opacity_mode, SegmentationOpacityEnum.BOTH.value
-        )
+        self.state.setdefault(SegmentationId.segment_opacity_mode, SegmentationOpacityEnum.BOTH.value)
         self.state.setdefault(SegmentationId.opacity_2d, 0.5)
         self.state.setdefault(SegmentationId.opacity_3d, 1.0)
 
@@ -305,9 +303,7 @@ class SegmentationButton(VMenu):
                 )
 
             with VCard(style="height:auto; overflow: visible;"), VCardText():
-                self.rename = SegmentationRename(
-                    server=server, v_if=(SegmentationId.is_renaming_segment,)
-                )
+                self.rename = SegmentationRename(server=server, v_if=(SegmentationId.is_renaming_segment,))
                 self.selection = SegmentSelection(v_else=True)
 
         self.connect_signals()
@@ -317,29 +313,21 @@ class SegmentationButton(VMenu):
         self.rename.cancel_clicked.connect(self.on_cancel_rename)
 
         self.selection.add_segment_clicked.connect(self.on_add_segment)
-        self.selection.delete_current_segment_clicked.connect(
-            self.on_delete_current_segment
-        )
+        self.selection.delete_current_segment_clicked.connect(self.on_delete_current_segment)
         self.selection.start_rename_clicked.connect(self.on_start_rename)
         self.selection.no_tool_clicked.connect(self.on_no_tool)
         self.selection.paint_clicked.connect(self.on_paint)
         self.selection.erase_clicked.connect(self.on_erase)
         self.selection.scissors_clicked.connect(self.on_scissors)
         self.selection.toggle_3d_clicked.connect(self.on_toggle_3d)
-        self.selection.segment_visibility_toggled.connect(
-            self.on_toggle_segment_visibility
-        )
+        self.selection.segment_visibility_toggled.connect(self.on_toggle_segment_visibility)
         self.selection.opacity_mode_clicked.connect(self.on_toggle_2d_opacity_mode)
         self.selection.undo_clicked.connect(self._undo_stack.undo)
         self.selection.redo_clicked.connect(self._undo_stack.redo)
 
     def connect_segmentation_editor_to_state(self):
-        self.segmentation_editor.segmentation_modified.connect(
-            self._update_segment_properties
-        )
-        connect_all_signals_emitting_values_to_state(
-            self.segmentation_editor, self.state
-        )
+        self.segmentation_editor.segmentation_modified.connect(self._update_segment_properties)
+        connect_all_signals_emitting_values_to_state(self.segmentation_editor, self.state)
         self.segmentation_editor.trigger_all_signals()
 
     def connect_undo_stack_to_state(self):
@@ -361,21 +349,15 @@ class SegmentationButton(VMenu):
         self.state[SegmentationId.current_segment_id] = segment_id
 
     def get_current_segment_properties(self):
-        return self.segmentation_editor.get_segment_properties(
-            self.get_current_segment_id()
-        )
+        return self.segmentation_editor.get_segment_properties(self.get_current_segment_id())
 
     def set_segment_properties(self, segment_properties: SegmentProperties):
-        self.segmentation_editor.set_segment_properties(
-            self.get_current_segment_id(), segment_properties
-        )
+        self.segmentation_editor.set_segment_properties(self.get_current_segment_id(), segment_properties)
 
     @change(StateId.current_volume_node_id)
     def on_volume_changed(self, **_kwargs):
         self.scene.RemoveNode(self._segmentation_node)
-        self._segmentation_node = (
-            self.segmentation_editor.create_empty_segmentation_node()
-        )
+        self._segmentation_node = self.segmentation_editor.create_empty_segmentation_node()
         self.segmentation_editor.deactivate_effect()
         self.segmentation_editor.set_active_segmentation(
             self._segmentation_node,
@@ -388,9 +370,7 @@ class SegmentationButton(VMenu):
 
     @change(SegmentationEditor.active_segment_id_changed.name)
     def on_current_segment_id_changed(self, **_kwargs):
-        self.segmentation_editor.set_active_segment_id(
-            _kwargs[SegmentationEditor.active_segment_id_changed.name]
-        )
+        self.segmentation_editor.set_active_segment_id(_kwargs[SegmentationEditor.active_segment_id_changed.name])
         # Update opacity for (potentially) new segment
         self.on_opacity_2d_changed()
         self.on_opacity_3d_changed()
@@ -441,9 +421,7 @@ class SegmentationButton(VMenu):
                 "title": segment_properties.name,
                 "props": {
                     "segment_id": segment_id,
-                    "visibility": self.segmentation_editor.get_segment_visibility(
-                        segment_id
-                    ),
+                    "visibility": self.segmentation_editor.get_segment_visibility(segment_id),
                     **segment_properties.to_dict(),
                 },
             }

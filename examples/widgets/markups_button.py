@@ -94,9 +94,7 @@ class MarkupsButton(VMenu):
     def markups_logic(self) -> MarkupsLogic:
         return self._slicer_app.markups_logic
 
-    def create_markups_button(
-        self, name: str, icon: str, node_type: str, is_persistent: bool
-    ) -> None:
+    def create_markups_button(self, name: str, icon: str, node_type: str, is_persistent: bool) -> None:
         """
         Creates a button to place a specific node type in a persistent or temporary
         manner. This function generates a clickable button using the given name,

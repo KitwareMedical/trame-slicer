@@ -80,9 +80,7 @@ class RemoteViewFactory(IViewFactory):
         view_ctor: Callable,
         view_type: ViewType,
         *,
-        populate_view_ui_f: (
-            Callable[[Server, str, AbstractViewChild], None] | None
-        ) = None,
+        populate_view_ui_f: (Callable[[Server, str, AbstractViewChild], None] | None) = None,
         target_fps: float | None = None,
         interactive_quality: int | None = None,
         rca_encoder: RcaEncoder | str | None = None,
@@ -145,9 +143,7 @@ class RemoteViewFactory(IViewFactory):
         return RcaView(vuetify_view, slicer_view, rca_view_adapter)
 
     def _create_vuetify_ui(self, view_id: str, slicer_view: AbstractView):
-        with Div(
-            style=("position: relative;width: 100%;height: 100%;overflow: hidden;")
-        ):
+        with Div(style=("position: relative;width: 100%;height: 100%;overflow: hidden;")):
             RemoteControlledArea(
                 name=view_id,
                 display="image",

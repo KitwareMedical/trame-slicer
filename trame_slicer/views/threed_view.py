@@ -140,9 +140,7 @@ class ThreeDView(RenderView):
             self.mrml_view_node.EndModify(was_modifying)
 
         # Exclude crosshair from focal point computation
-        crosshair_node = vtkMRMLCrosshairDisplayableManager().FindCrosshairNode(
-            self.mrml_scene
-        )
+        crosshair_node = vtkMRMLCrosshairDisplayableManager().FindCrosshairNode(self.mrml_scene)
         crosshairMode = 0
         if crosshair_node:
             crosshairMode = crosshair_node.GetCrosshairMode()
@@ -159,9 +157,7 @@ class ThreeDView(RenderView):
             self.mrml_view_node.EndModify(was_modifying)
             # Inform the displayable manager that the view is reset, so it can
             # update the box/labels bounds.
-            self.mrml_view_node.InvokeEvent(
-                vtkMRMLViewNode.ResetFocalPointRequestedEvent
-            )
+            self.mrml_view_node.InvokeEvent(vtkMRMLViewNode.ResetFocalPointRequestedEvent)
 
         if crosshair_node:
             crosshair_node.SetCrosshairMode(crosshairMode)
@@ -191,9 +187,7 @@ class ThreeDView(RenderView):
         camera_node.RotateTo(view_direction.value)
 
     def get_camera_node(self) -> vtkMRMLCameraNode | None:
-        camera_dm = self.displayable_manager_group.GetDisplayableManagerByClassName(
-            "vtkMRMLCameraDisplayableManager"
-        )
+        camera_dm = self.displayable_manager_group.GetDisplayableManagerByClassName("vtkMRMLCameraDisplayableManager")
         if not camera_dm:
             return None
         return camera_dm.GetCameraNode()
@@ -209,9 +203,7 @@ class ThreeDView(RenderView):
         if not self.mrml_view_node:
             return
 
-        self._call_if_value_not_none(
-            self.set_box_visible, self._view_properties.box_visible
-        )
+        self._call_if_value_not_none(self.set_box_visible, self._view_properties.box_visible)
 
     def set_ruler(self, ruler_type: int | None = None, ruler_color: int | None = None):
         if ruler_type and ruler_type != vtkMRMLAbstractViewNode.RulerTypeNone:
@@ -257,9 +249,7 @@ class ThreeDView(RenderView):
         camera_node = self.get_camera_node()
         camera_position = np.array(camera_node.GetPosition())
         focal_point = np.array(camera_node.GetFocalPoint())
-        camera_node.SetPosition(
-            camera_position + factor * (focal_point - camera_position)
-        )
+        camera_node.SetPosition(camera_position + factor * (focal_point - camera_position))
         camera_node.ResetClippingRange()
 
     def zoom_in(self):

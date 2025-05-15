@@ -116,9 +116,7 @@ class ThreedViewInteractionDispatch(ViewInteractionDispatch):
         picker.Pick(display_position[0], display_position[1], 0, poked_renderer)
 
     @staticmethod
-    def _closest_pick_position_to_camera(
-        picked_positions: vtkPoints, camera: vtkCamera
-    ) -> list[float] | None:
+    def _closest_pick_position_to_camera(picked_positions: vtkPoints, camera: vtkCamera) -> list[float] | None:
         """
         Finds the closest picked position to the camera.
 
