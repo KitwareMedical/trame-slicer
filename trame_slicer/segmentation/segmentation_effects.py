@@ -129,7 +129,7 @@ class SegmentationScissorEffect(SegmentationEffect):
         self._widgets: dict[AbstractView, SegmentScissorWidgetInteractor] = {}
 
     def activate(self, views: list[AbstractView]) -> None:
-        for view in [v for v in views if isinstance(v, (ThreeDView | SliceView))]:
+        for view in [v for v in views if isinstance(v, (ThreeDView, SliceView))]:
             if view not in self._widgets:
                 widget = SegmentScissorWidget(view, self._modifier)
                 interactor = SegmentScissorWidgetInteractor(widget)
