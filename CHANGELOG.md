@@ -1,6 +1,20 @@
 # CHANGELOG
 
 
+## v0.7.1 (2025-05-20)
+
+### Bug Fixes
+
+- **segmentation**: Fix scissors effect for python 3.9
+  ([`0e28b3e`](https://github.com/KitwareMedical/trame-slicer/commit/0e28b3e6a54eb78660bf8ea673119436063d65b9))
+
+- **views**: Fix slice views default tag
+  ([`96e5f1e`](https://github.com/KitwareMedical/trame-slicer/commit/96e5f1e6a8a7208fc1a94b9c925d4937ed7f4101))
+
+- Fix slice view tags to be consistent with Slicer desktop. Some modules rely on default views names
+  and tags to properly function.
+
+
 ## v0.7.0 (2025-05-15)
 
 ### Code Style
