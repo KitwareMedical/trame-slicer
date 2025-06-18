@@ -125,6 +125,9 @@ build_command = """
 dist_glob_patterns = ["dist/*"]
 upload_to_vcs_release = true
 
+[tool.semantic_release.branches.main]
+match = "(main|master)"
+
 [tool.coverage.report]
 omit = ["*/tests/*"]
 exclude_lines = [

@@ -22,6 +22,32 @@ jobs:
           pre-commit install
           pre-commit run --all-files
 
+  semantic-release-dry-run:
+    needs: [pre-commit]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: Replace branch in pyproject.toml
+        run: |
+          BRANCH="${{ github.head_ref || github.ref_name }}"
+          sed -i "s/\(main\|master\)/$BRANCH/g" pyproject.toml
+
+      - name: Python Semantic Release (Dry Run)
+        id: release
+        uses: python-semantic-release/python-semantic-release@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          no_operation_mode: true
+          changelog: true
+
+      - name: Echo changelog contents
+        run: cat CHANGELOG.md
+
   pytest:
     if: false # Test running currently deactivated as it requires slicer lib wheel generation for each target
     name: Pytest ${{ matrix.config.name }}
@@ -75,6 +101,7 @@ jobs:
         uses: python-semantic-release/python-semantic-release@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          changelog: true
 
       # https://docs.pypi.org/trusted-publishers/using-a-publisher/
       - name: Publish package distributions to PyPI
