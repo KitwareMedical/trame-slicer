@@ -93,8 +93,8 @@ for more information.
 
 This library was funded by the following projects :
 
-- [Cure Overgrowth Syndromes (COSY) RHU Project](https://rhu-cosy.com/en/accueil-english/).
-- [Handling heterogeneous Imaging and signal data for analysing the Neurodevelopmental Trajectories of premature newborns (HINT) ANR project](https://anr-hint.pages.in2p3.fr/)
+- [Cure Overgrowth Syndromes (COSY) RHU Project (ANR-18-RHUS-005)](https://rhu-cosy.com/en/accueil-english/).
+- [Handling heterogeneous Imaging and signal data for analysing the Neurodevelopmental Trajectories of premature newborns (HINT) ANR project (ANR-22-CE45-0034)](https://anr-hint.pages.in2p3.fr/)
 
 This library was created from the
 [trame-cookicutter](https://github.com/Kitware/trame-cookiecutter/) library.
