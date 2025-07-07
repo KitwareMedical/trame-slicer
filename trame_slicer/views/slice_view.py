@@ -94,28 +94,20 @@ class SliceView(AbstractView):
         self.render_manager = SliceRendererManager(self)
 
         self.image_data_connection = None
-
-        factory = vtkMRMLSliceViewDisplayableManagerFactory.GetInstance()
-        factory.SetMRMLApplicationLogic(app_logic)
+        self.displayable_manager_group.SetLightBoxRendererManagerProxy(self.render_manager)
 
         managers = [
-            vtkMRMLCrosshairDisplayableManager.__name__,
-            vtkMRMLVolumeGlyphSliceDisplayableManager.__name__,
-            vtkMRMLModelSliceDisplayableManager.__name__,
-            vtkMRMLOrientationMarkerDisplayableManager.__name__,
-            vtkMRMLRulerDisplayableManager.__name__,
-            vtkMRMLScalarBarDisplayableManager.__name__,
-            vtkMRMLSegmentationsDisplayableManager2D.__name__,
-            vtkMRMLMarkupsDisplayableManager.__name__,
-            vtkMRMLTransformsDisplayableManager2D.__name__,
+            vtkMRMLCrosshairDisplayableManager,
+            vtkMRMLVolumeGlyphSliceDisplayableManager,
+            vtkMRMLModelSliceDisplayableManager,
+            vtkMRMLOrientationMarkerDisplayableManager,
+            vtkMRMLRulerDisplayableManager,
+            vtkMRMLScalarBarDisplayableManager,
+            vtkMRMLSegmentationsDisplayableManager2D,
+            vtkMRMLMarkupsDisplayableManager,
+            vtkMRMLTransformsDisplayableManager2D,
         ]
-
-        for manager in managers:
-            if not factory.IsDisplayableManagerRegistered(manager):
-                factory.RegisterDisplayableManager(manager)
-
-        self.displayable_manager_group.SetLightBoxRendererManagerProxy(self.render_manager)
-        self.displayable_manager_group.Initialize(factory, self.renderer())
+        self.initialize_displayable_manager_group(vtkMRMLSliceViewDisplayableManagerFactory, app_logic, managers)
         self.name = name
 
         # Create slice logic

@@ -6,7 +6,10 @@ from dataclasses import dataclass
 from typing import Literal, TypeVar
 
 from slicer import (
+    vtkMRMLAbstractDisplayableManager,
     vtkMRMLAbstractViewNode,
+    vtkMRMLApplicationLogic,
+    vtkMRMLDisplayableManagerFactory,
     vtkMRMLDisplayableManagerGroup,
     vtkMRMLScene,
     vtkMRMLViewNode,
@@ -110,6 +113,31 @@ class AbstractView:
         self._modified_dispatcher.set_dispatch_information(self)
         self._mrml_node_obs_id = None
         self._view_interaction_dispatch = self.create_interaction_dispatch()
+
+    def initialize_displayable_manager_group(
+        self,
+        factory_type: vtkMRMLDisplayableManagerFactory,
+        app_logic: vtkMRMLApplicationLogic,
+        manager_types: list[type[vtkMRMLAbstractDisplayableManager] | str],
+    ) -> None:
+        """
+        Initialize the displayable manager group with the given input factory type and the list of displayable managers.
+
+        :param factory_type: vtkMRMLDisplayableManagerFactory responsible for the current view.
+        :param app_logic: Slicer application logic.
+        :param manager_types: List of displayable managers to register in view.
+        """
+        factory = factory_type.GetInstance()
+        factory.SetMRMLApplicationLogic(app_logic)
+
+        manager_names = [
+            manager_type if isinstance(manager_type, str) else manager_type.__name__ for manager_type in manager_types
+        ]
+        for manager in manager_names:
+            if not factory.IsDisplayableManagerRegistered(manager):
+                factory.RegisterDisplayableManager(manager)
+
+        self.displayable_manager_group.Initialize(factory, self.renderer())
 
     def create_interaction_dispatch(self) -> ViewInteractionDispatchChild:
         return ViewInteractionDispatch(self)
