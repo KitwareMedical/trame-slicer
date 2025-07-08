@@ -15,22 +15,23 @@ class ViewType(Enum):
 @dataclass
 class ViewLayoutDefinition:
     singleton_tag: str
-    type: ViewType
+    view_type: Enum
     properties: ViewProps
 
     def to_xml(self):
-        return f'<view class="{self.type.value}" singletontag="{self.singleton_tag}">{self.properties.to_xml()}</view>'
+        return f'<view class="{self.view_type.value}" singletontag="{self.singleton_tag}">{self.properties.to_xml()}</view>'
 
     @classmethod
-    def from_xml(cls, xml_str: str) -> ViewLayoutDefinition:
+    def from_xml(cls, xml_str: str, view_type_cls: type[Enum] | None = None) -> ViewLayoutDefinition:
         from lxml import etree
 
+        view_type_cls = view_type_cls or ViewType
         elt = etree.fromstring(xml_str)
 
         properties = {child.get("name"): child.text for child in elt.getchildren()}
         return cls(
             singleton_tag=elt.get("singletontag"),
-            type=ViewType(elt.get("class")),
+            view_type=view_type_cls(elt.get("class")),
             properties=ViewProps.from_xml_dict(properties),
         )
 
@@ -40,7 +41,7 @@ class ViewLayoutDefinition:
 
         return cls(
             singleton_tag=label,
-            type=ViewType.SLICE_VIEW,
+            view_type=ViewType.SLICE_VIEW,
             properties=ViewProps(orientation=orientation, label=label),
         )
 

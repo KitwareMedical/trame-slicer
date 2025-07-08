@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Generic
 
 from slicer import vtkMRMLApplicationLogic, vtkMRMLScene
 
@@ -17,7 +18,7 @@ from trame_slicer.views.view_factory import V
 
 
 @dataclass
-class _View:
+class _View(Generic[AbstractViewChild]):
     slicer_view: AbstractViewChild
 
 
@@ -31,7 +32,7 @@ class DirectViewFactory(IViewFactory):
         scene: vtkMRMLScene,
         app_logic: vtkMRMLApplicationLogic,
     ) -> V:
-        if view.type == ViewType.SLICE_VIEW:
+        if view.view_type == ViewType.SLICE_VIEW:
             slice_view = SliceView(
                 scene,
                 app_logic,
@@ -41,7 +42,7 @@ class DirectViewFactory(IViewFactory):
             if view.properties.orientation:
                 slice_view.set_orientation(view.properties.orientation)
             return _View(slice_view)
-        if view.type == ViewType.THREE_D_VIEW:
+        if view.view_type == ViewType.THREE_D_VIEW:
             return _View(
                 ThreeDView(
                     scene,

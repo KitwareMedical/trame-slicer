@@ -48,7 +48,7 @@ def a_view_manager(a_slicer_app, a_view_factory):
 @pytest.fixture
 def a_threed_view(a_view_manager, render_interactive):
     three_d_view = a_view_manager.create_view(
-        ViewLayoutDefinition(singleton_tag="ThreeD", type=ViewType.THREE_D_VIEW, properties=ViewProps())
+        ViewLayoutDefinition(singleton_tag="ThreeD", view_type=ViewType.THREE_D_VIEW, properties=ViewProps())
     )
     if render_interactive:
         three_d_view.render_window().ShowWindowOn()
@@ -62,7 +62,7 @@ def a_slice_view(a_view_manager, render_interactive):
     view = a_view_manager.create_view(
         ViewLayoutDefinition(
             singleton_tag="Red",
-            type=ViewType.SLICE_VIEW,
+            view_type=ViewType.SLICE_VIEW,
             properties=ViewProps(orientation="Axial"),
         )
     )

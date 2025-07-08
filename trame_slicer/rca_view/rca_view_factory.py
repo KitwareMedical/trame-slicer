@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from enum import Enum
+from typing import Generic
 
 from slicer import vtkMRMLApplicationLogic, vtkMRMLScene
 from trame_client.widgets.html import Div
@@ -27,7 +29,7 @@ from trame_slicer.views import (
 
 
 @dataclass
-class RcaView:
+class RcaView(Generic[AbstractViewChild]):
     vuetify_view: RemoteControlledArea
     slicer_view: AbstractViewChild
     view_adapter: RcaViewAdapter
@@ -78,7 +80,7 @@ class RemoteViewFactory(IViewFactory):
         self,
         server: Server,
         view_ctor: Callable,
-        view_type: ViewType,
+        view_type: Enum,
         *,
         populate_view_ui_f: (Callable[[Server, str, AbstractViewChild], None] | None) = None,
         target_fps: float | None = None,
@@ -99,7 +101,7 @@ class RemoteViewFactory(IViewFactory):
         return view.slicer_view
 
     def can_create_view(self, view: ViewLayoutDefinition) -> bool:
-        return view.type == self._view_type
+        return view.view_type == self._view_type
 
     def _create_view(
         self,
