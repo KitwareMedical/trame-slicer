@@ -42,6 +42,7 @@ def register_rca_factories(
     three_d_view_ui_f: Callable[[Server, str, AbstractViewChild], None] | None = None,
     rca_encoder: RcaEncoder = RcaEncoder.TURBO_JPEG,
     target_fps: float = 30.0,
+    blur_fps: float = 10.0,
     interactive_quality: int = 50,
 ) -> None:
     """
@@ -59,6 +60,7 @@ def register_rca_factories(
                 server,
                 rca_encoder=rca_encoder,
                 target_fps=target_fps,
+                blur_fps=blur_fps,
                 interactive_quality=interactive_quality,
                 populate_view_ui_f=populate_view_ui_f,
             )
@@ -82,17 +84,29 @@ class RemoteViewFactory(IViewFactory):
         view_ctor: Callable,
         view_type: Enum,
         *,
-        populate_view_ui_f: (Callable[[Server, str, AbstractViewChild], None] | None) = None,
+        populate_view_ui_f: Callable[[Server, str, AbstractViewChild], None] | None = None,
         target_fps: float | None = None,
+        blur_fps: float | None = None,
         interactive_quality: int | None = None,
         rca_encoder: RcaEncoder | str | None = None,
     ):
+        """
+        :param server: Trame server.
+        :param view_ctor: Callback responsible for creating the actual Slicer view.
+        :param view_type: Type of view which can be created by the factory.
+        :param populate_view_ui_f: Callback to populate the RCA HTML view.
+        :param target_fps: Focused rendering speed.
+        :param blur_fps: Out of focus rendering speed.
+        :param interactive_quality: Interactive RCA image encoding quality.
+        :param rca_encoder: Encoder type to use for RCA image encoding.
+        """
         super().__init__()
         self._server = server
         self._view_ctor = view_ctor
         self._view_type = view_type
 
         self._target_fps = target_fps
+        self._blur_fps = blur_fps
         self._interactive_quality = interactive_quality
         self._rca_encoder = rca_encoder
         self._populate_view_ui_f = populate_view_ui_f
@@ -118,15 +132,15 @@ class RemoteViewFactory(IViewFactory):
 
         slicer_view.set_view_properties(view.properties)
 
-        with ViewLayout(self._server, template_name=view_id) as vuetify_view:
-            self._create_vuetify_ui(view_id, slicer_view)
-
         rca_scheduler = RcaRenderScheduler(
             window=slicer_view.render_window(),
             interactive_quality=self._interactive_quality,
             rca_encoder=self._rca_encoder,
             target_fps=self._target_fps,
         )
+
+        with ViewLayout(self._server, template_name=view_id) as vuetify_view:
+            self._create_vuetify_ui(view_id, slicer_view, rca_scheduler)
 
         rca_view_adapter = RcaViewAdapter(
             window=slicer_view.render_window(),
@@ -144,13 +158,32 @@ class RemoteViewFactory(IViewFactory):
         create_task(init_rca())
         return RcaView(vuetify_view, slicer_view, rca_view_adapter)
 
-    def _create_vuetify_ui(self, view_id: str, slicer_view: AbstractView):
-        with Div(style=("position: relative;width: 100%;height: 100%;overflow: hidden;")):
+    def _create_vuetify_ui(self, view_id: str, slicer_view: AbstractView, rca_scheduler: RcaRenderScheduler):
+        def set_scheduler_fps(fps: float | None) -> None:
+            """
+            Update the view target FPS to the given input value if the value is not None.
+            """
+            if fps is None:
+                return
+            rca_scheduler._target_fps = fps
+
+        def set_focus_fps(*_):
+            set_scheduler_fps(self._target_fps)
+
+        def set_blur_fps(*_):
+            set_scheduler_fps(self._blur_fps)
+
+        # As views are not yet displayed, configure the views in blur FPS until first hover
+        set_blur_fps()
+
+        with Div(style="position: relative; width: 100%; height: 100%; overflow: hidden;"):
             RemoteControlledArea(
                 name=view_id,
                 display="image",
                 style="position: relative; width: 100%; height: 100%;",
                 send_mouse_move=True,
+                mouseenter=set_focus_fps,
+                mouseleave=set_blur_fps,
             )
 
             if self._populate_view_ui_f is not None:
