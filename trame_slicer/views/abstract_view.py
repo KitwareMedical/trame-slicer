@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Literal, TypeVar
@@ -114,6 +114,8 @@ class AbstractView:
         self._mrml_node_obs_id = None
         self._view_interaction_dispatch = self.create_interaction_dispatch()
 
+        self._is_render_blocked = False
+
     def initialize_displayable_manager_group(
         self,
         factory_type: vtkMRMLDisplayableManagerFactory,
@@ -169,11 +171,13 @@ class AbstractView:
         return self.first_renderer()
 
     def schedule_render(self, *_) -> None:
-        if not self._scheduled_render:
+        if not self._scheduled_render or self._is_render_blocked:
             return
         self._scheduled_render.schedule_render()
 
     def render(self) -> None:
+        if self._is_render_blocked:
+            return
         self._render_window_interactor.Render()
         if not self._scheduled_render:
             return
@@ -329,3 +333,31 @@ class AbstractView:
 
     def start_interactor(self) -> None:
         self.interactor().Start()
+
+    @property
+    def is_render_blocked(self) -> bool:
+        return self._is_render_blocked
+
+    def set_render_blocked(self, is_blocked: bool) -> bool:
+        """
+        Enable / Disable blocking rendering of the view.
+        This method doesn't prevent direct calls to the render_window.Render API.
+
+        :param is_blocked: If True, will prevent all schedule_render calls to render strategy.
+            If False, will schedule a new rendering.
+        :returns: Previous blocked state
+        """
+        was_blocked = self._is_render_blocked
+        self._is_render_blocked = is_blocked
+        if not is_blocked:
+            self.schedule_render()
+        return was_blocked
+
+    @contextmanager
+    def render_blocked(self) -> Generator[None, None, None]:
+        """
+        Context manager API for blocked rendering in the scope of the call.
+        """
+        was_blocked = self.set_render_blocked(True)
+        yield
+        self.set_render_blocked(was_blocked)

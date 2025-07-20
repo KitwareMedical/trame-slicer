@@ -204,3 +204,39 @@ def test_sets_current_layout_views_as_active(
 
     a_layout_manager.set_layout("L2")
     a_mock_view_manager.set_current_view_ids.assert_called_once_with([a_coronal_view.singleton_tag])
+
+
+def test_view_creation_can_be_lazy(a_layout_manager, a_sagittal_layout, a_coronal_layout, a_mock_view_manager):
+    a_mock_view_manager.is_view_created.return_value = False
+    a_layout_manager.register_layout("id_1", a_sagittal_layout, lazy_initialization=True)
+    a_layout_manager.register_layout_dict({"id_2": a_coronal_layout}, lazy_initialization=True)
+    a_mock_view_manager.create_view.assert_not_called()
+
+
+def test_view_creation_is_not_lazy_by_default(
+    a_layout_manager, a_sagittal_layout, a_coronal_layout, a_mock_view_manager
+):
+    a_mock_view_manager.is_view_created.return_value = False
+    a_layout_manager.register_layout("id_1", a_sagittal_layout)
+    a_layout_manager.register_layout_dict({"id_2": a_coronal_layout})
+    assert a_mock_view_manager.create_view.call_count == 2
+
+
+def test_layout_manager_blocks_views_not_currently_displayed(
+    a_slicer_scene,
+    a_view_manager,
+    a_sagittal_layout,
+    a_coronal_layout,
+    a_mock_ui,
+):
+    layout_man = LayoutManager(a_slicer_scene, a_view_manager, a_mock_ui)
+    layout_man.register_layout("id_1", a_sagittal_layout)
+    layout_man.register_layout("id_2", a_coronal_layout)
+
+    layout_man.set_layout("id_1")
+    assert not a_view_manager.get_view("sagittal_view_tag").is_render_blocked
+    assert a_view_manager.get_view("coronal_view_tag").is_render_blocked
+
+    layout_man.set_layout("id_2")
+    assert a_view_manager.get_view("sagittal_view_tag").is_render_blocked
+    assert not a_view_manager.get_view("coronal_view_tag").is_render_blocked
