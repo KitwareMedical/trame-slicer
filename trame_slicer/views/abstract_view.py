@@ -217,6 +217,7 @@ class AbstractView:
                 self.set_background_color_from_string,
                 self._view_properties.background_color,
             )
+            self._call_if_value_not_none(self.set_layout_color_from_string, self._view_properties.color)
 
     def get_view_group(self) -> int:
         if not self.mrml_view_node:
@@ -361,3 +362,9 @@ class AbstractView:
         was_blocked = self.set_render_blocked(True)
         yield
         self.set_render_blocked(was_blocked)
+
+    def set_layout_color_from_string(self, color: str):
+        self.set_layout_color(self._str_to_color(color))
+
+    def set_layout_color(self, color: list[int]):
+        self.mrml_view_node.SetLayoutColor(*self._to_float_color(color))

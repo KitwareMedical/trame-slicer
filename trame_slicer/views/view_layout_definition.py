@@ -36,26 +36,28 @@ class ViewLayoutDefinition:
         )
 
     @classmethod
-    def slice_view(cls, orientation: ViewOrientation, *, label: str | None = None) -> ViewLayoutDefinition:
+    def slice_view(
+        cls, orientation: ViewOrientation, *, label: str | None = None, color: str | None = None
+    ) -> ViewLayoutDefinition:
         label = str(label or orientation)
 
         return cls(
             singleton_tag=label,
             view_type=ViewType.SLICE_VIEW,
-            properties=ViewProps(orientation=orientation, label=label),
+            properties=ViewProps(orientation=orientation, label=label, color=color),
         )
 
     @classmethod
     def axial_view(cls, label: str | None = None) -> ViewLayoutDefinition:
-        return cls.slice_view("Axial", label=label or "Red")
+        return cls.slice_view("Axial", label=label or "Red", color="#F34A33")
 
     @classmethod
     def coronal_view(cls, label: str | None = None) -> ViewLayoutDefinition:
-        return cls.slice_view("Coronal", label=label or "Green")
+        return cls.slice_view("Coronal", label=label or "Green", color="#6DAD4A")
 
     @classmethod
     def sagittal_view(cls, label: str | None = None) -> ViewLayoutDefinition:
-        return cls.slice_view("Sagittal", label=label or "Yellow")
+        return cls.slice_view("Sagittal", label=label or "Yellow", color="#EFD64D")
 
     @classmethod
     def threed_view(
