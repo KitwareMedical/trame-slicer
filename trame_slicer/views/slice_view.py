@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
+import vtk
 from slicer import (
     vtkMRMLApplicationLogic,
     vtkMRMLCrosshairDisplayableManager,
@@ -230,3 +231,28 @@ class SliceView(AbstractView):
 
     def zoom_out(self):
         self.zoom(-0.2)
+
+    def set_slab_enabled(self, is_enabled: bool):
+        self.mrml_view_node.SetSlabReconstructionEnabled(is_enabled)
+
+    def is_slab_enabled(self) -> bool:
+        return self.mrml_view_node.GetSlabReconstructionEnabled()
+
+    def set_slab_thickness(self, thickness: float):
+        self.mrml_view_node.SetSlabReconstructionThickness(thickness)
+
+    def get_slab_thickness(self) -> float:
+        return self.mrml_view_node.GetSlabReconstructionThickness()
+
+    def set_slab_type(
+        self,
+        slab_type: Literal[
+            vtk.VTK_IMAGE_SLAB_SUM, vtk.VTK_IMAGE_SLAB_MAX, vtk.VTK_IMAGE_SLAB_MIN, vtk.VTK_IMAGE_SLAB_MEAN
+        ],
+    ):
+        self.mrml_view_node.SetSlabReconstructionType(slab_type)
+
+    def get_slab_type(
+        self,
+    ) -> Literal[vtk.VTK_IMAGE_SLAB_SUM, vtk.VTK_IMAGE_SLAB_MAX, vtk.VTK_IMAGE_SLAB_MIN, vtk.VTK_IMAGE_SLAB_MEAN]:
+        return self.mrml_view_node.GetSlabReconstructionType()
