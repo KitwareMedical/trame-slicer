@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import uuid
 from pathlib import Path
 
 import pytest
@@ -159,7 +160,14 @@ def a_segmentation_node(a_segmentation_editor, a_volume_node):
 
 
 def pytest_addoption(parser):
-    parser.addoption("--render_interactive", action="store", default=0)
+    parser.addoption(
+        "--render-interactive",
+        action="store",
+        default=0,
+        help="Enable interactive rendering in tests for visual debugging. "
+        "Value indicates the interactive time in seconds for web browser tests. "
+        "For VTK tests, values greater than 0 will block the UI until the window is manually closed.",
+    )
 
 
 @pytest.fixture(scope="session")
@@ -169,7 +177,8 @@ def render_interactive(pytestconfig):
 
 @pytest.fixture
 def a_server(render_interactive):
-    server = get_server(None, client_type="vue3")
+    # Create a server with a unique ID to be sure that the created server is different for each run
+    server = get_server(f"test_server_{uuid.uuid4()}", client_type="vue3")
 
     async def stop_server(stop_time_s):
         await server.ready
