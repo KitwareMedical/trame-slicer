@@ -82,28 +82,22 @@ class ThreeDView(RenderView):
         self.renderer().SetUseDepthPeeling(True)
         self.renderer().SetUseDepthPeelingForVolumes(True)
 
-        factory = vtkMRMLThreeDViewDisplayableManagerFactory.GetInstance()
-        factory.SetMRMLApplicationLogic(app_logic)
-
         managers = [
-            vtkMRMLVolumeRenderingDisplayableManager.__name__,
-            vtkMRMLCameraDisplayableManager.__name__,
-            vtkMRMLViewDisplayableManager.__name__,
-            vtkMRMLModelDisplayableManager.__name__,
-            vtkMRMLThreeDReformatDisplayableManager.__name__,
-            vtkMRMLCrosshairDisplayableManager3D.__name__,
-            vtkMRMLOrientationMarkerDisplayableManager.__name__,
-            vtkMRMLRulerDisplayableManager.__name__,
-            vtkMRMLSegmentationsDisplayableManager3D.__name__,
-            vtkMRMLMarkupsDisplayableManager.__name__,
-            vtkMRMLTransformsDisplayableManager3D.__name__,
+            vtkMRMLVolumeRenderingDisplayableManager,
+            vtkMRMLCameraDisplayableManager,
+            vtkMRMLViewDisplayableManager,
+            vtkMRMLModelDisplayableManager,
+            vtkMRMLThreeDReformatDisplayableManager,
+            vtkMRMLCrosshairDisplayableManager3D,
+            vtkMRMLOrientationMarkerDisplayableManager,
+            vtkMRMLRulerDisplayableManager,
+            vtkMRMLSegmentationsDisplayableManager3D,
+            vtkMRMLMarkupsDisplayableManager,
+            vtkMRMLTransformsDisplayableManager3D,
         ]
 
-        for manager in managers:
-            if not factory.IsDisplayableManagerRegistered(manager):
-                factory.RegisterDisplayableManager(manager)
+        self.initialize_displayable_manager_group(vtkMRMLThreeDViewDisplayableManagerFactory, app_logic, managers)
 
-        self.displayable_manager_group.Initialize(factory, self.renderer())
         self.interactor().SetInteractorStyle(vtkInteractorStyle3D())
         self.renderer().SetSafeGetZ(False)
 

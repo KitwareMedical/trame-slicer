@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Literal, TypeVar
 
 from slicer import (
+    vtkMRMLAbstractDisplayableManager,
     vtkMRMLAbstractViewNode,
+    vtkMRMLApplicationLogic,
+    vtkMRMLDisplayableManagerFactory,
     vtkMRMLDisplayableManagerGroup,
     vtkMRMLScene,
     vtkMRMLViewNode,
@@ -111,6 +114,33 @@ class AbstractView:
         self._mrml_node_obs_id = None
         self._view_interaction_dispatch = self.create_interaction_dispatch()
 
+        self._is_render_blocked = False
+
+    def initialize_displayable_manager_group(
+        self,
+        factory_type: vtkMRMLDisplayableManagerFactory,
+        app_logic: vtkMRMLApplicationLogic,
+        manager_types: list[type[vtkMRMLAbstractDisplayableManager] | str],
+    ) -> None:
+        """
+        Initialize the displayable manager group with the given input factory type and the list of displayable managers.
+
+        :param factory_type: vtkMRMLDisplayableManagerFactory responsible for the current view.
+        :param app_logic: Slicer application logic.
+        :param manager_types: List of displayable managers to register in view.
+        """
+        factory = factory_type.GetInstance()
+        factory.SetMRMLApplicationLogic(app_logic)
+
+        manager_names = [
+            manager_type if isinstance(manager_type, str) else manager_type.__name__ for manager_type in manager_types
+        ]
+        for manager in manager_names:
+            if not factory.IsDisplayableManagerRegistered(manager):
+                factory.RegisterDisplayableManager(manager)
+
+        self.displayable_manager_group.Initialize(factory, self.renderer())
+
     def create_interaction_dispatch(self) -> ViewInteractionDispatchChild:
         return ViewInteractionDispatch(self)
 
@@ -141,11 +171,13 @@ class AbstractView:
         return self.first_renderer()
 
     def schedule_render(self, *_) -> None:
-        if not self._scheduled_render:
+        if not self._scheduled_render or self._is_render_blocked:
             return
         self._scheduled_render.schedule_render()
 
     def render(self) -> None:
+        if self._is_render_blocked:
+            return
         self._render_window_interactor.Render()
         if not self._scheduled_render:
             return
@@ -185,6 +217,7 @@ class AbstractView:
                 self.set_background_color_from_string,
                 self._view_properties.background_color,
             )
+            self._call_if_value_not_none(self.set_layout_color_from_string, self._view_properties.color)
 
     def get_view_group(self) -> int:
         if not self.mrml_view_node:
@@ -301,3 +334,37 @@ class AbstractView:
 
     def start_interactor(self) -> None:
         self.interactor().Start()
+
+    @property
+    def is_render_blocked(self) -> bool:
+        return self._is_render_blocked
+
+    def set_render_blocked(self, is_blocked: bool) -> bool:
+        """
+        Enable / Disable blocking rendering of the view.
+        This method doesn't prevent direct calls to the render_window.Render API.
+
+        :param is_blocked: If True, will prevent all schedule_render calls to render strategy.
+            If False, will schedule a new rendering.
+        :returns: Previous blocked state
+        """
+        was_blocked = self._is_render_blocked
+        self._is_render_blocked = is_blocked
+        if not is_blocked:
+            self.schedule_render()
+        return was_blocked
+
+    @contextmanager
+    def render_blocked(self) -> Generator[None, None, None]:
+        """
+        Context manager API for blocked rendering in the scope of the call.
+        """
+        was_blocked = self.set_render_blocked(True)
+        yield
+        self.set_render_blocked(was_blocked)
+
+    def set_layout_color_from_string(self, color: str):
+        self.set_layout_color(self._str_to_color(color))
+
+    def set_layout_color(self, color: list[int]):
+        self.mrml_view_node.SetLayoutColor(*self._to_float_color(color))

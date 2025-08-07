@@ -42,6 +42,10 @@ class VolumeRendering(SlicerWrapper):
     def _logic(self) -> vtkSlicerVolumeRenderingLogic:
         return self._slicer_obj
 
+    @property
+    def crop_logic(self) -> vtkSlicerCropVolumeLogic:
+        return self._crop_logic
+
     def create_display_node(
         self,
         volume_node: vtkMRMLVolumeNode,

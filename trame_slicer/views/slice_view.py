@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
+import vtk
 from slicer import (
     vtkMRMLApplicationLogic,
     vtkMRMLCrosshairDisplayableManager,
@@ -94,28 +95,20 @@ class SliceView(AbstractView):
         self.render_manager = SliceRendererManager(self)
 
         self.image_data_connection = None
-
-        factory = vtkMRMLSliceViewDisplayableManagerFactory.GetInstance()
-        factory.SetMRMLApplicationLogic(app_logic)
+        self.displayable_manager_group.SetLightBoxRendererManagerProxy(self.render_manager)
 
         managers = [
-            vtkMRMLCrosshairDisplayableManager.__name__,
-            vtkMRMLVolumeGlyphSliceDisplayableManager.__name__,
-            vtkMRMLModelSliceDisplayableManager.__name__,
-            vtkMRMLOrientationMarkerDisplayableManager.__name__,
-            vtkMRMLRulerDisplayableManager.__name__,
-            vtkMRMLScalarBarDisplayableManager.__name__,
-            vtkMRMLSegmentationsDisplayableManager2D.__name__,
-            vtkMRMLMarkupsDisplayableManager.__name__,
-            vtkMRMLTransformsDisplayableManager2D.__name__,
+            vtkMRMLCrosshairDisplayableManager,
+            vtkMRMLVolumeGlyphSliceDisplayableManager,
+            vtkMRMLModelSliceDisplayableManager,
+            vtkMRMLOrientationMarkerDisplayableManager,
+            vtkMRMLRulerDisplayableManager,
+            vtkMRMLScalarBarDisplayableManager,
+            vtkMRMLSegmentationsDisplayableManager2D,
+            vtkMRMLMarkupsDisplayableManager,
+            vtkMRMLTransformsDisplayableManager2D,
         ]
-
-        for manager in managers:
-            if not factory.IsDisplayableManagerRegistered(manager):
-                factory.RegisterDisplayableManager(manager)
-
-        self.displayable_manager_group.SetLightBoxRendererManagerProxy(self.render_manager)
-        self.displayable_manager_group.Initialize(factory, self.renderer())
+        self.initialize_displayable_manager_group(vtkMRMLSliceViewDisplayableManagerFactory, app_logic, managers)
         self.name = name
 
         # Create slice logic
@@ -238,3 +231,28 @@ class SliceView(AbstractView):
 
     def zoom_out(self):
         self.zoom(-0.2)
+
+    def set_slab_enabled(self, is_enabled: bool):
+        self.mrml_view_node.SetSlabReconstructionEnabled(is_enabled)
+
+    def is_slab_enabled(self) -> bool:
+        return self.mrml_view_node.GetSlabReconstructionEnabled()
+
+    def set_slab_thickness(self, thickness: float):
+        self.mrml_view_node.SetSlabReconstructionThickness(thickness)
+
+    def get_slab_thickness(self) -> float:
+        return self.mrml_view_node.GetSlabReconstructionThickness()
+
+    def set_slab_type(
+        self,
+        slab_type: Literal[
+            vtk.VTK_IMAGE_SLAB_SUM, vtk.VTK_IMAGE_SLAB_MAX, vtk.VTK_IMAGE_SLAB_MIN, vtk.VTK_IMAGE_SLAB_MEAN
+        ],
+    ):
+        self.mrml_view_node.SetSlabReconstructionType(slab_type)
+
+    def get_slab_type(
+        self,
+    ) -> Literal[vtk.VTK_IMAGE_SLAB_SUM, vtk.VTK_IMAGE_SLAB_MAX, vtk.VTK_IMAGE_SLAB_MIN, vtk.VTK_IMAGE_SLAB_MEAN]:
+        return self.mrml_view_node.GetSlabReconstructionType()

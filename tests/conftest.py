@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import uuid
 from pathlib import Path
 
 import pytest
@@ -48,7 +49,7 @@ def a_view_manager(a_slicer_app, a_view_factory):
 @pytest.fixture
 def a_threed_view(a_view_manager, render_interactive):
     three_d_view = a_view_manager.create_view(
-        ViewLayoutDefinition(singleton_tag="ThreeD", type=ViewType.THREE_D_VIEW, properties=ViewProps())
+        ViewLayoutDefinition(singleton_tag="ThreeD", view_type=ViewType.THREE_D_VIEW, properties=ViewProps())
     )
     if render_interactive:
         three_d_view.render_window().ShowWindowOn()
@@ -62,7 +63,7 @@ def a_slice_view(a_view_manager, render_interactive):
     view = a_view_manager.create_view(
         ViewLayoutDefinition(
             singleton_tag="Red",
-            type=ViewType.SLICE_VIEW,
+            view_type=ViewType.SLICE_VIEW,
             properties=ViewProps(orientation="Axial"),
         )
     )
@@ -159,7 +160,14 @@ def a_segmentation_node(a_segmentation_editor, a_volume_node):
 
 
 def pytest_addoption(parser):
-    parser.addoption("--render_interactive", action="store", default=0)
+    parser.addoption(
+        "--render-interactive",
+        action="store",
+        default=0,
+        help="Enable interactive rendering in tests for visual debugging. "
+        "Value indicates the interactive time in seconds for web browser tests. "
+        "For VTK tests, values greater than 0 will block the UI until the window is manually closed.",
+    )
 
 
 @pytest.fixture(scope="session")
@@ -169,7 +177,8 @@ def render_interactive(pytestconfig):
 
 @pytest.fixture
 def a_server(render_interactive):
-    server = get_server(None, client_type="vue3")
+    # Create a server with a unique ID to be sure that the created server is different for each run
+    server = get_server(f"test_server_{uuid.uuid4()}", client_type="vue3")
 
     async def stop_server(stop_time_s):
         await server.ready
