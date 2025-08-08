@@ -1,0 +1,17 @@
+Dockerfile_WSL builds an image launching the medical_viewer_app example in a container with GPU capacities, on 127.0.0.1:8080.
+
+This image is specific to WSL.
+
+You need nvidia-container-toolkit to run it.
+
+To build it, use `docker build . -f ./docker/Dockerfile_WSL -t trame-slicer-wsl`
+
+To run it, you have 2 choices :
+
+- To use EGL:
+
+    `docker run -p 8080:8080 -it --gpus all -e VTK_DEFAULT_OPENGL_WINDOW=vtkEGLRenderWindow -e LD_LIBRARY_PATH=/usr/lib/wsl/lib -v /usr/lib/wsl:/usr/lib/wsl trame-slicer-wsl`
+
+- To use X server:
+
+    `docker run -p 8080:8080 -it --gpus all -e DISPLAY -e LD_LIBRARY_PATH=/usr/lib/wsl/lib -v /usr/lib/wsl:/usr/lib/wsl -v /tmp/.X11-unix:/tmp/.X11-unix trame-slicer-wsl`
