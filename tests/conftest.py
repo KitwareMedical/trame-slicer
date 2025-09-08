@@ -80,6 +80,16 @@ def a_data_folder():
 
 
 @pytest.fixture
+def a_background_volume_file_path(a_data_folder) -> Path:
+    return a_data_folder.joinpath("mr_brain_tumor_1.nrrd")
+
+
+@pytest.fixture
+def a_foreground_volume_file_path(a_data_folder) -> Path:
+    return a_data_folder.joinpath("mr_brain_tumor_2.nrrd")
+
+
+@pytest.fixture
 def a_nrrd_volume_file_path(a_data_folder) -> Path:
     return a_data_folder.joinpath("mr_head.nrrd")
 
@@ -141,14 +151,27 @@ def a_segmentation_model(a_slicer_app, a_data_folder):
 
 @pytest.fixture
 def a_volume_node(a_slicer_app, a_nrrd_volume_file_path):
+    return get_volume_node_from_filename(a_nrrd_volume_file_path, a_slicer_app)
+
+
+@pytest.fixture
+def a_foreground_volume_node(a_slicer_app, a_foreground_volume_file_path):
+    return get_volume_node_from_filename(a_foreground_volume_file_path, a_slicer_app)
+
+
+@pytest.fixture
+def a_background_volume_node(a_slicer_app, a_background_volume_file_path):
+    return get_volume_node_from_filename(a_background_volume_file_path, a_slicer_app)
+
+
+def get_volume_node_from_filename(file_path: Path, a_slicer_app):
     storage_node = vtkMRMLVolumeArchetypeStorageNode()
     node = a_slicer_app.scene.AddNewNodeByClass("vtkMRMLScalarVolumeNode")
     storage_node.SetFileName(
-        a_nrrd_volume_file_path.as_posix(),
+        file_path.as_posix(),
     )
     storage_node.ReadData(node)
     node.SetAndObserveStorageNodeID(storage_node.GetID())
-
     return node
 
 

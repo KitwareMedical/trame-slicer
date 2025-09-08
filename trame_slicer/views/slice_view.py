@@ -256,3 +256,9 @@ class SliceView(AbstractView):
         self,
     ) -> Literal[vtk.VTK_IMAGE_SLAB_SUM, vtk.VTK_IMAGE_SLAB_MAX, vtk.VTK_IMAGE_SLAB_MIN, vtk.VTK_IMAGE_SLAB_MEAN]:
         return self.mrml_view_node.GetSlabReconstructionType()
+
+    def set_foreground_opacity(self, opacity: float):
+        self.logic.GetSliceCompositeNode().SetForegroundOpacity(opacity)
+
+    def get_foreground_opacity(self) -> float:
+        return self.logic.GetSliceCompositeNode().GetForegroundOpacity()
