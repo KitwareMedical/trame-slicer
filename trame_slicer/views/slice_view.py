@@ -259,6 +259,7 @@ class SliceView(AbstractView):
 
     def set_foreground_opacity(self, opacity: float):
         self.logic.GetSliceCompositeNode().SetForegroundOpacity(opacity)
+        self.schedule_render()
 
     def get_foreground_opacity(self) -> float:
         return self.logic.GetSliceCompositeNode().GetForegroundOpacity()
