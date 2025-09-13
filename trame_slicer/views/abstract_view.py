@@ -24,12 +24,7 @@ from vtkmodules.vtkRenderingCore import (
 
 from trame_slicer.utils import VtkEventDispatcher
 
-from .abstract_view_interactor import AbstractViewInteractor
 from .render_scheduler import DirectRendering, ScheduledRenderStrategy
-from .view_interaction_dispatch import (
-    ViewInteractionDispatch,
-    ViewInteractionDispatchChild,
-)
 
 ViewOrientation = Literal["Axial", "Coronal", "Sagittal"]
 
@@ -112,7 +107,6 @@ class AbstractView:
         self._modified_dispatcher = VtkEventDispatcher()
         self._modified_dispatcher.set_dispatch_information(self)
         self._mrml_node_obs_id = None
-        self._view_interaction_dispatch = self.create_interaction_dispatch()
 
         self._is_render_blocked = False
 
@@ -140,15 +134,6 @@ class AbstractView:
                 factory.RegisterDisplayableManager(manager)
 
         self.displayable_manager_group.Initialize(factory, self.renderer())
-
-    def create_interaction_dispatch(self) -> ViewInteractionDispatchChild:
-        return ViewInteractionDispatch(self)
-
-    def add_user_interactor(self, observer: AbstractViewInteractor):
-        self._view_interaction_dispatch.add_user_interactor(observer)
-
-    def remove_user_interactor(self, observer: AbstractViewInteractor):
-        self._view_interaction_dispatch.remove_user_interactor(observer)
 
     def set_scheduled_render(self, scheduled_render_strategy: ScheduledRenderStrategy) -> None:
         self._scheduled_render = scheduled_render_strategy or DirectRendering()
