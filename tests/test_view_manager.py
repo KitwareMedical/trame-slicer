@@ -301,3 +301,10 @@ def test_view_manager_is_compatible_with_non_slicer_views(a_view_manager, a_serv
 
     # Start server
     a_server.start()
+
+
+def test_get_view_is_compatible_with_view_node_instance(a_view_manager, a_server, a_2d_view):
+    factory = RemoteSliceViewFactory(a_server)
+    a_view_manager.register_factory(factory)
+    view: SliceView = a_view_manager.create_view(a_2d_view)
+    assert a_view_manager.get_view(view.mrml_view_node) == view

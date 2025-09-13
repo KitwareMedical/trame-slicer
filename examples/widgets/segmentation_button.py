@@ -20,11 +20,10 @@ from undo_stack import Signal, UndoStack
 
 from trame_slicer.core import SegmentationEditor, SlicerApp
 from trame_slicer.segmentation import (
-    SegmentationEffectID,
-    SegmentationEraseEffect,
+    SegmentationEffectErase,
+    SegmentationEffectPaint,
+    SegmentationEffectScissors,
     SegmentationOpacityEnum,
-    SegmentationPaintEffect,
-    SegmentationScissorEffect,
     SegmentProperties,
 )
 from trame_slicer.utils import (
@@ -205,21 +204,21 @@ class SegmentSelection(Template):
                     icon="mdi-brush",
                     size=0,
                     click=self.paint_clicked,
-                    active=self.button_active(SegmentationPaintEffect),
+                    active=self.button_active(SegmentationEffectPaint),
                 )
                 ControlButton(
                     name="Erase",
                     icon="mdi-eraser",
                     size=0,
                     click=self.erase_clicked,
-                    active=self.button_active(SegmentationEraseEffect),
+                    active=self.button_active(SegmentationEffectErase),
                 )
                 ControlButton(
                     name="Scissors",
                     icon="mdi-content-cut",
                     size=0,
                     click=self.scissors_clicked,
-                    active=self.button_active(SegmentationScissorEffect),
+                    active=self.button_active(SegmentationEffectScissors),
                 )
 
             with VRow():
@@ -376,13 +375,13 @@ class SegmentationButton(VMenu):
         self.on_opacity_3d_changed()
 
     def on_paint(self):
-        self.segmentation_editor.set_active_effect_id(SegmentationEffectID.Paint)
+        self.segmentation_editor.set_active_effect_type(SegmentationEffectPaint)
 
     def on_erase(self):
-        self.segmentation_editor.set_active_effect_id(SegmentationEffectID.Erase)
+        self.segmentation_editor.set_active_effect_type(SegmentationEffectErase)
 
     def on_scissors(self):
-        self.segmentation_editor.set_active_effect_id(SegmentationEffectID.Scissors)
+        self.segmentation_editor.set_active_effect_type(SegmentationEffectScissors)
 
     def on_no_tool(self):
         self.segmentation_editor.deactivate_effect()

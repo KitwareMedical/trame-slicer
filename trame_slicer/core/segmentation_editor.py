@@ -1,12 +1,19 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
+from typing import TYPE_CHECKING, ClassVar
 
 from numpy.typing import NDArray
 from slicer import (
+    vtkMRMLAbstractViewNode,
     vtkMRMLLabelMapVolumeNode,
+    vtkMRMLLayerDMPipelineFactory,
+    vtkMRMLLayerDMPipelineScriptedCreator,
     vtkMRMLModelNode,
+    vtkMRMLNode,
     vtkMRMLScene,
+    vtkMRMLScriptedModuleNode,
     vtkMRMLSegmentationNode,
     vtkMRMLVolumeArchetypeStorageNode,
     vtkMRMLVolumeNode,
@@ -20,22 +27,32 @@ from vtkmodules.vtkCommonDataModel import vtkImageData
 from trame_slicer.segmentation import (
     Segmentation,
     SegmentationEffect,
-    SegmentationEffectID,
-    SegmentationEraseEffect,
+    SegmentationEffectErase,
+    SegmentationEffectNoTool,
+    SegmentationEffectPaint,
+    SegmentationEffectPipeline,
+    SegmentationEffectScissors,
     SegmentationOpacityEnum,
-    SegmentationPaintEffect,
-    SegmentationScissorEffect,
     SegmentModifier,
     SegmentProperties,
 )
+from trame_slicer.utils import ensure_node_in_scene
 
-from .view_manager import ViewManager
+if TYPE_CHECKING:
+    from trame_slicer.core import ViewManager
 
 
 class SegmentationEditor(SignalContainer):
     """
-    Helper class to activate / deactivate / load / export segmentation.
+    Class responsible for editing the segmentation.
+    Meant to be used by the application to activate / deactivate segmentation effects.
     """
+
+    builtin_effects: ClassVar[list[type[SegmentationEffect]]] = [
+        SegmentationEffectPaint,
+        SegmentationEffectErase,
+        SegmentationEffectScissors,
+    ]
 
     segmentation_modified = Signal()
     active_segment_id_changed = Signal(str)
@@ -49,19 +66,39 @@ class SegmentationEditor(SignalContainer):
         view_manager: ViewManager,
     ) -> None:
         self._logic = logic
-        self._view_manager = view_manager
         self._scene = scene
+        self._view_manager = view_manager
 
         self._active_effect: SegmentationEffect | None = None
-        self._builtin_effects: dict[SegmentationEffectID, type] = {
-            SegmentationEffectID.Paint: SegmentationPaintEffect,
-            SegmentationEffectID.Erase: SegmentationEraseEffect,
-            SegmentationEffectID.Scissors: SegmentationScissorEffect,
-        }
+        self._active_effect_class_name: str = SegmentationEffectNoTool.get_effect_name()
 
+        self._effects: dict[str, SegmentationEffect] = {}
+        self._effect_parameters: dict[str, vtkMRMLScriptedModuleNode] = {}
         self._active_modifier: SegmentModifier | None = None
         self._undo_stack: UndoStack | None = None
         self._modified_obs = None
+
+        self.register_effect_type(SegmentationEffectNoTool)
+        for effect in self.builtin_effects:
+            self.register_effect_type(effect)
+
+        # Register pipeline creator
+        self._pipeline_creator = vtkMRMLLayerDMPipelineScriptedCreator()
+        self._pipeline_creator.SetPythonCallback(self._try_create_effect_pipeline)
+        vtkMRMLLayerDMPipelineFactory.GetInstance().AddPipelineCreator(self._pipeline_creator)
+
+    def register_effect_type(self, effect_type: type[SegmentationEffect]):
+        """
+        Registers the input segment editor effect pipeline for the segmentation editor.
+        :param effect_type:
+        :return:
+        """
+        if effect_type.get_effect_name() in self._effects:
+            return
+
+        effect = effect_type()
+        effect.set_scene(self._scene)
+        self._effects[effect_type.get_effect_name()] = effect
 
     def set_undo_stack(self, undo_stack: UndoStack):
         self._undo_stack = undo_stack
@@ -104,7 +141,7 @@ class SegmentationEditor(SignalContainer):
         self._active_modifier.segmentation_modified.connect(self.segmentation_modified)
 
         if self._active_effect:
-            self._active_effect.modifier = self._active_modifier
+            self._active_effect.set_modifier(self._active_modifier)
 
         self.set_active_segment_id(self.get_nth_segment_id(0))
 
@@ -141,36 +178,44 @@ class SegmentationEditor(SignalContainer):
         self._initialize_segmentation_node(segmentation_node)
         return segmentation_node
 
-    def set_active_effect_id(
-        self, effect: SegmentationEffectID, view_group: list[int] | None = None
-    ) -> SegmentationEffect | None:
-        return self.set_active_effect(self._builtin_effects[effect](self._active_modifier), view_group)
+    def set_active_effect_type(self, effect_type: type[SegmentationEffect]) -> SegmentationEffect | None:
+        self.register_effect_type(effect_type)
+        return self.set_active_effect_name(effect_type.get_effect_name())
 
-    def set_active_effect(
-        self,
-        effect: SegmentationEffect | None,
-        view_group: list[int] | None = None,
-    ):
+    def set_active_effect_name(self, effect_id: str) -> SegmentationEffect | None:
+        if effect_id not in self._effects:
+            _warn_msg = f"Unknown effect id : {effect_id}"
+            logging.warning(_warn_msg)
+            return None
+
+        effect = self._effects[effect_id]
+        self.set_active_effect(effect)
+        return effect
+
+    def set_active_effect(self, effect: SegmentationEffect | None):
         if self._active_effect == effect:
             return None
 
         if self._active_effect:
+            self._active_effect.set_modifier(None)
             self._active_effect.deactivate()
 
+        self._add_effect_parameters_to_scene(effect)
         self._active_effect = effect
 
         if self._active_effect:
-            self._active_effect.activate(self._view_manager.get_views(view_group))
+            self._active_effect.set_modifier(self._active_modifier)
+            self._active_effect.activate()
 
-        self.active_effect_name_changed(self._active_effect.class_name() if self._active_effect else "")
+        self.active_effect_name_changed(self.active_effect_name)
         return self._active_effect
 
     @property
     def active_effect_name(self) -> str:
-        return self._active_effect.class_name() if self._active_effect else ""
+        return self._active_effect.get_effect_name() if self._active_effect else ""
 
     def deactivate_effect(self):
-        self.set_active_effect(None)
+        self.set_active_effect_type(SegmentationEffectNoTool)
 
     def get_segment_ids(self) -> list[str]:
         return self.active_segmentation.get_segment_ids() if self.active_segmentation else []
@@ -381,3 +426,42 @@ class SegmentationEditor(SignalContainer):
         if not self.active_segmentation:
             return
         self.active_segmentation.set_3d_opacity(opacity)
+
+    def _add_effect_parameters_to_scene(self, effect: SegmentationEffect) -> vtkMRMLScriptedModuleNode:
+        """
+        Create the default effect parameters linked to the input effect id and add it the current list of tracked
+        segmentation effect parameters.
+
+        Created parameter is added to the scene if not present (scene clear / first instantiation).
+        Adding the parameter to the scene will trigger the pipeline registration if needed.
+
+        :param effect: ID of the segment editor effect
+        :return: Instance of the created parameter
+        """
+        effect_name = effect.get_effect_name()
+        if effect_name not in self._effect_parameters:
+            self._effect_parameters[effect_name] = effect.get_parameter_node()
+
+        effect_params = self._effect_parameters[effect_name]
+        return ensure_node_in_scene(effect_params, self._scene)
+
+    def _try_create_effect_pipeline(
+        self, view_node: vtkMRMLAbstractViewNode, parameter_node: vtkMRMLNode
+    ) -> SegmentationEffectPipeline | None:
+        """
+        Try to create the segment editor effect pipeline given the input view node and parameter node.
+        Only creates the pipelines for effects whose parameters are currently managed by the segmentation editor.
+
+        :param view_node:
+        :param parameter_node:
+        :return:
+        """
+        if parameter_node not in self._effect_parameters.values():
+            return None
+
+        for effect_type in self._effects.values():
+            if pipeline := effect_type.create_pipeline(view_node, parameter_node):
+                pipeline.SetView(self._view_manager.get_view(view_node))
+                return pipeline
+
+        return None

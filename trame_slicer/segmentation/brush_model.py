@@ -1,25 +1,27 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from enum import IntEnum
 
-from vtkmodules.vtkCommonCore import vtkPoints
+from slicer import vtkMRMLModelNode
 from vtkmodules.vtkCommonExecutionModel import vtkAlgorithmOutput
 from vtkmodules.vtkCommonTransforms import vtkTransform
 from vtkmodules.vtkFiltersCore import vtkPolyDataNormals
 from vtkmodules.vtkFiltersGeneral import vtkTransformPolyDataFilter
 from vtkmodules.vtkFiltersSources import vtkCylinderSource, vtkSphereSource
-from vtkmodules.vtkRenderingCore import vtkProp
-
-from trame_slicer.views import AbstractView, AbstractViewInteractor
-
-from .segment_modifier import SegmentModifier
-from .segmentation_widget import SegmentationWidget
 
 
 class BrushShape(IntEnum):
     Sphere = 0
     Cylinder = 1
+
+
+@dataclass
+class PaintEffectParameters:
+    brush_radius: float = 5.0
+    brush_shape: BrushShape = BrushShape.Cylinder
+    brush_model_node: vtkMRMLModelNode | None = None
+    paint_feedback_model_node: vtkMRMLModelNode | None = None
 
 
 class BrushModel:
@@ -88,99 +90,16 @@ class BrushModel:
         """
         return self._world_origin_to_world_transformer.GetOutputPort()
 
+    def get_polydata(self):
+        """
+        Return the transformed polydata of the brush model.
+        """
+        self._world_origin_to_world_transformer.Update()
+        return self._world_origin_to_world_transformer.GetOutput()
+
     def get_untransformed_output_port(self) -> vtkAlgorithmOutput:
         """
         Return the output port of untransformed brush model
         Useful for feedback actors
         """
         return self._brush_poly_data_normals.GetOutputPort()
-
-
-class AbstractBrush(ABC):
-    @abstractmethod
-    def get_prop(self) -> vtkProp:
-        raise NotImplementedError()
-
-    def get_visibility(self) -> bool:
-        return self.get_prop().GetVisibility() != 0
-
-    def set_visibility(self, visibility: bool) -> None:
-        return self.get_prop().SetVisibility(int(visibility))
-
-
-class SegmentPaintWidget(SegmentationWidget):
-    def __init__(
-        self,
-        view: AbstractView,
-        modifier: SegmentModifier,
-        brush_model: BrushModel,
-        brush: AbstractBrush,
-        brush_feedback: AbstractBrush,
-    ) -> None:
-        super().__init__(modifier)
-        self._view = view
-        self._brush_model = brush_model
-        self._brush = brush
-        self._brush_feedback = brush_feedback
-        self._brush_enabled = False
-        self._paint_coordinates_world = vtkPoints()
-        self._painting = False
-
-    @property
-    def paint_coordinates_world(self) -> vtkPoints:
-        return self._paint_coordinates_world
-
-    def add_point_to_selection(self, position: list[float]) -> None:
-        self._paint_coordinates_world.InsertNextPoint(position)
-        self._paint_coordinates_world.Modified()
-
-    def enable_brush(self) -> None:
-        self._brush.set_visibility(True)
-        self._brush_enabled = True
-        renderer = self._view.renderer()
-        renderer.AddViewProp(self._brush.get_prop())
-        renderer.AddViewProp(self._brush_feedback.get_prop())
-
-    def disable_brush(self) -> None:
-        if self.is_painting():
-            self.stop_painting()
-        self._brush.set_visibility(False)
-        self._brush_enabled = False
-        renderer = self._view.renderer()
-        renderer.RemoveViewProp(self._brush.get_prop())
-        renderer.RemoveViewProp(self._brush_feedback.get_prop())
-
-    def is_brush_enabled(self) -> bool:
-        return self._brush_enabled
-
-    def start_painting(self) -> None:
-        self._brush_feedback.set_visibility(True)
-        self._painting = True
-
-    def stop_painting(self) -> None:
-        self._brush_feedback.set_visibility(False)
-        self._painting = False
-        if self._paint_coordinates_world.GetNumberOfPoints() > 0:
-            self.commit()
-
-    def is_painting(self) -> bool:
-        return self._painting
-
-    def commit(self) -> None:
-        try:
-            algo = self._brush_model.get_untransformed_output_port().GetProducer()
-            algo.Update()
-            self.modifier.apply_glyph(algo.GetOutput(), self._paint_coordinates_world)
-        finally:
-            # ensure points are always cleared
-            self._paint_coordinates_world.SetNumberOfPoints(0)
-
-
-class SegmentPaintWidgetInteractor(AbstractViewInteractor):
-    def __init__(self, widget: SegmentPaintWidget) -> None:
-        super().__init__()
-        self._widget = widget
-
-    @property
-    def widget(self) -> SegmentPaintWidget:
-        return self._widget

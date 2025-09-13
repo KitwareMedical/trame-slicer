@@ -1,9 +1,15 @@
 from __future__ import annotations
 
 import pytest
+from slicer import vtkMRMLAbstractViewNode, vtkMRMLNode
 from undo_stack import SignalContainerSpy, UndoStack
 
-from trame_slicer.segmentation import SegmentationEffectID
+from trame_slicer.segmentation import (
+    SegmentationEffect,
+    SegmentationEffectNoTool,
+    SegmentationEffectPipeline,
+    SegmentationEffectScissors,
+)
 from trame_slicer.utils import vtk_image_to_np
 
 
@@ -167,7 +173,7 @@ def test_notifies_changes_on_new_segmentation(editor, a_volume_node, editor_spy)
     editor.set_active_segmentation(n1, a_volume_node)
     editor_spy[editor.active_segment_id_changed].assert_called_with("")
     editor_spy[editor.show_3d_changed].assert_called_with(False)
-    editor_spy[editor.active_effect_name_changed].assert_called_with("")
+    editor_spy[editor.active_effect_name_changed].assert_called_with(SegmentationEffectNoTool.get_effect_name())
     editor_spy.reset()
 
     editor.show_3d(True)
@@ -176,11 +182,30 @@ def test_notifies_changes_on_new_segmentation(editor, a_volume_node, editor_spy)
     segment_id = editor.add_empty_segment()
     editor_spy[editor.active_segment_id_changed].assert_called_with(segment_id)
 
-    effect = editor.set_active_effect_id(SegmentationEffectID.Scissors)
-    editor_spy[editor.active_effect_name_changed].assert_called_with(effect.class_name())
+    effect = editor.set_active_effect_type(SegmentationEffectScissors)
+    editor_spy[editor.active_effect_name_changed].assert_called_with(effect.get_effect_name())
 
     editor_spy.reset()
     editor.remove_segment(segment_id)
 
     editor_spy[editor.active_segment_id_changed].assert_called_with("")
-    editor_spy[editor.active_effect_name_changed].assert_called_with("")
+    editor_spy[editor.active_effect_name_changed].assert_called_with(SegmentationEffectNoTool.get_effect_name())
+
+
+def test_can_add_new_effects_to_segmentation_editor_by_type(editor, a_threed_view):
+    class MyEffectPipeline(SegmentationEffectPipeline):
+        pass
+
+    class MyNewEffect(SegmentationEffect):
+        def _create_pipeline(
+            self, _view_node: vtkMRMLAbstractViewNode, _parameter: vtkMRMLNode
+        ) -> SegmentationEffectPipeline | None:
+            return MyEffectPipeline()
+
+    editor.register_effect_type(MyNewEffect)
+    effect = editor.set_active_effect_type(MyNewEffect)
+
+    assert effect.pipelines
+    assert isinstance(effect.pipelines[0](), MyEffectPipeline)
+    assert effect.pipelines[0]().GetViewNode() == a_threed_view.mrml_view_node
+    assert effect.is_active

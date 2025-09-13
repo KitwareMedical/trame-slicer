@@ -4,7 +4,7 @@ import pytest
 
 from tests.conftest import a_slice_view, a_threed_view
 from tests.view_events import ViewEvents
-from trame_slicer.segmentation import SegmentationEffectID
+from trame_slicer.segmentation import SegmentationEffectScissors
 
 
 def apply_scissors_effect(view):
@@ -36,7 +36,7 @@ def test_scissors_effect_can_erase_all_segmentations(
     )
 
     prev_sum = labelmap.sum()
-    a_segmentation_editor.set_active_effect_id(SegmentationEffectID.Scissors)
+    a_segmentation_editor.set_active_effect_type(SegmentationEffectScissors)
     apply_scissors_effect(view)
 
     labelmap = a_segmentation_editor.get_segment_labelmap(
