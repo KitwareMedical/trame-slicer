@@ -6,6 +6,7 @@ import vtk
 from slicer import (
     vtkMRMLApplicationLogic,
     vtkMRMLCrosshairDisplayableManager,
+    vtkMRMLLayerDisplayableManager,
     vtkMRMLLightBoxRendererManagerProxy,
     vtkMRMLMarkupsDisplayableManager,
     vtkMRMLModelSliceDisplayableManager,
@@ -16,6 +17,7 @@ from slicer import (
     vtkMRMLSegmentationsDisplayableManager2D,
     vtkMRMLSliceLogic,
     vtkMRMLSliceViewDisplayableManagerFactory,
+    vtkMRMLSliceViewInteractorStyle,
     vtkMRMLTransformsDisplayableManager2D,
     vtkMRMLVolumeGlyphSliceDisplayableManager,
 )
@@ -96,6 +98,7 @@ class SliceView(AbstractView):
 
         self.image_data_connection = None
         self.displayable_manager_group.SetLightBoxRendererManagerProxy(self.render_manager)
+        self.interactor_observer = vtkMRMLSliceViewInteractorStyle()
 
         managers = [
             vtkMRMLCrosshairDisplayableManager,
@@ -107,6 +110,7 @@ class SliceView(AbstractView):
             vtkMRMLSegmentationsDisplayableManager2D,
             vtkMRMLMarkupsDisplayableManager,
             vtkMRMLTransformsDisplayableManager2D,
+            vtkMRMLLayerDisplayableManager,
         ]
         self.initialize_displayable_manager_group(vtkMRMLSliceViewDisplayableManagerFactory, app_logic, managers)
         self.name = name
@@ -117,10 +121,13 @@ class SliceView(AbstractView):
         self.logic.AddObserver(vtkCommand.ModifiedEvent, self._on_slice_logic_modified_event)
         self._modified_dispatcher.attach_vtk_observer(self.logic, "ModifiedEvent")
         app_logic.GetSliceLogics().AddItem(self.logic)
+        self.interactor_observer.SetSliceLogic(self.logic)
+        self.interactor_observer.SetDisplayableManagers(self.displayable_manager_group)
 
         # Connect to scene
         self.set_mrml_scene(scene)
         self.interactor().SetInteractorStyle(vtkInteractorStyleUser())
+        self.interactor_observer.SetInteractor(self.interactor())
 
     def _reset_node_view_properties(self):
         super()._reset_node_view_properties()

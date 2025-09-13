@@ -15,21 +15,21 @@ from trame.widgets.vuetify3 import (
     VTextField,
 )
 from trame_client.widgets.html import Span
+from trame_server import Server
 from trame_vuetify.widgets.vuetify3 import VSelect
 from undo_stack import Signal, UndoStack
 
 from trame_slicer.core import SegmentationEditor, SlicerApp
 from trame_slicer.segmentation import (
-    SegmentationEffectID,
-    SegmentationEraseEffect,
+    SegmentationEffect,
+    SegmentationEffectErase,
+    SegmentationEffectNoTool,
+    SegmentationEffectPaint,
+    SegmentationEffectScissors,
     SegmentationOpacityEnum,
-    SegmentationPaintEffect,
-    SegmentationScissorEffect,
     SegmentProperties,
 )
-from trame_slicer.utils import (
-    connect_all_signals_emitting_values_to_state,
-)
+from trame_slicer.utils import connect_all_signals_emitting_values_to_state
 
 from .control_button import ControlButton
 from .utils import IdName, StateId, get_current_volume_node
@@ -198,28 +198,28 @@ class SegmentSelection(Template):
                     icon="mdi-cursor-default",
                     size=0,
                     click=self.no_tool_clicked,
-                    active=self.button_active(None),
+                    active=self.button_active(SegmentationEffectNoTool),
                 )
                 ControlButton(
                     name="Paint",
                     icon="mdi-brush",
                     size=0,
                     click=self.paint_clicked,
-                    active=self.button_active(SegmentationPaintEffect),
+                    active=self.button_active(SegmentationEffectPaint),
                 )
                 ControlButton(
                     name="Erase",
                     icon="mdi-eraser",
                     size=0,
                     click=self.erase_clicked,
-                    active=self.button_active(SegmentationEraseEffect),
+                    active=self.button_active(SegmentationEffectErase),
                 )
                 ControlButton(
                     name="Scissors",
                     icon="mdi-content-cut",
                     size=0,
                     click=self.scissors_clicked,
-                    active=self.button_active(SegmentationScissorEffect),
+                    active=self.button_active(SegmentationEffectScissors),
                 )
 
             with VRow():
@@ -268,14 +268,14 @@ class SegmentSelection(Template):
                 )
 
     @classmethod
-    def button_active(cls, effect_cls: type | None):
-        name = effect_cls.__name__ if effect_cls is not None else ""
-        return (f"{SegmentationEditor.active_effect_name_changed.name}==='{name}'",)
+    def button_active(cls, effect_cls: type[SegmentationEffect]):
+        name = effect_cls.get_effect_name()
+        return (f"{SegmentationEditor.active_effect_name_changed.name} === '{name}'",)
 
 
 @TrameApp()
 class SegmentationButton(VMenu):
-    def __init__(self, server, slicer_app: SlicerApp):
+    def __init__(self, server: Server, slicer_app: SlicerApp):
         super().__init__(location="right", close_on_content_click=False)
         self._server = server
         self._slicer_app = slicer_app
@@ -376,13 +376,13 @@ class SegmentationButton(VMenu):
         self.on_opacity_3d_changed()
 
     def on_paint(self):
-        self.segmentation_editor.set_active_effect_id(SegmentationEffectID.Paint)
+        self.segmentation_editor.set_active_effect_type(SegmentationEffectPaint)
 
     def on_erase(self):
-        self.segmentation_editor.set_active_effect_id(SegmentationEffectID.Erase)
+        self.segmentation_editor.set_active_effect_type(SegmentationEffectErase)
 
     def on_scissors(self):
-        self.segmentation_editor.set_active_effect_id(SegmentationEffectID.Scissors)
+        self.segmentation_editor.set_active_effect_type(SegmentationEffectScissors)
 
     def on_no_tool(self):
         self.segmentation_editor.deactivate_effect()

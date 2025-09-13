@@ -10,6 +10,7 @@ from slicer import (
     vtkMRMLCrosshairDisplayableManager,
     vtkMRMLCrosshairDisplayableManager3D,
     vtkMRMLCrosshairNode,
+    vtkMRMLLayerDisplayableManager,
     vtkMRMLMarkupsDisplayableManager,
     vtkMRMLModelDisplayableManager,
     vtkMRMLOrientationMarkerDisplayableManager,
@@ -18,6 +19,7 @@ from slicer import (
     vtkMRMLSegmentationsDisplayableManager3D,
     vtkMRMLThreeDReformatDisplayableManager,
     vtkMRMLThreeDViewDisplayableManagerFactory,
+    vtkMRMLThreeDViewInteractorStyle,
     vtkMRMLTransformsDisplayableManager3D,
     vtkMRMLViewDisplayableManager,
     vtkMRMLViewLogic,
@@ -27,7 +29,6 @@ from slicer import (
 from vtkmodules.vtkRenderingCore import vtkInteractorStyle3D
 
 from .abstract_view import AbstractView
-from .threed_view_interaction_dispatch import ThreedViewInteractionDispatch
 
 
 class RenderView(AbstractView):
@@ -94,12 +95,14 @@ class ThreeDView(RenderView):
             vtkMRMLSegmentationsDisplayableManager3D,
             vtkMRMLMarkupsDisplayableManager,
             vtkMRMLTransformsDisplayableManager3D,
+            vtkMRMLLayerDisplayableManager,
         ]
 
         self.initialize_displayable_manager_group(vtkMRMLThreeDViewDisplayableManagerFactory, app_logic, managers)
-
+        self.interactor_observer = vtkMRMLThreeDViewInteractorStyle()
+        self.interactor_observer.SetDisplayableManagers(self.displayable_manager_group)
+        self.interactor_observer.SetInteractor(self.interactor())
         self.interactor().SetInteractorStyle(vtkInteractorStyle3D())
-        self.renderer().SetSafeGetZ(False)
 
         self.name = name
         self.logic = vtkMRMLViewLogic()
@@ -107,9 +110,6 @@ class ThreeDView(RenderView):
 
         app_logic.GetViewLogics().AddItem(self.logic)
         self.set_mrml_scene(scene)
-
-    def create_interaction_dispatch(self):
-        return ThreedViewInteractionDispatch(self)
 
     def set_mrml_scene(self, scene: vtkMRMLScene) -> None:
         super().set_mrml_scene(scene)
@@ -251,6 +251,3 @@ class ThreeDView(RenderView):
 
     def zoom_out(self):
         self.zoom(-0.2)
-
-    def has_pick_hit(self) -> bool:
-        return self._view_interaction_dispatch.has_pick_hit()

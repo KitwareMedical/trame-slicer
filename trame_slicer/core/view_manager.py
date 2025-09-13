@@ -3,7 +3,7 @@ from __future__ import annotations
 from itertools import chain
 from typing import TypeVar
 
-from slicer import vtkMRMLApplicationLogic, vtkMRMLScene
+from slicer import vtkMRMLAbstractViewNode, vtkMRMLApplicationLogic, vtkMRMLScene
 
 from trame_slicer.views import (
     AbstractView,
@@ -46,10 +46,13 @@ class ViewManager:
         """
         self._factories.append(view_factory)
 
-    def get_view(self, view_id: str) -> AbstractViewChild | None:
+    def get_view(self, view_id: str | vtkMRMLAbstractViewNode) -> AbstractViewChild | None:
         """
-        Get view associated with ID
+        Get view associated with input view ID.
         """
+        if isinstance(view_id, vtkMRMLAbstractViewNode):
+            view_id = view_id.GetSingletonTag()
+
         for factory in self._factories:
             if factory.has_view(view_id):
                 return factory.get_view(view_id)

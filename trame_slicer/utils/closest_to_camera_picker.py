@@ -1,9 +1,4 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
-from slicer import vtkMRMLInteractionEventData
-from vtkmodules.vtkCommonCore import vtkCommand, vtkMath, vtkPoints
+from vtkmodules.vtkCommonCore import vtkMath, vtkPoints
 from vtkmodules.vtkRenderingCore import (
     vtkAbstractPropPicker,
     vtkActor,
@@ -13,17 +8,9 @@ from vtkmodules.vtkRenderingCore import (
 )
 from vtkmodules.vtkRenderingVolume import vtkVolumePicker
 
-if TYPE_CHECKING:
-    from .threed_view import ThreeDView
 
-
-from .view_interaction_dispatch import ViewInteractionDispatch
-
-
-class ThreedViewInteractionDispatch(ViewInteractionDispatch):
-    def __init__(self, view: ThreeDView):
-        super().__init__(view)
-
+class ClosestToCameraPicker:
+    def __init__(self):
         # Use hardware picker in through vtkWorldPointPicker, this may be slightly slower
         # for generic cases, but way more efficient for some use cases (e.g. segmentation widget)
         # since we won't have to pick multiple times.
@@ -36,40 +23,18 @@ class ThreedViewInteractionDispatch(ViewInteractionDispatch):
         self._last_world_position = [0.0, 0.0, 0.0]
         self._last_pick_hit = None
 
-    def process_event_data(self, event_data: vtkMRMLInteractionEventData):
-        super().process_event_data(event_data)
-        if event_data.GetType() == vtkCommand.MouseMoveEvent:
-            position = self._view.interactor().GetEventPosition()
-            hit, world_position = self._quick_pick(position, event_data.GetRenderer())
-            self._last_pick_hit = hit
-            self._last_world_position = world_position
-
-        # set "inaccurate" world position
-        event_data.SetWorldPosition(self._last_world_position, False)
-
-    def has_pick_hit(self) -> bool:
-        return bool(self._last_pick_hit)
-
-    def _quick_pick(
-        self, display_position: tuple[int, int], poked_renderer: vtkRenderer
-    ) -> tuple[bool, tuple[float, float, float]] | None:
-        camera_node = self._view.get_camera_node()
-        no_pick = False, [0, 0, 0]
-        if camera_node is None:
-            return no_pick
-
+    def pick(
+        self,
+        display_position: tuple[int, int],
+        poked_renderer: vtkRenderer,
+        camera: vtkCamera,
+    ) -> list[float] | None:
         # Pick at display position with actor and volume picker
         self._pick(self._volume_picker, display_position, poked_renderer, True)
         self._pick(self._actors_picker, display_position, poked_renderer, False)
 
         # Filter the closest position to the camera as the latest world position value
-        position = self._closest_pick_position_to_camera(
-            self._get_picked_positions(),
-            camera_node.GetCamera(),
-        )
-        if position is not None:
-            return True, position
-        return no_pick
+        return self._closest_pick_position_to_camera(self._get_picked_positions(), camera)
 
     def _get_picked_positions(self):
         positions = self._volume_picker.GetPickedPositions()
@@ -145,4 +110,4 @@ class ThreedViewInteractionDispatch(ViewInteractionDispatch):
             if dist < min_dist:
                 min_dist, closest_pos = dist, pos
 
-        return closest_pos
+        return list(closest_pos)

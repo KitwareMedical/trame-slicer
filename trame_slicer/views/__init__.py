@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from .abstract_view import AbstractView, AbstractViewChild, ViewOrientation, ViewProps
-from .abstract_view_interactor import AbstractViewInteractor
 from .layout_grid import (
     Layout,
     LayoutDirection,
@@ -30,7 +29,6 @@ from .view_layout_definition import ViewLayoutDefinition, ViewType
 __all__ = [
     "AbstractView",
     "AbstractViewChild",
-    "AbstractViewInteractor",
     "AsyncIORendering",
     "DirectRendering",
     "IViewFactory",
