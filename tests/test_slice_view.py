@@ -168,6 +168,7 @@ def test_slice_views_can_activate_slab(
     if render_interactive:
         a_slice_view.start_interactor()
 
+
 def test_slice_views_can_set_foregrond_opacity(
     a_slice_view,
     a_background_volume_node,

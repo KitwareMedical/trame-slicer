@@ -490,14 +490,17 @@ class Segmentation:
             return
 
         display_node = self._segmentation_node.GetDisplayNode()
-        display_node.SetSegmentVisibility(segment_id, visibility)
+        if display_node:
+            display_node.SetSegmentVisibility(segment_id, visibility)
 
     def get_segment_visibility(self, segment_id) -> bool | None:
         if segment_id not in self.get_segment_ids():
             return None
 
         display_node = self._segmentation_node.GetDisplayNode()
-        return display_node.GetSegmentVisibility(segment_id)
+        if display_node:
+            return display_node.GetSegmentVisibility(segment_id)
+        return None
 
     def set_opacity_mode(self, opacity_mode: SegmentationOpacityEnum) -> None:
         if not self._segmentation_node:
@@ -510,6 +513,8 @@ class Segmentation:
         if not self._segmentation_node:
             return None
         display_node = self._segmentation_node.GetDisplayNode()
+        if display_node is None:
+            return None
         fill_visibility = display_node.GetVisibility2DFill()
         outline_visibility = display_node.GetVisibility2DOutline()
         if outline_visibility and not fill_visibility:
@@ -522,23 +527,29 @@ class Segmentation:
         if not self._segmentation_node:
             return None
         display_node = self._segmentation_node.GetDisplayNode()
-        return display_node.GetOpacity2DFill()
+        if display_node:
+            return display_node.GetOpacity2DFill()
+        return None
 
     def set_2d_opacity(self, opacity: float) -> None:
         if not self._segmentation_node:
             return
         display_node = self._segmentation_node.GetDisplayNode()
-        display_node.SetOpacity2DFill(opacity)
-        display_node.SetOpacity2DOutline(opacity)
+        if display_node:
+            display_node.SetOpacity2DFill(opacity)
+            display_node.SetOpacity2DOutline(opacity)
 
     def get_3d_opacity(self) -> float | None:
         if not self._segmentation_node:
             return None
         display_node = self._segmentation_node.GetDisplayNode()
-        return display_node.GetOpacity3D()
+        if display_node:
+            return display_node.GetOpacity3D()
+        return None
 
     def set_3d_opacity(self, opacity: float) -> None:
         if not self._segmentation_node:
             return
         display_node = self._segmentation_node.GetDisplayNode()
-        display_node.SetOpacity3D(opacity)
+        if display_node:
+            display_node.SetOpacity3D(opacity)
