@@ -1,0 +1,24 @@
+name: Semantic release dry run
+
+on: workflow_dispatch
+
+jobs:
+  semantic-release-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: Python Semantic Release (Dry Run)
+        id: release
+        uses: python-semantic-release/python-semantic-release@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          no_operation_mode: true
+          changelog: true
+
+      - name: Echo changelog contents
+        run: cat CHANGELOG.md
