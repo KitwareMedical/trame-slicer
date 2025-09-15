@@ -167,3 +167,16 @@ def test_slice_views_can_activate_slab(
     assert a_slice_view.get_slab_type() == slab_type
     if render_interactive:
         a_slice_view.start_interactor()
+
+def test_slice_views_can_set_foregrond_opacity(
+    a_slice_view,
+    a_background_volume_node,
+    a_foreground_volume_node,
+    render_interactive,
+):
+    a_slice_view.set_background_volume_id(a_background_volume_node.GetID())
+    a_slice_view.set_foreground_volume_id(a_foreground_volume_node.GetID())
+    a_slice_view.set_foreground_opacity(0.5)
+    assert a_slice_view.get_foreground_opacity() == 0.5
+    if render_interactive:
+        a_slice_view.start_interactor()
