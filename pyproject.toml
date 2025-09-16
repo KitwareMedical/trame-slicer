@@ -13,7 +13,7 @@ dependencies = [
     "trame-server >= 3.6",
     "trame-vuetify",
     "trame-vtk",
-    "trame-rca >= 2.0.1",
+    "trame-rca >= 2.2.0",
     "itk",
     "lxml",
     "pydicom",
