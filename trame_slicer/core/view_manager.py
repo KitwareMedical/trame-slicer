@@ -83,6 +83,9 @@ class ViewManager:
         return any(factory.has_view(view_id) for factory in self._factories)
 
     def get_views(self, view_group: int | None = None) -> list[AbstractView]:
+        """
+        Return all Slicer views matching view group in the view manager.
+        """
         views = list(chain(*[factory.get_views() for factory in self._factories]))
         return [view for view in views if (view_group is None or view.get_view_group() == view_group)]
 

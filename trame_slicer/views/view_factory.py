@@ -46,7 +46,13 @@ class IViewFactory(ABC):
         scene: vtkMRMLScene,
         app_logic: vtkMRMLApplicationLogic,
     ) -> V:
-        pass
+        """
+        Create a new view given the input layout definition and slicer scene / application logic.
+        The actual view type returned by this method can be anything.
+
+        The view type will be passed to _get_slicer_view when other classes need to access the underlying slicer
+        instance (if any).
+        """
 
     def get_view(self, view_id: str) -> AbstractViewChild | None:
         view = self.get_factory_view(view_id)
@@ -60,11 +66,18 @@ class IViewFactory(ABC):
         return self._views[view_id]
 
     def get_views(self) -> list[AbstractViewChild]:
-        return [self._get_slicer_view(view) for view in self._views.values()]
+        """
+        :return: all slicer AbstractView created by the view factory.
+        """
+        views = [self._get_slicer_view(view) for view in self._views.values()]
+        return [view for view in views if isinstance(view, AbstractView)]
 
     def has_view(self, view_id: str) -> bool:
         return view_id in self._views
 
     @abstractmethod
-    def _get_slicer_view(self, view: V) -> AbstractViewChild:
-        pass
+    def _get_slicer_view(self, view: V) -> AbstractViewChild | None:
+        """
+        :param view: View created using the _create_view method
+        :return: The slicer view instance attached to the created view. None if no instance is attached.
+        """
