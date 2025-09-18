@@ -1,20 +1,26 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import Enum
 
 import pytest
 from slicer import vtkMRMLApplicationLogic, vtkMRMLScene
 from trame.widgets import client
-from trame_vuetify.ui.vuetify3 import VAppLayout
+from trame_client.widgets.core import AbstractElement
+from trame_client.widgets.html import Div
+from trame_vuetify.ui.vuetify3 import SinglePageLayout, VAppLayout
 from vtkmodules.vtkCommonCore import vtkCollection
 
-from trame_slicer.core import SlicerApp, ViewManager
+from trame_slicer.core import DisplayManager, LayoutManager, SlicerApp, ViewManager
 from trame_slicer.rca_view import RemoteSliceViewFactory, RemoteThreeDViewFactory
 from trame_slicer.views import (
     AbstractView,
     AbstractViewChild,
     IViewFactory,
+    Layout,
+    LayoutDirection,
     SliceView,
+    ViewLayout,
     ViewLayoutDefinition,
     ViewProps,
     ViewType,
@@ -216,3 +222,82 @@ def test_default_slice_views_names_are_consistent_with_slicer(
     assert view.mrml_view_node.GetID() == scene_id
     assert view.mrml_view_node.GetName() == name
     assert view.mrml_view_node.GetSingletonTag() == name
+
+
+@dataclass
+class CustomView:
+    vuetify_view: AbstractElement
+
+
+class CustomViews(Enum):
+    MY_CUSTOM_VIEW = "CUSTOM"
+
+
+class CustomViewFactory(IViewFactory):
+    def __init__(self, server):
+        super().__init__()
+        self._server = server
+
+    def _get_slicer_view(self, _view: CustomView) -> AbstractViewChild | None:
+        return None
+
+    def can_create_view(self, view: ViewLayoutDefinition) -> bool:
+        return view.view_type == CustomViews.MY_CUSTOM_VIEW
+
+    def _create_view(
+        self,
+        view: ViewLayoutDefinition,
+        _scene: vtkMRMLScene,
+        _app_logic: vtkMRMLApplicationLogic,
+    ) -> CustomView:
+        view_id = view.singleton_tag
+        with ViewLayout(self._server, template_name=view_id) as vuetify_view:
+            Div(classes="fill-width fill-height", style="background-color: blue;")
+
+        return CustomView(vuetify_view)
+
+
+def custom_view_layout_configuration() -> dict[str, Layout]:
+    custom_view = ViewLayoutDefinition("custom_singleton_id", CustomViews.MY_CUSTOM_VIEW, ViewProps())
+
+    return {
+        "default": Layout(
+            LayoutDirection.Horizontal,
+            [
+                ViewLayoutDefinition.threed_view(),
+                Layout(
+                    LayoutDirection.Vertical,
+                    [custom_view, (ViewLayoutDefinition.axial_view())],
+                ),
+            ],
+            flex_sizes=["2"],
+        )
+    }
+
+
+def test_view_manager_is_compatible_with_non_slicer_views(a_view_manager, a_server, a_slicer_app, a_volume_node):
+    # Register view factories
+    a_view_manager.register_factory(RemoteSliceViewFactory(a_server))
+    a_view_manager.register_factory(RemoteThreeDViewFactory(a_server))
+    a_view_manager.register_factory(CustomViewFactory(a_server))
+
+    # Create a layout using the layout manager
+    layout_manager = LayoutManager(a_slicer_app.scene, a_view_manager, a_server.ui.layout_grid)
+
+    # Create a display manager
+    display_manager = DisplayManager(a_view_manager, a_slicer_app.volume_rendering)
+
+    # Create the layout configuration
+    layout_manager.register_layout_dict(custom_view_layout_configuration())
+
+    # Trigger layout change
+    layout_manager.set_layout("default")
+
+    with SinglePageLayout(a_server) as ui, ui.content:
+        a_server.ui.layout_grid(ui)
+
+    # Show volume
+    display_manager.show_volume(a_volume_node)
+
+    # Start server
+    a_server.start()
