@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from slicer import (
-    vtkMRMLApplicationLogic,
     vtkMRMLMarkupsROINode,
-    vtkMRMLScene,
     vtkMRMLVolumeNode,
     vtkMRMLVolumePropertyNode,
     vtkMRMLVolumeRenderingDisplayNode,
@@ -15,28 +15,21 @@ from trame_slicer.utils import SlicerWrapper
 
 from .volume_property import VolumeProperty, VRShiftMode
 
+if TYPE_CHECKING:
+    from .slicer_app import SlicerApp
+
 
 class VolumeRendering(SlicerWrapper):
     """
     Simple facade for volume rendering logic.
     """
 
-    def __init__(
-        self,
-        scene: vtkMRMLScene,
-        app_logic: vtkMRMLApplicationLogic,
-        share_directory: str,
-    ):
+    def __init__(self, slicer_app: SlicerApp):
         super().__init__(slicer_obj=vtkSlicerVolumeRenderingLogic())
-        self._scene = scene
-        self._logic.SetMRMLApplicationLogic(app_logic)
-        self._logic.SetMRMLScene(scene)
+        self._scene = slicer_app.scene
+        slicer_app.register_module_logic(self._logic)
+        self._crop_logic = slicer_app.register_module_logic(vtkSlicerCropVolumeLogic())
         self._logic.ChangeVolumeRenderingMethod("vtkMRMLGPURayCastVolumeRenderingDisplayNode")
-        self._logic.SetModuleShareDirectory(share_directory)
-
-        self._crop_logic = vtkSlicerCropVolumeLogic()
-        self._crop_logic.SetMRMLApplicationLogic(app_logic)
-        self._crop_logic.SetMRMLScene(scene)
 
     @property
     def _logic(self) -> vtkSlicerVolumeRenderingLogic:

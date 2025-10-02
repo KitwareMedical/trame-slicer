@@ -1,14 +1,17 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from slicer import (
-    vtkMRMLApplicationLogic,
     vtkMRMLInteractionNode,
     vtkMRMLMarkupsNode,
-    vtkMRMLScene,
     vtkSlicerMarkupsLogic,
 )
 
 from trame_slicer.utils import SlicerWrapper
+
+if TYPE_CHECKING:
+    from .slicer_app import SlicerApp
 
 
 class MarkupsLogic(SlicerWrapper):
@@ -16,17 +19,10 @@ class MarkupsLogic(SlicerWrapper):
     Thin wrapper around vtkSlicerMarkupsLogic
     """
 
-    def __init__(
-        self,
-        scene: vtkMRMLScene,
-        app_logic: vtkMRMLApplicationLogic,
-    ):
+    def __init__(self, slicer_app: SlicerApp):
         super().__init__(slicer_obj=vtkSlicerMarkupsLogic())
-
-        self._scene = scene
-        self._logic.SetMRMLApplicationLogic(app_logic)
-        self._logic.SetMRMLScene(scene)
-        app_logic.SetModuleLogic("Markups", self._logic)
+        self._scene = slicer_app.scene
+        slicer_app.register_module_logic(self._logic)
 
     @property
     def _logic(self) -> vtkSlicerMarkupsLogic:
