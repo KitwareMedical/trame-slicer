@@ -72,8 +72,8 @@ class LayoutGrid:
                         with html.Div(
                             classes="layout-grid-item",
                             style="display: flex; flex: 1; border: 1px solid #222;",
-                        ):
-                            client.ServerTemplate(name=item.singleton_tag)
+                        ) as div_layout:
+                            client.ServerTemplate(name=div_layout.server.translator.translate_key(item.singleton_tag))
 
     @classmethod
     def create_root_grid_ui(cls, layout: Layout):
