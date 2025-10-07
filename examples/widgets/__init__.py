@@ -4,6 +4,7 @@ from .control_button import ControlButton
 from .layout_button import LayoutButton
 from .load_client_volume_files_button import LoadClientVolumeFilesButton
 from .markups_button import MarkupsButton
+from .mpr_interaction_button import MprInteractionButton
 from .slab_widget import SlabWidget
 from .tools_strip import ToolsStrip
 from .utils import StateId, get_current_volume_node
@@ -17,6 +18,7 @@ __all__ = [
     "LayoutButton",
     "LoadClientVolumeFilesButton",
     "MarkupsButton",
+    "MprInteractionButton",
     "SlabWidget",
     "StateId",
     "ToolsStrip",

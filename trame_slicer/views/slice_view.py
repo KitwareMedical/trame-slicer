@@ -7,7 +7,6 @@ from slicer import (
     vtkMRMLApplicationLogic,
     vtkMRMLCrosshairDisplayableManager,
     vtkMRMLLayerDisplayableManager,
-    vtkMRMLLightBoxRendererManagerProxy,
     vtkMRMLMarkupsDisplayableManager,
     vtkMRMLModelSliceDisplayableManager,
     vtkMRMLOrientationMarkerDisplayableManager,
@@ -28,19 +27,18 @@ from vtkmodules.vtkRenderingCore import vtkActor2D, vtkImageMapper, vtkRenderer
 from .abstract_view import AbstractView
 
 
-class SliceRendererManager(vtkMRMLLightBoxRendererManagerProxy):
+class SliceRendererManager:
     """
     In 3D Slicer the image actor is handled by CTK vtkLightBoxRendererManager currently not wrapped in SlicerLib
-    This render manager implements a one image actor / mapper for the rendering without lightbox features.
-
-    It combines the vtkLightBoxRendererManager and vtkMRMLLightBoxRendererManagerProxy features.
+    This render manager implements a one image actor / mapper for the rendering.
+    vtkMRMLLightBoxRendererManagerProxy was removed from Slicer 5.10. This class implements only the
+    vtkLightBoxRendererManager feature for displaying the Slice image actor on update.
 
     :see: https://github.com/commontk/CTK/blob/master/Libs/Visualization/VTK/Core/vtkLightBoxRendererManager.cpp
     :see: qMRMLSliceControllerWidget.cxx
     """
 
     def __init__(self, view: SliceView):
-        super().__init__()
         self.view = view
 
         # Create Slice image mapper and set its window / level fix to 8bit
@@ -54,16 +52,13 @@ class SliceRendererManager(vtkMRMLLightBoxRendererManagerProxy):
         self.image_actor.SetMapper(self.image_mapper)
         self.image_actor.GetProperty().SetDisplayLocationToBackground()
 
-    def GetRenderer(self, _):
-        return self.view.first_renderer()
-
     def SetImageDataConnection(self, imageDataConnection):
         self.image_actor.GetMapper().SetInputConnection(imageDataConnection)
-        self.add_slice_actor_to_renderer_if_needed()
+        self._AddSliceActorToRendererIfNeeded()
         self.image_actor.SetVisibility(bool(imageDataConnection))
 
-    def add_slice_actor_to_renderer_if_needed(self):
-        renderer = self.GetRenderer(0)
+    def _AddSliceActorToRendererIfNeeded(self):
+        renderer = self.view.first_renderer()
         if renderer.HasViewProp(self.image_actor):
             return
 
@@ -97,7 +92,6 @@ class SliceView(AbstractView):
         self.render_manager = SliceRendererManager(self)
 
         self.image_data_connection = None
-        self.displayable_manager_group.SetLightBoxRendererManagerProxy(self.render_manager)
         self.interactor_observer = vtkMRMLSliceViewInteractorStyle()
 
         managers = [

@@ -24,6 +24,7 @@ class StateId:
     vr_slider_max = IdName()
     vr_presets = IdName()
     vr_preset_value = IdName()
+    is_mpr_interaction_active = IdName()
 
 
 def get_current_volume_node(server: Server, slicer_app: SlicerApp) -> vtkMRMLVolumeNode | None:

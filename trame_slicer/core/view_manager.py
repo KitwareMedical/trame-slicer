@@ -119,3 +119,4 @@ class ViewManager:
         """
         for view in self.get_views():
             view.set_render_blocked(view.get_singleton_tag() not in self._current_view_ids)
+            view.set_mapped_in_layout(view.get_singleton_tag() in self._current_view_ids)

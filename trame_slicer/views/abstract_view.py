@@ -353,3 +353,6 @@ class AbstractView:
 
     def set_layout_color(self, color: list[int]):
         self.mrml_view_node.SetLayoutColor(*self._to_float_color(color))
+
+    def set_mapped_in_layout(self, is_mapped_in_layout: bool):
+        self.mrml_view_node.SetMappedInLayout(is_mapped_in_layout)
