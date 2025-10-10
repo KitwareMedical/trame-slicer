@@ -64,11 +64,6 @@ def test_slice_view_can_register_modified_observers(a_slice_view, a_volume_node)
     mock_obs.assert_not_called()
 
 
-@pytest.mark.xfail(reason="API not available yet")
-def test_slice_view_foreground_background_opacity_can_be_set():
-    raise NotImplementedError()
-
-
 def test_slice_view_can_be_set_visible_in_3d(
     a_slice_view,
     a_volume_node,
@@ -169,7 +164,7 @@ def test_slice_views_can_activate_slab(
         a_slice_view.start_interactor()
 
 
-def test_slice_views_can_set_foregrond_opacity(
+def test_slice_views_can_set_foreground_opacity(
     a_slice_view,
     a_background_volume_node,
     a_foreground_volume_node,

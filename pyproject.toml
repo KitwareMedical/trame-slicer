@@ -9,7 +9,7 @@ authors = [
 ]
 dependencies = [
     "trame",
-    "trame-client >= 3.5.2",
+    "trame-client >= 3.11.2",
     "trame-server >= 3.6",
     "trame-vuetify",
     "trame-vtk",
@@ -53,7 +53,7 @@ dev = [
     "pytest",
     "pytest-asyncio",
     "pytest-xprocess",
-    "seleniumbase",
+    "pytest-playwright",
     "pixelmatch",
     "nox",
 ]

@@ -15,8 +15,9 @@ environment :
 1. Download the [trame-slicer-test-data]{.title-ref} zip file available in this
    repository\'s release page
 1. Unzip the file content to the [tests/data]{.title-ref} folder
-1. Install the test requirements using pip using the
-   [tests/requirements.txt]{.title-ref} file
+1. Install the test requirements using pip using the `pip install .[dev]`
+   command
+1. Install playwright browsers using the `playwright install` command
 1. Run the tests using the pytest module `python -m pytest tests`
 
 ## Interactivity
