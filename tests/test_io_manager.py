@@ -8,11 +8,13 @@ import pytest
 from slicer import (
     vtkMRMLModelNode,
     vtkMRMLSegmentationNode,
+    vtkMRMLTransformStorageNode,
     vtkMRMLVolumeNode,
     vtkSegmentation,
 )
 from vtkmodules.vtkCommonCore import vtkPoints
 from vtkmodules.vtkCommonDataModel import vtkPolyData
+from vtkmodules.vtkCommonMath import vtkMatrix4x4
 from vtkmodules.vtkIOGeometry import vtkSTLReader
 
 from trame_slicer.core import IOManager, VolumesReader
@@ -208,3 +210,29 @@ def test_an_io_manager_can_read_write_scene(an_io_manager, a_slicer_app, scene_n
 
     an_io_manager.load_scene(file_path)
     assert a_slicer_app.scene.GetNodeByID(volume_id)
+
+
+def test_is_compatible_with_transform_h5_export(a_slicer_app, tmp_path):
+    # create transform node
+    node = a_slicer_app.scene.AddNewNodeByClass("vtkMRMLLinearTransformNode")
+    m44 = vtkMatrix4x4()
+    m44.Identity()
+    node.SetMatrixTransformToParent(m44)
+
+    # Create a transform storage node
+    out_path = Path(tmp_path).joinpath("transform.h5")
+
+    storage_node = vtkMRMLTransformStorageNode()
+    storage_node.SetFileName(out_path.as_posix())
+    storage_node.SetUseCompression(True)
+
+    # Add the storage node to the scene
+    a_slicer_app.scene.AddNode(storage_node)
+
+    # Associate the storage node with the transform node
+    node.SetAndObserveStorageNodeID(storage_node.GetID())
+
+    # save transform node
+    storage_node.WriteData(node)
+
+    assert out_path.is_file()
