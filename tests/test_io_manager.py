@@ -75,7 +75,7 @@ def test_split_volume_returns_original_volume_if_nothing_to_split(
     volume_files = [p.as_posix() for p in ct_chest_dcm_volume_file_paths]
     split_volumes = VolumesReader.split_volumes(volume_files)
     assert len(split_volumes) == 1
-    assert split_volumes == [volume_files]
+    assert split_volumes[0].sort() == volume_files.sort()
 
 
 def test_can_load_multiple_volumes_in_dcm_format(

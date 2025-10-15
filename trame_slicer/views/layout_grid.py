@@ -60,7 +60,7 @@ class LayoutGrid(html.Div):
             style="flex: 1;",
         )
         self._build_ui(layout_items, layout_flex_sizes)
-    
+
     def _build_ui(self, layout_items, layout_flex_sizes):
         with self:
             for i_item, item in enumerate(layout_items):
