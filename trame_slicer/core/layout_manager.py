@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from slicer import vtkMRMLScene, vtkMRMLScriptedModuleNode
+from trame_client.ui.core import AbstractLayout
 from trame_client.widgets.core import VirtualNode
+from trame_server import Server
 
 from trame_slicer.views import (
     Layout,
@@ -26,14 +28,11 @@ class LayoutManager:
     """
 
     def __init__(
-        self,
-        scene: vtkMRMLScene,
-        view_manager: ViewManager,
-        layout_ui_node: VirtualNode,
+        self, scene: vtkMRMLScene, view_manager: ViewManager, server: Server, *, virtual_node: VirtualNode | None = None
     ):
         self._layouts: dict[str, Layout] = {}
         self._view_manager = view_manager
-        self._ui = layout_ui_node
+        self._virtual_node = virtual_node or VirtualNode(server)
         self._current_layout: str | None = None
         self._scene_node = scene.AddNewNodeByClass("vtkMRMLScriptedModuleNode", "layout_node")
 
@@ -68,7 +67,7 @@ class LayoutManager:
         layout = self.get_layout(self._current_layout, Layout.empty_layout())
         self.create_layout_views_if_needed(self._current_layout)
         self._set_current_views_as_active(layout)
-        with self._ui.clear():
+        with self._virtual_node.clear():
             LayoutGrid.create_root_grid_ui(layout)
         self._save_layout_to_scene(self._current_layout, layout)
 
@@ -165,3 +164,9 @@ class LayoutManager:
             ),
             "3D Only": Layout(LayoutDirection.Vertical, [threed_view]),
         }
+
+    def initialize_layout_grid(self, layout: AbstractLayout):
+        """
+        Initialize the LayoutGrid placeholder in the layout at the call position.
+        """
+        self._virtual_node(layout)

@@ -52,8 +52,8 @@ def a_slicer_scene() -> vtkMRMLScene:
 
 
 @pytest.fixture
-def a_layout_manager(a_mock_ui, a_mock_view_manager, a_slicer_scene):
-    return LayoutManager(a_slicer_scene, a_mock_view_manager, a_mock_ui)
+def a_layout_manager(a_mock_ui, a_mock_view_manager, a_slicer_scene, a_server):
+    return LayoutManager(a_slicer_scene, a_mock_view_manager, a_server, virtual_node=a_mock_ui)
 
 
 @pytest.fixture
@@ -223,13 +223,9 @@ def test_view_creation_is_not_lazy_by_default(
 
 
 def test_layout_manager_blocks_views_not_currently_displayed(
-    a_slicer_scene,
-    a_view_manager,
-    a_sagittal_layout,
-    a_coronal_layout,
-    a_mock_ui,
+    a_slicer_scene, a_view_manager, a_sagittal_layout, a_coronal_layout, a_server
 ):
-    layout_man = LayoutManager(a_slicer_scene, a_view_manager, a_mock_ui)
+    layout_man = LayoutManager(a_slicer_scene, a_view_manager, a_server)
     layout_man.register_layout("id_1", a_sagittal_layout)
     layout_man.register_layout("id_2", a_coronal_layout)
 

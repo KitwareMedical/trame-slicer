@@ -24,11 +24,7 @@ class MyTrameSlicerApp:
         register_rca_factories(self._slicer_app.view_manager, self._server)
 
         # Create the trame layout manager and initialize it with the default grid configuration
-        self._layout_manager = LayoutManager(
-            self._slicer_app.scene,
-            self._slicer_app.view_manager,
-            self._server.ui.layout_grid,
-        )
+        self._layout_manager = LayoutManager(self._slicer_app.scene, self._slicer_app.view_manager, self._server)
 
         self._layout_manager.register_layout_dict(LayoutManager.default_grid_configuration())
 
@@ -70,7 +66,7 @@ class MyTrameSlicerApp:
                     slicer_app=self._slicer_app,
                     layout_manager=self._layout_manager,
                 )
-                self._server.ui.layout_grid(self.ui)
+                self._layout_manager.initialize_layout_grid(self.ui)
 
 
 def main(server=None, **kwargs):
