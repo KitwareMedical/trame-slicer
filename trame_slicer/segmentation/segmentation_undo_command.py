@@ -15,10 +15,11 @@ if TYPE_CHECKING:
 class SegmentationRemoveUndoCommand(UndoCommand):
     def __init__(self, segmentation: Segmentation, segment_id):
         super().__init__()
+        self.segment_id = segment_id
         self._segmentation = segmentation
         self._segmentation_state_stack = SegmentationStateStack(segmentation.segmentation, max_size=2)
         self._segmentation_state_stack.save_state()
-        self._segmentation.segmentation.RemoveSegment(segment_id)
+        self._segmentation.segmentation.RemoveSegment(self.segment_id)
         self._segmentation_state_stack.save_state()
 
     def undo(self) -> None:
@@ -50,10 +51,12 @@ class SegmentationAddUndoCommand(UndoCommand):
 
     def undo(self) -> None:
         self._segmentation.segmentation.RemoveSegment(self.segment_id)
+        self._segmentation.trigger_modified()
 
     def redo(self) -> None:
         self._segmentation.segmentation.AddEmptySegment(self.segment_id)
         self._segment_properties.to_segment(self._segmentation.get_segment(self.segment_id))
+        self._segmentation.trigger_modified()
 
     def merge_with(self, command: UndoCommand) -> bool:
         if not isinstance(command, SegmentationRemoveUndoCommand):

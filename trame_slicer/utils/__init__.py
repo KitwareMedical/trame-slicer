@@ -12,10 +12,6 @@ from .scripted_module_node_dataclass_proxy import (
     scripted_proxy_from_dataclass,
     scripted_proxy_to_dataclass,
 )
-from .signal_to_state import (
-    connect_all_signals_emitting_values_to_state,
-    connect_signal_emit_values_to_state,
-)
 from .singleton_meta import Singleton
 from .slicer_wrapper import SlicerWrapper, wrap
 from .vtk_event_dispatcher import VtkEventDispatcher
@@ -27,8 +23,6 @@ __all__ = [
     "Singleton",
     "SlicerWrapper",
     "VtkEventDispatcher",
-    "connect_all_signals_emitting_values_to_state",
-    "connect_signal_emit_values_to_state",
     "create_scripted_module_dataclass_proxy",
     "create_scripted_module_dataclass_proxy_name",
     "ensure_node_in_scene",

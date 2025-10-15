@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
@@ -122,13 +123,16 @@ class SegmentationEditor(SignalContainer):
     def editor_node(self) -> vtkMRMLSegmentEditorNode:
         return self._editor_node
 
-    def register_effect_type(self, effect_type: type[SegmentationEffect]):
+    def is_effect_type_registered(self, effect_type: type[SegmentationEffect]) -> bool:
+        return effect_type.get_effect_name() in self._effects
+
+    def register_effect_type(self, effect_type: type[SegmentationEffect]) -> None:
         """
         Registers the input segment editor effect pipeline for the segmentation editor.
         :param effect_type:
         :return:
         """
-        if effect_type.get_effect_name() in self._effects:
+        if self.is_effect_type_registered(effect_type):
             return
 
         effect = effect_type()
@@ -248,6 +252,9 @@ class SegmentationEditor(SignalContainer):
 
     @property
     def active_effect_name(self) -> str:
+        return self.get_active_effect_name()
+
+    def get_active_effect_name(self) -> str:
         return self._active_effect.get_effect_name() if self._active_effect else ""
 
     def deactivate_effect(self):
@@ -460,6 +467,19 @@ class SegmentationEditor(SignalContainer):
             return
         self.active_segmentation.set_3d_opacity(opacity)
 
+    def get_effect_parameter_node(
+        self, effect: SegmentationEffect | type[SegmentationEffect]
+    ) -> vtkMRMLScriptedModuleNode:
+        """
+        returns segmentation effect parameter node as used by this segment editor.
+        When passing effect types as inputs, this method will ensure the effect has been registered.
+        If the parameter node doesn't exist in the current scene, the parameter node will be added automatically.
+        """
+        if inspect.isclass(effect):
+            self.register_effect_type(effect)
+            effect = self._effects[effect.get_effect_name()]
+        return self._add_effect_parameters_to_scene(effect)
+
     def _add_effect_parameters_to_scene(self, effect: SegmentationEffect) -> vtkMRMLScriptedModuleNode:
         """
         Create the default effect parameters linked to the input effect id and add it the current list of tracked
@@ -468,15 +488,14 @@ class SegmentationEditor(SignalContainer):
         Created parameter is added to the scene if not present (scene clear / first instantiation).
         Adding the parameter to the scene will trigger the pipeline registration if needed.
 
-        :param effect: ID of the segment editor effect
-        :return: Instance of the created parameter
+        :param effect: Segment editor effect instance.
+        :return: Instance of the created parameter.
         """
         effect_name = effect.get_effect_name()
         if effect_name not in self._effect_parameters:
             self._effect_parameters[effect_name] = effect.get_parameter_node()
 
-        effect_params = self._effect_parameters[effect_name]
-        return ensure_node_in_scene(effect_params, self._scene)
+        return ensure_node_in_scene(self._effect_parameters[effect_name], self._scene)
 
     def _try_create_effect_pipeline(
         self, view_node: vtkMRMLAbstractViewNode, parameter_node: vtkMRMLNode

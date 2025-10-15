@@ -3,10 +3,12 @@ from __future__ import annotations
 import pytest
 from slicer import vtkMRMLAbstractViewNode, vtkMRMLNode
 from undo_stack import SignalContainerSpy, UndoStack
+from vtkmodules.vtkMRMLCore import vtkMRMLScriptedModuleNode
 
 from trame_slicer.segmentation import (
     SegmentationEffect,
     SegmentationEffectNoTool,
+    SegmentationEffectPaint,
     SegmentationEffectPipeline,
     SegmentationEffectScissors,
 )
@@ -206,3 +208,43 @@ def test_can_add_new_effects_to_segmentation_editor_by_type(editor, a_threed_vie
     assert isinstance(effect.pipelines[0](), MyEffectPipeline)
     assert effect.pipelines[0]().GetViewNode() == a_threed_view.mrml_view_node
     assert effect.is_active
+
+
+def test_can_return_segmentation_effect_type_parameter_node(editor):
+    param = editor.get_effect_parameter_node(SegmentationEffectPaint)
+    assert isinstance(param, vtkMRMLScriptedModuleNode)
+
+
+def test_can_return_segmentation_effect_parameter_node(editor):
+    class MyEffectPipeline(SegmentationEffectPipeline):
+        pass
+
+    p = vtkMRMLScriptedModuleNode()
+
+    class MyNewEffect(SegmentationEffect):
+        def _create_pipeline(
+            self, _view_node: vtkMRMLAbstractViewNode, _parameter: vtkMRMLNode
+        ) -> SegmentationEffectPipeline | None:
+            return MyEffectPipeline()
+
+        def get_parameter_node(self):
+            return p
+
+    editor.register_effect_type(MyNewEffect)
+    editor.set_active_effect_type(MyNewEffect)
+    assert editor.get_effect_parameter_node(editor.active_effect) == p
+
+
+def test_registers_effect_when_accessing_effect_parameter_node_if_needed(editor):
+    class MyEffectPipeline(SegmentationEffectPipeline):
+        pass
+
+    class MyNewEffect(SegmentationEffect):
+        def _create_pipeline(
+            self, _view_node: vtkMRMLAbstractViewNode, _parameter: vtkMRMLNode
+        ) -> SegmentationEffectPipeline | None:
+            return MyEffectPipeline()
+
+    assert not editor.is_effect_type_registered(MyNewEffect)
+    assert editor.get_effect_parameter_node(MyNewEffect)
+    assert editor.is_effect_type_registered(MyNewEffect)
