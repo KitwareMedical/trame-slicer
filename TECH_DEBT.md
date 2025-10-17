@@ -47,34 +47,41 @@ require refactoring, optimization, or future improvements.
 
 ### Issue: Segment editor effects code duplication from Slicer codebase
 
-- **Description**: Describe the problem and its implications.
-- **Impact**: How does this affect performance, scalability, or maintainability?
-- **Potential Solution**: Proposed fix or approach to mitigate the issue.
-- **Priority**: High / Medium / Low
-- **Created By**: [Developer Name]
-- **Date Logged**: [YYYY-MM-DD]
-- **Status**: Open / In Progress
-
----
-
-### Issue: Segment editor logic reimplementation from Slicer codebase
-
-- **Description**: Describe the problem and its implications.
-- **Impact**: How does this affect performance, scalability, or maintainability?
-- **Potential Solution**: Proposed fix or approach to mitigate the issue.
-- **Priority**: High / Medium / Low
-- **Created By**: [Developer Name]
-- **Date Logged**: [YYYY-MM-DD]
-- **Status**: Open / In Progress
+- **Description**: Part of the current code base duplicate the Slicer Segment
+  Editor Effect logic.
+  - Duplication comes from implementation of the current segment editor effects
+    which is Qt based and don't use the existing displayable manager pattern.
+- **Impact**: Increased maintainability problems when making changes to the
+  segment editor effects.
+- **Potential Solution**:
+  - Refactor the core logic of the segment editor effects into displayable
+    manager pipelines.
+  - Contribute the effect logic to Slicer main.
+- **Priority**: Medium
+- **Created By**: [Thibault Pelletier]
+- **Date Logged**: [2025-06-18]
+- **Status**: In Progress
+  - Part of the segment editor logic was extracted into a dedicated logic class
+    in the main Slicer branch.
+  - The Layer Displayable Manager extension was contributed as an external
+    extension to simplify creating and managing new segment editor effects.
+  - Existing segment editor effects have been refactored to implement the new
+    logic.
+  - REMAINING: Dev meeting to decide if/how these effects should be brought back
+    to the main Slicer branch.
 
 ---
 
 ### Issue: IOManager code reimplementation from Slicer codebase
 
-- **Description**: Describe the problem and its implications.
-- **Impact**: How does this affect performance, scalability, or maintainability?
-- **Potential Solution**: Proposed fix or approach to mitigate the issue.
-- **Priority**: High / Medium / Low
-- **Created By**: [Developer Name]
-- **Date Logged**: [YYYY-MM-DD]
-- **Status**: Open / In Progress
+- **Description**: Current IOManager class reimplements loading logic
+  - Duplication comes from implementation of the current IO module mechanism
+    being Qt based.
+- **Impact**: Increased implementation and maintainability problems.
+- **Potential Solution**: Existing IO logic should be split into VTK and Qt
+  components in the Slicer main codebase. Trame-slicer should depend on the
+  Slicer VTK logic for handling IO.
+- **Priority**: Medium
+- **Created By**: [Thibault Pelletier]
+- **Date Logged**: [2025-06-18]
+- **Status**: Open
