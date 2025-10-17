@@ -15,20 +15,19 @@ from trame.widgets.vuetify3 import (
     VTextField,
 )
 from trame_client.widgets.html import Span
+from trame_server import Server
 from trame_vuetify.widgets.vuetify3 import VSelect
 from undo_stack import Signal, UndoStack
 
-from trame_slicer.core import SegmentationEditor, SlicerApp
+from trame_slicer.core import SlicerApp
 from trame_slicer.segmentation import (
-    SegmentationEffectID,
-    SegmentationEraseEffect,
+    SegmentationEffect,
+    SegmentationEffectErase,
+    SegmentationEffectNoTool,
+    SegmentationEffectPaint,
+    SegmentationEffectScissors,
     SegmentationOpacityEnum,
-    SegmentationPaintEffect,
-    SegmentationScissorEffect,
     SegmentProperties,
-)
-from trame_slicer.utils import (
-    connect_all_signals_emitting_values_to_state,
 )
 
 from .control_button import ControlButton
@@ -42,6 +41,11 @@ class SegmentationId:
     segment_opacity_mode = IdName()
     opacity_2d = IdName()
     opacity_3d = IdName()
+    can_undo = IdName()
+    can_redo = IdName()
+    active_segment_id = IdName()
+    show_3d = IdName()
+    active_effect_name = IdName()
 
 
 class SegmentationRename(Template):
@@ -137,7 +141,7 @@ class SegmentSelection(Template):
                 VRow(align="center"),
                 VSelect(
                     label="Current Segment",
-                    v_model=(SegmentationEditor.active_segment_id_changed.name,),
+                    v_model=(SegmentationId.active_segment_id,),
                     items=(SegmentationId.segments,),
                     item_value="props.segment_id",
                     item_title="title",
@@ -189,7 +193,7 @@ class SegmentSelection(Template):
                     icon="mdi-video-3d",
                     size=0,
                     click=self.toggle_3d_clicked,
-                    active=(f"{SegmentationEditor.show_3d_changed.name}",),
+                    active=(f"{SegmentationId.show_3d}",),
                 )
 
             with VRow():
@@ -198,28 +202,28 @@ class SegmentSelection(Template):
                     icon="mdi-cursor-default",
                     size=0,
                     click=self.no_tool_clicked,
-                    active=self.button_active(None),
+                    active=self.button_active(SegmentationEffectNoTool),
                 )
                 ControlButton(
                     name="Paint",
                     icon="mdi-brush",
                     size=0,
                     click=self.paint_clicked,
-                    active=self.button_active(SegmentationPaintEffect),
+                    active=self.button_active(SegmentationEffectPaint),
                 )
                 ControlButton(
                     name="Erase",
                     icon="mdi-eraser",
                     size=0,
                     click=self.erase_clicked,
-                    active=self.button_active(SegmentationEraseEffect),
+                    active=self.button_active(SegmentationEffectErase),
                 )
                 ControlButton(
                     name="Scissors",
                     icon="mdi-content-cut",
                     size=0,
                     click=self.scissors_clicked,
-                    active=self.button_active(SegmentationScissorEffect),
+                    active=self.button_active(SegmentationEffectScissors),
                 )
 
             with VRow():
@@ -228,14 +232,14 @@ class SegmentSelection(Template):
                     icon="mdi-undo",
                     size=0,
                     click=self.undo_clicked,
-                    disabled=(f"!{UndoStack.can_undo_changed.name}",),
+                    disabled=(f"!{SegmentationId.can_undo}",),
                 )
                 ControlButton(
                     name="Redo",
                     icon="mdi-redo",
                     size=0,
                     click=self.redo_clicked,
-                    disabled=(f"!{UndoStack.can_redo_changed.name}",),
+                    disabled=(f"!{SegmentationId.can_redo}",),
                 )
                 SegmentationOpacityModeToggleButton(
                     name="Toggle Opacity mode (fill, outline, both)",
@@ -268,14 +272,14 @@ class SegmentSelection(Template):
                 )
 
     @classmethod
-    def button_active(cls, effect_cls: type | None):
-        name = effect_cls.__name__ if effect_cls is not None else ""
-        return (f"{SegmentationEditor.active_effect_name_changed.name}==='{name}'",)
+    def button_active(cls, effect_cls: type[SegmentationEffect]):
+        name = effect_cls.get_effect_name()
+        return (f"{SegmentationId.active_effect_name} === '{name}'",)
 
 
 @TrameApp()
 class SegmentationButton(VMenu):
-    def __init__(self, server, slicer_app: SlicerApp):
+    def __init__(self, server: Server, slicer_app: SlicerApp):
         super().__init__(location="right", close_on_content_click=False)
         self._server = server
         self._slicer_app = slicer_app
@@ -290,6 +294,11 @@ class SegmentationButton(VMenu):
         self.state.setdefault(SegmentationId.segment_opacity_mode, SegmentationOpacityEnum.BOTH.value)
         self.state.setdefault(SegmentationId.opacity_2d, 0.5)
         self.state.setdefault(SegmentationId.opacity_3d, 1.0)
+        self.state.setdefault(SegmentationId.can_undo, False)
+        self.state.setdefault(SegmentationId.can_redo, False)
+        self.state.setdefault(SegmentationId.active_segment_id, "")
+        self.state.setdefault(SegmentationId.show_3d, False)
+        self.state.setdefault(SegmentationId.active_effect_name, SegmentationEffectNoTool.get_effect_name())
 
         self.connect_segmentation_editor_to_state()
         self.connect_undo_stack_to_state()
@@ -326,13 +335,12 @@ class SegmentationButton(VMenu):
         self.selection.redo_clicked.connect(self._undo_stack.redo)
 
     def connect_segmentation_editor_to_state(self):
-        self.segmentation_editor.segmentation_modified.connect(self._update_segment_properties)
-        connect_all_signals_emitting_values_to_state(self.segmentation_editor, self.state)
-        self.segmentation_editor.trigger_all_signals()
+        for sig in self.segmentation_editor.signals():
+            sig.connect(self._on_segment_editor_changed)
 
     def connect_undo_stack_to_state(self):
-        connect_all_signals_emitting_values_to_state(self._undo_stack, self.state)
-        self._undo_stack.trigger_all_signals()
+        for sig in self._undo_stack.signals():
+            sig.connect(self._on_undo_changed)
 
     @property
     def segmentation_editor(self):
@@ -368,21 +376,21 @@ class SegmentationButton(VMenu):
         )
         self.on_add_segment()
 
-    @change(SegmentationEditor.active_segment_id_changed.name)
+    @change(SegmentationId.active_segment_id)
     def on_current_segment_id_changed(self, **_kwargs):
-        self.segmentation_editor.set_active_segment_id(_kwargs[SegmentationEditor.active_segment_id_changed.name])
+        self.segmentation_editor.set_active_segment_id(_kwargs[SegmentationId.active_segment_id])
         # Update opacity for (potentially) new segment
         self.on_opacity_2d_changed()
         self.on_opacity_3d_changed()
 
     def on_paint(self):
-        self.segmentation_editor.set_active_effect_id(SegmentationEffectID.Paint)
+        self.segmentation_editor.set_active_effect_type(SegmentationEffectPaint)
 
     def on_erase(self):
-        self.segmentation_editor.set_active_effect_id(SegmentationEffectID.Erase)
+        self.segmentation_editor.set_active_effect_type(SegmentationEffectErase)
 
     def on_scissors(self):
-        self.segmentation_editor.set_active_effect_id(SegmentationEffectID.Scissors)
+        self.segmentation_editor.set_active_effect_type(SegmentationEffectScissors)
 
     def on_no_tool(self):
         self.segmentation_editor.deactivate_effect()
@@ -450,3 +458,14 @@ class SegmentationButton(VMenu):
     @change(SegmentationId.opacity_3d)
     def on_opacity_3d_changed(self, **_kwargs):
         self.segmentation_editor.set_3d_opacity(self.state[SegmentationId.opacity_3d])
+
+    def _on_segment_editor_changed(self, *_):
+        self.state[SegmentationId.active_segment_id] = self.segmentation_editor.get_active_segment_id()
+        self.state[SegmentationId.show_3d] = self.segmentation_editor.is_surface_representation_enabled()
+        self.state[SegmentationId.active_effect_name] = self.segmentation_editor.get_active_effect_name()
+        self._update_segment_properties()
+
+    def _on_undo_changed(self, *_):
+        self.state[SegmentationId.can_undo] = self._undo_stack.can_undo()
+        self.state[SegmentationId.can_redo] = self._undo_stack.can_redo()
+        self.state[SegmentationId.active_segment_id] = self.segmentation_editor.get_active_segment_id()

@@ -3,12 +3,10 @@ from __future__ import annotations
 import enum
 import logging
 import math
-from copy import deepcopy
 from enum import auto
 
-import numpy as np
 from numpy.typing import NDArray
-from slicer import vtkMRMLTransformNode
+from slicer import vtkMRMLTransformNode, vtkSlicerSegmentEditorLogic
 from undo_stack import Signal
 from vtkmodules.vtkCommonCore import VTK_UNSIGNED_CHAR, vtkPoints
 from vtkmodules.vtkCommonDataModel import vtkImageData, vtkPolyData
@@ -16,15 +14,18 @@ from vtkmodules.vtkCommonMath import vtkMatrix4x4
 from vtkmodules.vtkCommonTransforms import vtkTransform
 from vtkmodules.vtkFiltersGeneral import vtkTransformPolyDataFilter
 from vtkmodules.vtkFiltersModeling import vtkFillHolesFilter
+from vtkmodules.vtkImagingCore import vtkImageChangeInformation
 from vtkmodules.vtkImagingStencil import (
     vtkImageStencilToImage,
     vtkPolyDataToImageStencil,
 )
+from vtkmodules.vtkSegmentationCore import (
+    vtkOrientedImageData,
+    vtkOrientedImageDataResample,
+)
 
-from trame_slicer.utils import vtk_image_to_np
-
-from .segment_region_mask import MaskedRegion, SegmentRegionMask
-from .segmentation import Segmentation, SegmentationLabelMapUndoCommand
+from .segmentation import Segmentation
+from .segmentation_undo_command import SegmentationLabelMapUndoCommand
 
 
 def _clamp_extent(extent: list[int], limits: list[int]) -> list[int]:
@@ -59,14 +60,10 @@ def _sub_extent_to_slices(extent: list[int], sub_extent: list[int]) -> tuple[sli
 
 
 class ModificationMode(enum.IntEnum):
-    # Paint
-    Paint = auto()
-
-    # Erase active segment
-    Erase = auto()
-
-    # Erase all segments
-    EraseAll = auto()
+    Set = auto()
+    Add = auto()
+    Remove = auto()
+    RemoveAll = auto()
 
 
 class SegmentModifier:
@@ -81,11 +78,13 @@ class SegmentModifier:
         self._segmentation: Segmentation = segmentation
         self._active_segment_id = self._segmentation.get_nth_segment_id(0)
 
-        self._modification_mode = ModificationMode.Paint
-        self._region_mask = SegmentRegionMask(self._segmentation)
-        self._mask = None
+        self._modification_mode = ModificationMode.Add
         self._segmentation.segmentation_modified.connect(self.segmentation_modified)
         self._segmentation.segmentation_modified.connect(self.on_segmentation_modified)
+
+    @property
+    def logic(self) -> vtkSlicerSegmentEditorLogic:
+        return self._segmentation.editor_logic
 
     @property
     def active_segment_id(self):
@@ -98,40 +97,12 @@ class SegmentModifier:
         self._active_segment_id = segment_id
 
     @property
-    def mask(self) -> NDArray[np.bool] | None:
-        return self._mask
-
-    @mask.setter
-    def mask(self, val: NDArray[np.bool] | None):
-        if val is not None and tuple(val.shape) != tuple(reversed(self.volume_node.GetImageData().GetDimensions())):
-            _error_msg = "mask extent must match source volume extent"
-            raise ValueError(_error_msg)
-
-        self._mask = val
-
-    @property
     def modification_mode(self) -> ModificationMode:
         return self._modification_mode
 
     @modification_mode.setter
     def modification_mode(self, mode: ModificationMode) -> None:
         self._modification_mode = mode
-
-    @property
-    def masked_region(self) -> MaskedRegion:
-        return self._region_mask.masked_region
-
-    @masked_region.setter
-    def masked_region(self, region: MaskedRegion) -> None:
-        self._region_mask.masked_region = region
-
-    @property
-    def selected_ids(self) -> list[str]:
-        return self._region_mask.selected_ids
-
-    @selected_ids.setter
-    def selected_ids(self, selected_ids: list[str]):
-        self._region_mask.selected_ids = selected_ids
 
     @property
     def segmentation(self) -> Segmentation:
@@ -184,27 +155,38 @@ class SegmentModifier:
 
         # Pre-rotated polydata
         brush_model: vtkPolyData = world_origin_to_modifier_labelmap_ijk_transformer.GetOutput()
-
-        modifier_labelmap = self._poly_to_modifier_labelmap(brush_model)
-        original_extent = modifier_labelmap.GetExtent()
-        np_modifier_labelmap = vtk_image_to_np(modifier_labelmap) > 0
+        brush_labelmap = self._poly_to_image_data(brush_model)
+        modifier_labelmap = self.segmentation.create_modifier_labelmap()
 
         points_ijk = self._world_points_to_ijk(world_locations)
+        brush_positioner = vtkImageChangeInformation()
+        brush_positioner.SetInputData(brush_labelmap)
+        brush_positioner.SetOutputSpacing(modifier_labelmap.GetSpacing())
+        brush_positioner.SetOutputOrigin(modifier_labelmap.GetOrigin())
 
-        with SegmentationLabelMapUndoCommand.push_state_change(self.segmentation):
-            for i in range(points_ijk.GetNumberOfPoints()):
-                position = points_ijk.GetPoint(i)
-                # translate the modifier labelmap in IJK coords
-                extent = [
-                    original_extent[0] + int(position[0]),
-                    original_extent[1] + int(position[0]),
-                    original_extent[2] + int(position[1]),
-                    original_extent[3] + int(position[1]),
-                    original_extent[4] + int(position[2]),
-                    original_extent[5] + int(position[2]),
-                ]
-                self._apply_binary_labelmap(np_modifier_labelmap, extent, do_trigger_segmentation_modified=False)
+        modifier_extent = [0, -1, 0, -1, 0, -1]
+        oriented_brush_positioner_output = vtkOrientedImageData()
+        for i in range(points_ijk.GetNumberOfPoints()):
+            brush_positioner.SetExtentTranslation([int(p) for p in points_ijk.GetPoint(i)])
+            brush_positioner.Update()
 
+            oriented_brush_positioner_output.ShallowCopy(brush_positioner.GetOutput())
+            oriented_brush_positioner_output.CopyDirections(modifier_labelmap)
+            if i == 0:
+                modifier_extent = list(oriented_brush_positioner_output.GetExtent())
+            else:
+                brush_extent = oriented_brush_positioner_output.GetExtent()
+                for i_extent in range(3):
+                    modifier_extent[i_extent * 2] = min(modifier_extent[i_extent * 2], brush_extent[i_extent * 2])
+                    modifier_extent[i_extent * 2 + 1] = max(
+                        modifier_extent[i_extent * 2 + 1], brush_extent[i_extent * 2 + 1]
+                    )
+
+            vtkOrientedImageDataResample.ModifyImage(
+                modifier_labelmap, oriented_brush_positioner_output, vtkOrientedImageDataResample.OPERATION_MAXIMUM
+            )
+
+        self.apply_labelmap(modifier_labelmap, modifier_extent)
         self.trigger_active_segment_modified()
 
     def apply_polydata_world(self, poly_world: vtkPolyData):
@@ -215,90 +197,70 @@ class SegmentModifier:
             return
 
         poly_ijk = self._world_poly_to_ijk(poly_world)
-        modifier_labelmap = self._poly_to_modifier_labelmap(poly_ijk)
+        poly_modifier = self._poly_to_image_data(poly_ijk)
+        modifier_labelmap = self._poly_image_data_to_modifier_labelmap(poly_modifier)
         self.apply_labelmap(modifier_labelmap)
 
-    def apply_labelmap(self, modifier_labelmap: vtkImageData):
+    def _poly_image_data_to_modifier_labelmap(self, poly_modifier: vtkOrientedImageData) -> vtkOrientedImageData | None:
+        modifier_labelmap = self.segmentation.create_modifier_labelmap()
+        brush_positioner = vtkImageChangeInformation()
+        brush_positioner.SetInputData(poly_modifier)
+        brush_positioner.SetOutputSpacing(modifier_labelmap.GetSpacing())
+        brush_positioner.SetOutputOrigin(modifier_labelmap.GetOrigin())
+        brush_positioner.Update()
+
+        oriented_labelmap = vtkOrientedImageData()
+        oriented_labelmap.ShallowCopy(brush_positioner.GetOutput())
+        oriented_labelmap.CopyDirections(modifier_labelmap)
+        vtkOrientedImageDataResample.ModifyImage(
+            modifier_labelmap, oriented_labelmap, vtkOrientedImageDataResample.OPERATION_MAXIMUM
+        )
+        return modifier_labelmap
+
+    def apply_labelmap(self, modifier_labelmap: vtkImageData, modifier_extent=None):
         """
         :param modifier_labelmap: in source ijk coordinates, VTK image data version
         """
-
         with SegmentationLabelMapUndoCommand.push_state_change(self.segmentation):
-            np_modifier_labelmap = vtk_image_to_np(modifier_labelmap) > 0
-            self._apply_binary_labelmap(np_modifier_labelmap, list(modifier_labelmap.GetExtent()))
+            self.modify_active_segment_by_labelmap(modifier_labelmap, modifier_extent=modifier_extent)
+        self.trigger_active_segment_modified()
+
+    def modify_active_segment_by_labelmap(
+        self,
+        modifier_labelmap: vtkImageData,
+        *,
+        modifier_extent=None,
+        is_per_segment: bool = True,
+        do_bypass_masking: bool = False,
+    ):
+        if not self.logic or self.active_segment_id == "":
+            return
+
+        if modifier_extent is None:
+            modifier_extent = [0, -1, 0, -1, 0, -1]
+
+        modifier_mode = {
+            ModificationMode.Set: vtkSlicerSegmentEditorLogic.ModificationModeSet,
+            ModificationMode.Add: vtkSlicerSegmentEditorLogic.ModificationModeAdd,
+            ModificationMode.Remove: vtkSlicerSegmentEditorLogic.ModificationModeRemove,
+            ModificationMode.RemoveAll: vtkSlicerSegmentEditorLogic.ModificationModeRemoveAll,
+        }[self.modification_mode]
+
+        self.logic.ModifySegmentByLabelmap(
+            self.segmentation.segmentation_node,
+            self.active_segment_id,
+            modifier_labelmap,
+            modifier_mode,
+            modifier_extent,
+            is_per_segment,
+            do_bypass_masking,
+        )
 
     def get_segment_labelmap(self, segment_id, *, as_numpy_array=False) -> NDArray | vtkImageData:
         return self._segmentation.get_segment_labelmap(segment_id=segment_id, as_numpy_array=as_numpy_array)
 
-    def _apply_binary_labelmap(
-        self,
-        modifier_labelmap: NDArray[np.bool],
-        base_modifier_extent: list[int],
-        do_trigger_segmentation_modified=True,
-    ):
-        """
-        :param modifier_labelmap: in source ijk coordinates
-        :param base_modifier_extent: Extent of the modifier
-        :param do_trigger_segmentation_modified: When True updates the surface representation if active.
-        """
-        if self.active_segment_id == "":
-            return
-
-        segment = self._segmentation.get_segment(self.active_segment_id)
-        labelmap: vtkImageData = self.get_segment_labelmap(self.active_segment_id)
-
-        common_extent = list(labelmap.GetExtent())
-        # clamp modifier extent to common extent so we don't draw outside the segmentation!
-        modifier_extent = _clamp_extent(base_modifier_extent, common_extent)
-
-        np_labelmap = vtk_image_to_np(labelmap)
-        labelmap_slices = _sub_extent_to_slices(common_extent, modifier_extent)
-        modifier_labelmap_slices = _sub_extent_to_slices(base_modifier_extent, modifier_extent)
-
-        if any(s.stop - s.start <= 0 for s in labelmap_slices) or any(
-            s.stop - s.start <= 0 for s in modifier_labelmap_slices
-        ):
-            # nothing to do, affected labelmap area is empty or out of labelmap range
-            return
-
-        label_value = segment.GetLabelValue() if self.modification_mode == ModificationMode.Paint else 0
-        active_label_value = segment.GetLabelValue()
-
-        # Apply effect
-        self._apply_modifier_labelmap_to_labelmap(
-            labelmap=np_labelmap[labelmap_slices],
-            modifier=modifier_labelmap[modifier_labelmap_slices],
-            mask=self._mask[labelmap_slices] if self._mask is not None else None,
-            label_value=label_value,
-            active_label_value=active_label_value,
-        )
-
-        labelmap.GetPointData().GetScalars().Modified()
-        if do_trigger_segmentation_modified:
-            self.trigger_active_segment_modified()
-
-    def _apply_modifier_labelmap_to_labelmap(
-        self,
-        *,
-        labelmap: np.ndarray,
-        modifier: NDArray[np.bool],
-        mask: NDArray[np.bool] | None,
-        label_value: int,
-        active_label_value: int,
-    ) -> None:
-        # Copy input modifier since we will apply mutating op on it with masking.
-        modifier = deepcopy(modifier)
-        if mask is not None:
-            modifier &= mask
-
-        if self.modification_mode == ModificationMode.Erase:
-            modifier &= labelmap == active_label_value
-
-        modifier &= self._region_mask.get_masked_region(labelmap)
-        labelmap[modifier] = label_value
-
     @staticmethod
-    def _poly_to_modifier_labelmap(poly: vtkPolyData) -> vtkImageData:
+    def _poly_to_image_data(poly: vtkPolyData) -> vtkOrientedImageData:
         filler = vtkFillHolesFilter()
         filler.SetInputData(poly)
         filler.SetHoleSize(4096.0)

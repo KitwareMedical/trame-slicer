@@ -1,9 +1,17 @@
 from __future__ import annotations
 
 import pytest
+from slicer import vtkMRMLAbstractViewNode, vtkMRMLNode
 from undo_stack import SignalContainerSpy, UndoStack
+from vtkmodules.vtkMRMLCore import vtkMRMLScriptedModuleNode
 
-from trame_slicer.segmentation import SegmentationEffectID
+from trame_slicer.segmentation import (
+    SegmentationEffect,
+    SegmentationEffectNoTool,
+    SegmentationEffectPaint,
+    SegmentationEffectPipeline,
+    SegmentationEffectScissors,
+)
 from trame_slicer.utils import vtk_image_to_np
 
 
@@ -49,13 +57,6 @@ def test_segmentation_editor_can_add_segments(editor, a_volume_node, active_segm
     assert active_segmentation_node.GetSegmentation().GetNumberOfSegments() == 2
     assert editor.get_segment_ids() == ["segment_id_1", "segment_id_2"]
     assert editor.get_segment_names() == ["SegmentName", "SegmentName2"]
-
-
-def test_segmentation_can_sanitize_an_empty_initial_label_map(editor, a_volume_node, active_segmentation_node):
-    assert active_segmentation_node
-    segment_id = editor.add_empty_segment()
-    labelmap = editor.get_segment_labelmap(segment_id)
-    assert labelmap.GetDimensions() == a_volume_node.GetImageData().GetDimensions()
 
 
 def test_segmentation_can_enable_3d_repr(editor, a_volume_node, a_segmentation_model):
@@ -108,28 +109,27 @@ def segmentation_with_two_segments(editor, undo_stack, active_segmentation_node)
 
 def test_modifying_segmentation_label_can_be_undo_redo(editor, undo_stack, segmentation_with_two_segments):
     segment_id_1, segment_id_2 = segmentation_with_two_segments
-    post = editor.get_segment_labelmap(segment_id_1, as_numpy_array=True, do_sanitize=False)
-    assert post.sum() == 3
+    assert editor.get_segment_labelmap(segment_id_1, as_numpy_array=True).sum() == 1
+    assert editor.get_segment_labelmap(segment_id_2, as_numpy_array=True).sum() == 1
 
     assert undo_stack.can_undo()
     undo_stack.undo()
 
-    post = editor.get_segment_labelmap(segment_id_1, as_numpy_array=True, do_sanitize=False)
-    assert post.sum() == 1
+    assert editor.get_segment_labelmap(segment_id_1, as_numpy_array=True).sum() == 1
+    assert editor.get_segment_labelmap(segment_id_2, as_numpy_array=True).sum() == 0
 
     while undo_stack.can_undo():
         undo_stack.undo()
 
     undo_stack.redo()
-    post = editor.get_segment_labelmap(segment_id_1, as_numpy_array=True, do_sanitize=False)
-    assert post.sum() == 0
+    assert editor.get_segment_labelmap(segment_id_1, as_numpy_array=True).sum() == 0
 
     assert undo_stack.can_redo()
     while undo_stack.can_redo():
         undo_stack.redo()
 
-    post = editor.get_segment_labelmap(segment_id_1, as_numpy_array=True, do_sanitize=False)
-    assert post.sum() == 3
+    assert editor.get_segment_labelmap(segment_id_1, as_numpy_array=True).sum() == 1
+    assert editor.get_segment_labelmap(segment_id_2, as_numpy_array=True).sum() == 1
 
 
 def test_undo_redo_keeps_labelmap_merged(editor, undo_stack, segmentation_with_two_segments):
@@ -150,8 +150,9 @@ def test_undo_redo_keeps_labelmap_merged(editor, undo_stack, segmentation_with_t
     assert labelmap_1 == labelmap_2
 
 
-def test_undo_redo_keeps_labelmap_merged_after_remove(editor, undo_stack, segmentation_with_two_segments):
+def test_undo_redo_keeps_labelmap_merged_after_remove(editor, undo_stack, segmentation_with_two_segments, editor_spy):
     segment_id_1, segment_id_2 = segmentation_with_two_segments
+    editor_spy.reset()
 
     editor.remove_segment(segment_id_2)
     undo_stack.undo()
@@ -160,6 +161,10 @@ def test_undo_redo_keeps_labelmap_merged_after_remove(editor, undo_stack, segmen
     labelmap_2 = editor.get_segment_labelmap(segment_id_2)
     assert labelmap_1 == labelmap_2
 
+    assert editor.get_segment_labelmap(segment_id_1, as_numpy_array=True).sum() > 0
+    assert editor.get_segment_labelmap(segment_id_2, as_numpy_array=True).sum() > 0
+    editor_spy[editor.segmentation_modified].assert_called()
+
 
 def test_notifies_changes_on_new_segmentation(editor, a_volume_node, editor_spy):
     n1 = editor.create_empty_segmentation_node()
@@ -167,7 +172,7 @@ def test_notifies_changes_on_new_segmentation(editor, a_volume_node, editor_spy)
     editor.set_active_segmentation(n1, a_volume_node)
     editor_spy[editor.active_segment_id_changed].assert_called_with("")
     editor_spy[editor.show_3d_changed].assert_called_with(False)
-    editor_spy[editor.active_effect_name_changed].assert_called_with("")
+    editor_spy[editor.active_effect_name_changed].assert_called_with(SegmentationEffectNoTool.get_effect_name())
     editor_spy.reset()
 
     editor.show_3d(True)
@@ -176,11 +181,70 @@ def test_notifies_changes_on_new_segmentation(editor, a_volume_node, editor_spy)
     segment_id = editor.add_empty_segment()
     editor_spy[editor.active_segment_id_changed].assert_called_with(segment_id)
 
-    effect = editor.set_active_effect_id(SegmentationEffectID.Scissors)
-    editor_spy[editor.active_effect_name_changed].assert_called_with(effect.class_name())
+    effect = editor.set_active_effect_type(SegmentationEffectScissors)
+    editor_spy[editor.active_effect_name_changed].assert_called_with(effect.get_effect_name())
 
     editor_spy.reset()
     editor.remove_segment(segment_id)
 
     editor_spy[editor.active_segment_id_changed].assert_called_with("")
-    editor_spy[editor.active_effect_name_changed].assert_called_with("")
+    editor_spy[editor.active_effect_name_changed].assert_called_with(SegmentationEffectNoTool.get_effect_name())
+
+
+def test_can_add_new_effects_to_segmentation_editor_by_type(editor, a_threed_view):
+    class MyEffectPipeline(SegmentationEffectPipeline):
+        pass
+
+    class MyNewEffect(SegmentationEffect):
+        def _create_pipeline(
+            self, _view_node: vtkMRMLAbstractViewNode, _parameter: vtkMRMLNode
+        ) -> SegmentationEffectPipeline | None:
+            return MyEffectPipeline()
+
+    editor.register_effect_type(MyNewEffect)
+    effect = editor.set_active_effect_type(MyNewEffect)
+
+    assert effect.pipelines
+    assert isinstance(effect.pipelines[0](), MyEffectPipeline)
+    assert effect.pipelines[0]().GetViewNode() == a_threed_view.mrml_view_node
+    assert effect.is_active
+
+
+def test_can_return_segmentation_effect_type_parameter_node(editor):
+    param = editor.get_effect_parameter_node(SegmentationEffectPaint)
+    assert isinstance(param, vtkMRMLScriptedModuleNode)
+
+
+def test_can_return_segmentation_effect_parameter_node(editor):
+    class MyEffectPipeline(SegmentationEffectPipeline):
+        pass
+
+    p = vtkMRMLScriptedModuleNode()
+
+    class MyNewEffect(SegmentationEffect):
+        def _create_pipeline(
+            self, _view_node: vtkMRMLAbstractViewNode, _parameter: vtkMRMLNode
+        ) -> SegmentationEffectPipeline | None:
+            return MyEffectPipeline()
+
+        def get_parameter_node(self):
+            return p
+
+    editor.register_effect_type(MyNewEffect)
+    editor.set_active_effect_type(MyNewEffect)
+    assert editor.get_effect_parameter_node(editor.active_effect) == p
+
+
+def test_registers_effect_when_accessing_effect_parameter_node_if_needed(editor):
+    class MyEffectPipeline(SegmentationEffectPipeline):
+        pass
+
+    class MyNewEffect(SegmentationEffect):
+        def _create_pipeline(
+            self, _view_node: vtkMRMLAbstractViewNode, _parameter: vtkMRMLNode
+        ) -> SegmentationEffectPipeline | None:
+            return MyEffectPipeline()
+
+    assert not editor.is_effect_type_registered(MyNewEffect)
+    assert editor.get_effect_parameter_node(MyNewEffect)
+    assert editor.is_effect_type_registered(MyNewEffect)

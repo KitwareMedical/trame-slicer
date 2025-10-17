@@ -45,7 +45,7 @@ def register_rca_factories(
     target_fps: float = 30.0,
     blur_fps: float = 10.0,
     interactive_quality: int = 50,
-    rca_event_throttle_s: float | None = None,
+    rca_event_throttle_s: str | float | None = None,
 ) -> None:
     """
     Helper function to register all RCA factories to a view manager.
@@ -102,7 +102,7 @@ class RemoteViewFactory(IViewFactory):
         blur_fps: float | None = None,
         interactive_quality: int | None = None,
         rca_encoder: RcaEncoder | str | None = None,
-        rca_event_throttle_s: float | None = None,
+        rca_event_throttle_s: str | float | None = None,
     ):
         """
         :param server: Trame server.
@@ -113,7 +113,10 @@ class RemoteViewFactory(IViewFactory):
         :param blur_fps: Out of focus rendering speed.
         :param interactive_quality: Interactive RCA image encoding quality.
         :param rca_encoder: Encoder type to use for RCA image encoding.
-        :param rca_event_throttle_s: Number of wait seconds in between two process events. (default = 50ms / 20FPS)
+        :param rca_event_throttle_s: Number of wait seconds in between two process events. (default = 10ms / 100FPS)
+            The rca_event_throttle_s can be made reactive on a trame state to vary throttle depending on the application
+            use case. For instance, for segmentation effects, the throttle should be 10ms but for interactions blocking
+            the server, throttle can be made slower to avoid server lagging behind interactions (for instance 100ms).
         """
         super().__init__()
         self._server = server
@@ -125,7 +128,7 @@ class RemoteViewFactory(IViewFactory):
         self._interactive_quality = interactive_quality
         self._rca_encoder = rca_encoder
         self._populate_view_ui_f = populate_view_ui_f
-        self._rca_event_throttle_s = rca_event_throttle_s if rca_event_throttle_s is not None else 0.05
+        self._rca_event_throttle_s = rca_event_throttle_s if rca_event_throttle_s is not None else 0.01
 
     def _get_slicer_view(self, view: RcaView) -> AbstractView:
         return view.slicer_view
@@ -202,7 +205,7 @@ class RemoteViewFactory(IViewFactory):
                 send_mouse_move=True,
                 mouseenter=set_focus_fps,
                 mouseleave=set_blur_fps,
-                event_throttle_ms=int(1000 * self._rca_event_throttle_s),
+                event_throttle_ms=(f"Math.ceil(1000.0 * {self._rca_event_throttle_s})",),
             )
 
             if self._populate_view_ui_f is not None:

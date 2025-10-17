@@ -1,55 +1,53 @@
 from __future__ import annotations
 
-from .segment_modifier import ModificationMode, SegmentModifier, vtk_image_to_np
-from .segment_paint_widget import BrushModel, BrushShape, SegmentPaintWidget
-from .segment_paint_widget_2d import (
-    SegmentPaintWidget2D,
-    SegmentPaintWidget2DInteractor,
-)
-from .segment_paint_widget_3d import (
-    SegmentPaintWidget3D,
-    SegmentPaintWidget3DInteractor,
-)
+from .brush_source import BrushSource
+from .paint_effect_parameters import BrushShape
+from .segment_modifier import ModificationMode, SegmentModifier
 from .segment_properties import SegmentProperties
-from .segment_region_mask import MaskedRegion, SegmentRegionMask
-from .segment_scissor_widget import (
-    ScissorPolygonBrush,
-    SegmentScissorWidget,
-    SegmentScissorWidgetInteractor,
-)
 from .segmentation import Segmentation, SegmentationOpacityEnum
-from .segmentation_effects import (
-    SegmentationEffect,
-    SegmentationEffectID,
-    SegmentationEraseEffect,
-    SegmentationPaintEffect,
-    SegmentationScissorEffect,
+from .segmentation_effect import SegmentationEffect
+from .segmentation_effect_no_tool import SegmentationEffectNoTool
+from .segmentation_effect_paint_erase import (
+    SegmentationEffectErase,
+    SegmentationEffectPaint,
 )
-from .segmentation_widget import SegmentationWidget
+from .segmentation_effect_pipeline import SegmentationEffectPipeline
+from .segmentation_effect_scissors import SegmentationEffectScissors
+from .segmentation_effect_scissors_widget import (
+    ScissorsPolygonBrush,
+    SegmentationScissorsPipeline,
+    SegmentationScissorsWidget,
+)
+from .segmentation_paint_pipeline import (
+    SegmentationPaintPipeline2D,
+    SegmentationPaintPipeline3D,
+)
+from .segmentation_paint_widget import (
+    SegmentationPaintWidget,
+    SegmentationPaintWidget2D,
+    SegmentationPaintWidget3D,
+)
 
 __all__ = [
-    "BrushModel",
     "BrushShape",
-    "MaskedRegion",
+    "BrushSource",
     "ModificationMode",
-    "ScissorPolygonBrush",
+    "ScissorsPolygonBrush",
     "SegmentModifier",
-    "SegmentPaintWidget",
-    "SegmentPaintWidget2D",
-    "SegmentPaintWidget2DInteractor",
-    "SegmentPaintWidget3D",
-    "SegmentPaintWidget3DInteractor",
     "SegmentProperties",
-    "SegmentRegionMask",
-    "SegmentScissorWidget",
-    "SegmentScissorWidgetInteractor",
     "Segmentation",
     "SegmentationEffect",
-    "SegmentationEffectID",
-    "SegmentationEraseEffect",
+    "SegmentationEffectErase",
+    "SegmentationEffectNoTool",
+    "SegmentationEffectPaint",
+    "SegmentationEffectPipeline",
+    "SegmentationEffectScissors",
     "SegmentationOpacityEnum",
-    "SegmentationPaintEffect",
-    "SegmentationScissorEffect",
-    "SegmentationWidget",
-    "vtk_image_to_np",
+    "SegmentationPaintPipeline2D",
+    "SegmentationPaintPipeline3D",
+    "SegmentationPaintWidget",
+    "SegmentationPaintWidget2D",
+    "SegmentationPaintWidget3D",
+    "SegmentationScissorsPipeline",
+    "SegmentationScissorsWidget",
 ]
