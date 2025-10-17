@@ -1,12 +1,22 @@
 from __future__ import annotations
 
+import uuid
+from io import BytesIO
 from unittest import mock
 
 import pytest
+from PIL import Image
+from pixelmatch.contrib.PIL import pixelmatch
+from playwright.async_api import async_playwright
 from slicer import vtkMRMLScene
+from trame.app import get_server
+from trame.widgets import client, html
+from trame_client.ui.core import AbstractLayout
 from trame_client.widgets.core import VirtualNode
+from trame_vuetify.ui.vuetify3 import VAppLayout
 
-from trame_slicer.core import LayoutManager, ViewManager
+from trame_slicer.core import LayoutManager, SlicerApp, ViewManager
+from trame_slicer.rca_view.rca_view_factory import register_rca_factories
 from trame_slicer.views import (
     Layout,
     LayoutDirection,
@@ -52,8 +62,8 @@ def a_slicer_scene() -> vtkMRMLScene:
 
 
 @pytest.fixture
-def a_layout_manager(a_mock_ui, a_mock_view_manager, a_slicer_scene):
-    return LayoutManager(a_slicer_scene, a_mock_view_manager, a_mock_ui)
+def a_layout_manager(a_mock_ui, a_mock_view_manager, a_slicer_scene, a_server):
+    return LayoutManager(a_slicer_scene, a_mock_view_manager, a_server, virtual_node=a_mock_ui)
 
 
 @pytest.fixture
@@ -223,13 +233,9 @@ def test_view_creation_is_not_lazy_by_default(
 
 
 def test_layout_manager_blocks_views_not_currently_displayed(
-    a_slicer_scene,
-    a_view_manager,
-    a_sagittal_layout,
-    a_coronal_layout,
-    a_mock_ui,
+    a_slicer_scene, a_view_manager, a_sagittal_layout, a_coronal_layout, a_server
 ):
-    layout_man = LayoutManager(a_slicer_scene, a_view_manager, a_mock_ui)
+    layout_man = LayoutManager(a_slicer_scene, a_view_manager, a_server)
     layout_man.register_layout("id_1", a_sagittal_layout)
     layout_man.register_layout("id_2", a_coronal_layout)
 
@@ -240,3 +246,80 @@ def test_layout_manager_blocks_views_not_currently_displayed(
     layout_man.set_layout("id_2")
     assert a_view_manager.get_view("sagittal_view_tag").is_render_blocked
     assert not a_view_manager.get_view("coronal_view_tag").is_render_blocked
+
+
+def server_with_child():
+    def _create_app_layout(server, name, color="#000000"):
+        app = SlicerApp()
+        view = ViewLayoutDefinition(
+            "sagittal_view_tag",
+            ViewType.SLICE_VIEW,
+            ViewProps(orientation="Sagittal", background_color=color),
+        )
+        layout = Layout(
+            LayoutDirection.Vertical,
+            [view],
+        )
+
+        register_rca_factories(app.view_manager, server)
+        layout_manager = LayoutManager(app.scene, app.view_manager, server)
+
+        layout_manager.register_layout("sag_view", layout)
+        layout_manager.set_layout("sag_view")
+
+        with AbstractLayout(
+            server,
+            html.Div(trame_server=server, style="height: 50%;"),
+            template_name=name,
+        ) as ui:
+            layout_manager.initialize_layout_grid(ui)
+
+    server = get_server(f"test_server_{uuid.uuid4()}", client_type="vue3")
+    _create_app_layout(
+        server,
+        "main_app",
+    )
+    _create_app_layout(server.create_child_server(prefix="child_"), "child_app", "#2B274D")
+    with VAppLayout(server):
+        client.ServerTemplate(name="main_app")
+        client.ServerTemplate(name="child_app")
+
+    return server
+
+
+def assert_images_differ(img_buffer1: str, img_buffer2: str, threshold: float = 0.1):
+    img1 = Image.open(BytesIO(img_buffer1)).convert("RGBA")
+    img2 = Image.open(BytesIO(img_buffer2)).convert("RGBA")
+    if img1.size != img2.size:
+        img2 = img2.resize(img1.size)
+
+    img_diff = Image.new("RGBA", img1.size)
+    mismatch = pixelmatch(img1, img2, img_diff, threshold=threshold)
+    assert mismatch > threshold
+
+
+@pytest.mark.asyncio
+async def test_layout_manager_is_compatible_with_child_server_pattern():
+    parent_server = server_with_child()
+    parent_server.start(exec_mode="task", thread=True, open_browser=True)
+    assert await parent_server.ready
+    assert parent_server.port
+
+    async with async_playwright() as p:
+        url = f"http://127.0.0.1:{parent_server.port}/"
+        browser = await p.chromium.launch(headless=True)
+        page = await browser.new_page()
+        await page.goto(url)
+
+        await page.wait_for_selector("img")
+        imgs = page.locator("img")
+
+        count = await imgs.count()
+        assert count == 2
+
+        img_buffer1 = await imgs.nth(0).screenshot()
+        img_buffer2 = await imgs.nth(1).screenshot()
+
+        assert_images_differ(img_buffer1, img_buffer2)
+
+        await browser.close()

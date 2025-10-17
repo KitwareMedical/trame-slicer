@@ -282,7 +282,7 @@ def test_view_manager_is_compatible_with_non_slicer_views(a_view_manager, a_serv
     a_view_manager.register_factory(CustomViewFactory(a_server))
 
     # Create a layout using the layout manager
-    layout_manager = LayoutManager(a_slicer_app.scene, a_view_manager, a_server.ui.layout_grid)
+    layout_manager = LayoutManager(a_slicer_app.scene, a_view_manager, a_server)
 
     # Create a display manager
     display_manager = DisplayManager(a_view_manager, a_slicer_app.volume_rendering)
@@ -294,7 +294,7 @@ def test_view_manager_is_compatible_with_non_slicer_views(a_view_manager, a_serv
     layout_manager.set_layout("default")
 
     with SinglePageLayout(a_server) as ui, ui.content:
-        a_server.ui.layout_grid(ui)
+        layout_manager.initialize_layout_grid(ui)
 
     # Show volume
     display_manager.show_volume(a_volume_node)

@@ -140,6 +140,7 @@ class RemoteViewFactory(IViewFactory):
         app_logic: vtkMRMLApplicationLogic,
     ) -> RcaView:
         view_id = view.singleton_tag
+        translated_view_id = self._server.translator.translate_key(view_id)
         slicer_view: AbstractView = self._view_ctor(
             scene=scene,
             app_logic=app_logic,
@@ -156,12 +157,12 @@ class RemoteViewFactory(IViewFactory):
             target_fps=self._target_fps,
         )
 
-        with ViewLayout(self._server, template_name=view_id) as vuetify_view:
-            self._create_vuetify_ui(view_id, slicer_view, rca_scheduler)
+        with ViewLayout(self._server, template_name=translated_view_id) as vuetify_view:
+            self._create_vuetify_ui(translated_view_id, slicer_view, rca_scheduler)
 
         rca_view_adapter = RcaViewAdapter(
             window=rca_window,
-            name=view_id,
+            name=translated_view_id,
             scheduler=rca_scheduler,
             do_schedule_render_on_interaction=False,
         )
@@ -170,7 +171,7 @@ class RemoteViewFactory(IViewFactory):
         async def init_rca():
             # RCA protocol needs to be registered before the RCA adapter can be added to the server
             await self._server.ready
-            self._server.controller.rc_area_register(rca_view_adapter)
+            self._server.root_server.controller.rc_area_register(rca_view_adapter)
 
         create_task(init_rca())
         return RcaView(vuetify_view, slicer_view, rca_view_adapter)

@@ -43,7 +43,7 @@ class Layout:
         return cls(LayoutDirection.Vertical, [])
 
 
-class LayoutGrid:
+class LayoutGrid(html.Div):
     """
     Component responsible for displaying view grids.
     """
@@ -55,11 +55,14 @@ class LayoutGrid:
         layout_flex_sizes: list[str] | None = None,
     ):
         layout_class = "flex-row" if layout_direction == LayoutDirection.Horizontal else "flex-column"
-
-        with html.Div(
+        super().__init__(
             classes=f"layout-grid-container d-flex {layout_class}",
             style="flex: 1;",
-        ):
+        )
+        self._build_ui(layout_items, layout_flex_sizes)
+
+    def _build_ui(self, layout_items, layout_flex_sizes):
+        with self:
             for i_item, item in enumerate(layout_items):
                 flex_size = (
                     f"{layout_flex_sizes[i_item]}" if layout_flex_sizes and len(layout_flex_sizes) > i_item else "1"
@@ -73,7 +76,7 @@ class LayoutGrid:
                             classes="layout-grid-item",
                             style="display: flex; flex: 1; border: 1px solid #222;",
                         ):
-                            client.ServerTemplate(name=item.singleton_tag)
+                            client.ServerTemplate(name=self.server.translator.translate_key(item.singleton_tag))
 
     @classmethod
     def create_root_grid_ui(cls, layout: Layout):
