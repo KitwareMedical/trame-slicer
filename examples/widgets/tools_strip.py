@@ -8,6 +8,7 @@ from trame_slicer.core import LayoutManager, SlicerApp
 from .layout_button import LayoutButton
 from .load_client_volume_files_button import LoadClientVolumeFilesButton
 from .markups_button import MarkupsButton
+from .mpr_interaction_button import MprInteractionButton
 from .segmentation_button import SegmentationButton
 from .slab_widget import SlabWidget
 from .volume_property_button import VolumePropertyButton
@@ -35,3 +36,4 @@ class ToolsStrip(Div):
             MarkupsButton(server=server, slicer_app=slicer_app)
             SegmentationButton(server=server, slicer_app=slicer_app)
             SlabWidget(server=server, slicer_app=slicer_app)
+            MprInteractionButton(server=server, slicer_app=slicer_app)

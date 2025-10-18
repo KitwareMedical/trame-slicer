@@ -13,7 +13,7 @@ class ControlButton(VBtn):
         *,
         name: str,
         icon: str,
-        click: Callable | None = None,
+        click: Callable | str | None = None,
         size: int = 40,
         **kwargs,
     ) -> None:
