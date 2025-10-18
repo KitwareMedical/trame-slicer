@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import uuid
 from io import BytesIO
 from unittest import mock
 
@@ -9,10 +8,10 @@ from PIL import Image
 from pixelmatch.contrib.PIL import pixelmatch
 from playwright.async_api import async_playwright
 from slicer import vtkMRMLScene
-from trame.app import get_server
 from trame.widgets import client, html
 from trame_client.ui.core import AbstractLayout
 from trame_client.widgets.core import VirtualNode
+from trame_server import Server
 from trame_vuetify.ui.vuetify3 import VAppLayout
 
 from trame_slicer.core import LayoutManager, SlicerApp, ViewManager
@@ -248,7 +247,7 @@ def test_layout_manager_blocks_views_not_currently_displayed(
     assert not a_view_manager.get_view("coronal_view_tag").is_render_blocked
 
 
-def server_with_child():
+def server_with_child(parent_server: Server):
     def _create_app_layout(server, name, color="#000000"):
         app = SlicerApp()
         view = ViewLayoutDefinition(
@@ -274,17 +273,11 @@ def server_with_child():
         ) as ui:
             layout_manager.initialize_layout_grid(ui)
 
-    server = get_server(f"test_server_{uuid.uuid4()}", client_type="vue3")
-    _create_app_layout(
-        server,
-        "main_app",
-    )
-    _create_app_layout(server.create_child_server(prefix="child_"), "child_app", "#2B274D")
-    with VAppLayout(server):
+    _create_app_layout(parent_server, "main_app")
+    _create_app_layout(parent_server.create_child_server(prefix="child_"), "child_app", "#2B274D")
+    with VAppLayout(parent_server):
         client.ServerTemplate(name="main_app")
         client.ServerTemplate(name="child_app")
-
-    return server
 
 
 def assert_images_differ(img_buffer1: str, img_buffer2: str, threshold: float = 0.1):
@@ -299,14 +292,14 @@ def assert_images_differ(img_buffer1: str, img_buffer2: str, threshold: float = 
 
 
 @pytest.mark.asyncio
-async def test_layout_manager_is_compatible_with_child_server_pattern():
-    parent_server = server_with_child()
-    parent_server.start(exec_mode="task", thread=True, open_browser=True)
-    assert await parent_server.ready
-    assert parent_server.port
+async def test_layout_manager_is_compatible_with_child_server_pattern(async_server, a_server_port):
+    server_with_child(async_server)
+    async_server.start(port=a_server_port, exec_mode="task", thread=True)
+    assert await async_server.ready
+    assert async_server.port
 
     async with async_playwright() as p:
-        url = f"http://127.0.0.1:{parent_server.port}/"
+        url = f"http://127.0.0.1:{async_server.port}/"
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
         await page.goto(url)

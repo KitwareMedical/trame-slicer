@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+import socket
 import uuid
 from pathlib import Path
 
 import pytest
+import pytest_asyncio
 from slicer import (
     vtkMRMLModelNode,
     vtkMRMLModelStorageNode,
@@ -199,6 +201,17 @@ def render_interactive(pytestconfig):
 
 
 @pytest.fixture
+def a_server_port():
+    """
+    Reserve free port to be sure the port will be bound to server before accessing it with other tools
+    (such as playwright) regardless of startup sequence.
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("", 0))
+        yield s.getsockname()[1]
+
+
+@pytest.fixture
 def a_server(render_interactive):
     # Create a server with a unique ID to be sure that the created server is different for each run
     server = get_server(f"test_server_{uuid.uuid4()}", client_type="vue3")
@@ -227,14 +240,10 @@ def a_server(render_interactive):
         server.start = _server_start
 
 
-@pytest.fixture
-def a_subprocess_server(xprocess, server_path, fixture_helper):
-    name, Starter, Monitor = fixture_helper.get_xprocess_args(server_path)
-
-    # ensure process is running and return its logfile
-    logfile = xprocess.ensure(name, Starter)
+@pytest_asyncio.fixture()
+async def async_server():
+    server = get_server(f"test_server_{uuid.uuid4()}", client_type="vue3")
     try:
-        yield Monitor(logfile[1])
+        yield server
     finally:
-        # clean up whole process tree afterwards
-        xprocess.getinfo(name).terminate()
+        await server.stop()

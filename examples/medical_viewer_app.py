@@ -7,7 +7,11 @@ from trame.widgets import vuetify3
 from trame_client.widgets.html import Div
 from trame_server import Server
 from trame_vuetify.ui.vuetify3 import SinglePageLayout
-from widgets import StateId, ToolsStrip
+
+try:
+    from widgets import StateId, ToolsStrip
+except ModuleNotFoundError:
+    from .widgets import StateId, ToolsStrip
 
 from trame_slicer.core import LayoutManager, SlicerApp
 from trame_slicer.rca_view import register_rca_factories
