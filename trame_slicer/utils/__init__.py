@@ -13,7 +13,7 @@ from .scripted_module_node_dataclass_proxy import (
     scripted_proxy_to_dataclass,
 )
 from .singleton_meta import Singleton
-from .slicer_wrapper import SlicerWrapper, wrap
+from .slicer_wrapper import SlicerWrapper, to_camel_case, to_snake_case, wrap
 from .vtk_numpy import vtk_image_to_np
 
 __all__ = [
@@ -29,6 +29,8 @@ __all__ = [
     "rgb_float_to_hex",
     "scripted_proxy_from_dataclass",
     "scripted_proxy_to_dataclass",
+    "to_camel_case",
+    "to_snake_case",
     "vtk_image_to_np",
     "wrap",
     "write_client_files_to_dir",

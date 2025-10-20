@@ -4,7 +4,8 @@ from .brush_source import BrushSource
 from .paint_effect_parameters import BrushShape
 from .segment_modifier import ModificationMode, SegmentModifier
 from .segment_properties import SegmentProperties
-from .segmentation import Segmentation, SegmentationOpacityEnum
+from .segmentation import Segmentation
+from .segmentation_display import SegmentationDisplay, SegmentationOpacityEnum
 from .segmentation_effect import SegmentationEffect
 from .segmentation_effect_no_tool import SegmentationEffectNoTool
 from .segmentation_effect_paint_erase import (
@@ -36,6 +37,7 @@ __all__ = [
     "SegmentModifier",
     "SegmentProperties",
     "Segmentation",
+    "SegmentationDisplay",
     "SegmentationEffect",
     "SegmentationEffectErase",
     "SegmentationEffectNoTool",

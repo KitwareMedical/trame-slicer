@@ -29,7 +29,7 @@ def test_segmentation_opacity_2d(
     assert display_node is not None
 
     opacity = 0.5
-    a_segmentation_editor.set_2d_opacity(opacity)
+    a_segmentation_editor.active_segmentation_display.set_opacity_2d(opacity)
     assert display_node.GetOpacity2DFill() == opacity
     assert display_node.GetOpacity2DOutline() == opacity
 
@@ -48,7 +48,7 @@ def test_segmentation_opacity_3d(
 
     opacity = 0.5
 
-    a_segmentation_editor.set_3d_opacity(opacity)
+    a_segmentation_editor.active_segmentation_display.set_opacity_3d(opacity)
     assert display_node.GetOpacity3D() == opacity
 
     if render_interactive:
@@ -64,15 +64,15 @@ def test_segmentation_opacity_mode(
     display_node = a_segmentation_node.GetDisplayNode()
     assert display_node is not None
 
-    a_segmentation_editor.set_opacity_mode(SegmentationOpacityEnum.BOTH)
+    a_segmentation_editor.active_segmentation_display.set_opacity_mode(SegmentationOpacityEnum.BOTH)
     assert display_node.GetVisibility2DFill()
     assert display_node.GetVisibility2DOutline()
 
-    a_segmentation_editor.set_opacity_mode(SegmentationOpacityEnum.OUTLINE)
+    a_segmentation_editor.active_segmentation_display.set_opacity_mode(SegmentationOpacityEnum.OUTLINE)
     assert not display_node.GetVisibility2DFill()
     assert display_node.GetVisibility2DOutline()
 
-    a_segmentation_editor.set_opacity_mode(SegmentationOpacityEnum.FILL)
+    a_segmentation_editor.active_segmentation_display.set_opacity_mode(SegmentationOpacityEnum.FILL)
     assert display_node.GetVisibility2DFill()
     assert not display_node.GetVisibility2DOutline()
 

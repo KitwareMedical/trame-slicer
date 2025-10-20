@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 from slicer import vtkMRMLModelNode
 
-from trame_slicer.utils import SlicerWrapper, wrap
+from trame_slicer.utils import SlicerWrapper, to_camel_case, to_snake_case, wrap
 
 
 def test_wraps_slicer_obj_function_calls(a_slicer_app):
@@ -70,3 +70,31 @@ def test_errors_when_fetching_information_are_informative():
 
     assert "None" in str(exc_info.value)
     assert "my_name_property" in str(exc_info.value)
+
+
+@pytest.mark.parametrize(
+    ("camel_case", "exp_snake_case"),
+    (
+        [
+            ("GetOpacity3D", "get_opacity_3d"),
+            ("SetOpacity3D", "set_opacity_3d"),
+            ("SetVisibility2DOutline", "set_visibility_2d_outline"),
+        ]
+    ),
+)
+def test_to_snake_case(camel_case, exp_snake_case):
+    assert to_snake_case(camel_case) == exp_snake_case
+
+
+@pytest.mark.parametrize(
+    ("snake_case", "exp_camel_case"),
+    (
+        [
+            ("get_opacity_3d", "GetOpacity3D"),
+            ("set_opacity_3d", "SetOpacity3D"),
+            ("set_visibility_2d_outline", "SetVisibility2DOutline"),
+        ]
+    ),
+)
+def test_to_camel_case(snake_case, exp_camel_case):
+    assert to_camel_case(snake_case) == exp_camel_case

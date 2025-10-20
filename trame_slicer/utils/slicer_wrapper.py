@@ -8,19 +8,22 @@ from undo_stack import Signal
 from vtkmodules.vtkCommonCore import vtkObject
 
 
-def _to_camel_case(attr: str) -> str:
+def to_camel_case(attr: str) -> str:
     """
     Copied from https://github.com/jpvanhal/inflection/blob/master/inflection/__init__.py
+    Also capitalizes letters that follow digits.
     """
-    return re.sub(r"(?:^|_)(.)", lambda m: m.group(1).upper(), attr)
+    return re.sub(r"(?:^|_|(?<=\d))(.)", lambda m: m.group(1).upper(), attr)
 
 
-def _to_snake_case(attr: str) -> str:
+def to_snake_case(attr: str) -> str:
     """
     Copied from https://github.com/jpvanhal/inflection/blob/master/inflection/__init__.py
+    Preserves digit-letter sequences like '3D' as single tokens.
     """
+    attr = re.sub(r"([a-zA-Z])(\d)", r"\1_\2", attr)
     attr = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1_\2", attr)
-    attr = re.sub(r"([a-z\d])([A-Z])", r"\1_\2", attr)
+    attr = re.sub(r"(?<!\d)([a-z])([A-Z])", r"\1_\2", attr)
     attr = attr.replace("-", "_")
     return attr.lower()
 
@@ -72,7 +75,7 @@ class SlicerWrapper(Generic[T]):
             raise AttributeError(_error_msg) from e
         except AttributeError:
             # Return slicer attr if present either in snake_case or CamelCaseCase
-            attr_names = {attr, _to_camel_case(attr)}
+            attr_names = {attr, to_camel_case(attr)}
 
             for attr_name in attr_names:
                 try:
@@ -87,7 +90,7 @@ class SlicerWrapper(Generic[T]):
 
     def __dir__(self):
         """Return all attributes for IDE autocompletion"""
-        slicer_obj_dir = dir(self._slicer_obj) + list(map(_to_snake_case, dir(self._slicer_obj)))
+        slicer_obj_dir = dir(self._slicer_obj) + list(map(to_snake_case, dir(self._slicer_obj)))
         self_dir = list(self.__dict__) + list(dir(type(self)))
         return self_dir + slicer_obj_dir
 
