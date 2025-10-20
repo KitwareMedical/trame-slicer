@@ -28,13 +28,20 @@ class LayoutManager:
     """
 
     def __init__(
-        self, scene: vtkMRMLScene, view_manager: ViewManager, server: Server, *, virtual_node: VirtualNode | None = None
+        self,
+        scene: vtkMRMLScene,
+        view_manager: ViewManager,
+        server: Server,
+        *,
+        virtual_node: VirtualNode | None = None,
+        is_virtual_node_initialized: bool = False,
     ):
         self._layouts: dict[str, Layout] = {}
         self._view_manager = view_manager
         self._virtual_node = virtual_node or VirtualNode(server)
         self._current_layout: str | None = None
         self._scene_node = scene.AddNewNodeByClass("vtkMRMLScriptedModuleNode", "layout_node")
+        self._is_virtual_node_initialized = is_virtual_node_initialized
 
     def get_layout_ids(self) -> list[str]:
         return list(self._layouts.keys())
@@ -64,6 +71,10 @@ class LayoutManager:
         self._create_views_if_needed(self.get_layout(layout_id, Layout.empty_layout()))
 
     def _refresh_layout(self):
+        # Don't refresh layout when the current layout is None or when the virtual node is not yet bound to a layout.
+        if not self._is_virtual_node_initialized or self._current_layout is None:
+            return
+
         layout = self.get_layout(self._current_layout, Layout.empty_layout())
         self.create_layout_views_if_needed(self._current_layout)
         self._set_current_views_as_active(layout)
@@ -170,3 +181,5 @@ class LayoutManager:
         Initialize the LayoutGrid placeholder in the layout at the call position.
         """
         self._virtual_node(layout)
+        self._is_virtual_node_initialized = True
+        self._refresh_layout()

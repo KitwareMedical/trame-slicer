@@ -10,7 +10,7 @@ authors = [
 dependencies = [
     "trame",
     "trame-client >= 3.11.2",
-    "trame-server >= 3.6",
+    "trame-server >= 3.6.3",
     "trame-vuetify",
     "trame-vtk",
     "trame-rca >= 2.2.1",

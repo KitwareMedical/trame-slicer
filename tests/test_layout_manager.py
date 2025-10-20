@@ -12,7 +12,7 @@ from trame.widgets import client, html
 from trame_client.ui.core import AbstractLayout
 from trame_client.widgets.core import VirtualNode
 from trame_server import Server
-from trame_vuetify.ui.vuetify3 import VAppLayout
+from trame_vuetify.ui.vuetify3 import SinglePageLayout, VAppLayout
 
 from trame_slicer.core import LayoutManager, SlicerApp, ViewManager
 from trame_slicer.rca_view.rca_view_factory import register_rca_factories
@@ -62,7 +62,9 @@ def a_slicer_scene() -> vtkMRMLScene:
 
 @pytest.fixture
 def a_layout_manager(a_mock_ui, a_mock_view_manager, a_slicer_scene, a_server):
-    return LayoutManager(a_slicer_scene, a_mock_view_manager, a_server, virtual_node=a_mock_ui)
+    return LayoutManager(
+        a_slicer_scene, a_mock_view_manager, a_server, virtual_node=a_mock_ui, is_virtual_node_initialized=True
+    )
 
 
 @pytest.fixture
@@ -234,7 +236,7 @@ def test_view_creation_is_not_lazy_by_default(
 def test_layout_manager_blocks_views_not_currently_displayed(
     a_slicer_scene, a_view_manager, a_sagittal_layout, a_coronal_layout, a_server
 ):
-    layout_man = LayoutManager(a_slicer_scene, a_view_manager, a_server)
+    layout_man = LayoutManager(a_slicer_scene, a_view_manager, a_server, is_virtual_node_initialized=True)
     layout_man.register_layout("id_1", a_sagittal_layout)
     layout_man.register_layout("id_2", a_coronal_layout)
 
@@ -316,3 +318,54 @@ async def test_layout_manager_is_compatible_with_child_server_pattern(async_serv
         assert_images_differ(img_buffer1, img_buffer2)
 
         await browser.close()
+
+
+def test_is_not_refreshed_if_virtual_node_not_initialized(
+    a_mock_ui,
+    a_mock_view_manager,
+    a_slicer_scene,
+    a_server,
+    a_sagittal_layout,
+):
+    layout_manager = LayoutManager(
+        a_slicer_scene, a_mock_view_manager, a_server, virtual_node=a_mock_ui, is_virtual_node_initialized=False
+    )
+
+    layout_manager.register_layout("L1", a_sagittal_layout)
+    layout_manager.set_layout("L1")
+    a_mock_ui.clear.assert_not_called()
+
+
+def test_on_initialize_does_nothing_if_no_current_layout(
+    a_mock_ui,
+    a_mock_view_manager,
+    a_slicer_scene,
+    a_server,
+):
+    layout_manager = LayoutManager(
+        a_slicer_scene, a_mock_view_manager, a_server, virtual_node=a_mock_ui, is_virtual_node_initialized=False
+    )
+
+    with SinglePageLayout(a_server) as ui:
+        layout_manager.initialize_layout_grid(ui)
+
+    a_mock_ui.clear.assert_not_called()
+
+
+def test_on_initialize_refreshes_if_current_layout(
+    a_mock_ui,
+    a_mock_view_manager,
+    a_slicer_scene,
+    a_server,
+    a_sagittal_layout,
+):
+    layout_manager = LayoutManager(
+        a_slicer_scene, a_mock_view_manager, a_server, virtual_node=a_mock_ui, is_virtual_node_initialized=False
+    )
+    layout_manager.register_layout("L1", a_sagittal_layout)
+    layout_manager.set_layout("L1")
+
+    with SinglePageLayout(a_server) as ui:
+        layout_manager.initialize_layout_grid(ui)
+
+    a_mock_ui.clear.assert_called_once()
