@@ -10,6 +10,7 @@ from trame_client.widgets.html import Div
 from trame_rca.utils import RcaEncoder, RcaRenderScheduler, RcaViewAdapter, VtkWindow
 from trame_rca.widgets.rca import RemoteControlledArea
 from trame_server import Server
+from trame_server.state import State
 from trame_server.utils.asynchronous import create_task
 from vtkmodules.vtkCommonCore import vtkCommand
 
@@ -17,6 +18,7 @@ from trame_slicer.core import ViewManager
 from trame_slicer.views import (
     AbstractView,
     AbstractViewChild,
+    CursorId,
     IViewFactory,
     ScheduledRenderStrategy,
     SliceView,
@@ -85,6 +87,18 @@ class RcaWindow(VtkWindow):
     RCA Window wrapper fixing resize event for 2D views.
     """
 
+    def __init__(self, vtk_render_window, state: State, active_view_cursor: str):
+        super().__init__(vtk_render_window=vtk_render_window)
+        self.state = state
+        self.active_view_cursor = active_view_cursor
+
+    def process_interaction_event(self, event):
+        super().process_interaction_event(event)
+        with self.state:
+            self.state[self.active_view_cursor] = CursorId.from_vtk_cursor_id(
+                self._vtk_render_window.GetCurrentCursor()
+            ).value
+
     def process_resize_event(self, width, height):
         super().process_resize_event(width, height)
         self._iren.InvokeEvent(vtkCommand.WindowResizeEvent)
@@ -152,7 +166,11 @@ class RemoteViewFactory(IViewFactory):
 
         slicer_view.set_view_properties(view.properties)
 
-        rca_window = RcaWindow(slicer_view.render_window())
+        active_view_cursor = f"{view_id}_active_view_cursor"
+        self._server.state.setdefault(active_view_cursor, CursorId.DEFAULT.value)
+        rca_window = RcaWindow(
+            slicer_view.render_window(), state=self._server.state, active_view_cursor=active_view_cursor
+        )
         rca_scheduler = RcaRenderScheduler(
             window=rca_window,
             interactive_quality=self._interactive_quality,
@@ -161,7 +179,9 @@ class RemoteViewFactory(IViewFactory):
         )
 
         with ViewLayout(self._server, template_name=translated_view_id) as vuetify_view:
-            self._create_vuetify_ui(translated_view_id, slicer_view, rca_scheduler)
+            self._create_vuetify_ui(
+                translated_view_id, slicer_view, rca_scheduler, active_view_cursor=active_view_cursor
+            )
 
         rca_view_adapter = RcaViewAdapter(
             window=rca_window,
@@ -179,7 +199,9 @@ class RemoteViewFactory(IViewFactory):
         create_task(init_rca())
         return RcaView(vuetify_view, slicer_view, rca_view_adapter)
 
-    def _create_vuetify_ui(self, view_id: str, slicer_view: AbstractView, rca_scheduler: RcaRenderScheduler):
+    def _create_vuetify_ui(
+        self, view_id: str, slicer_view: AbstractView, rca_scheduler: RcaRenderScheduler, *, active_view_cursor: str
+    ):
         def set_scheduler_fps(fps: float | None) -> None:
             """
             Update the view target FPS to the given input value if the value is not None.
@@ -197,7 +219,13 @@ class RemoteViewFactory(IViewFactory):
         # As views are not yet displayed, configure the views in blur FPS until first hover
         set_blur_fps()
 
-        with Div(style="position: relative; width: 100%; height: 100%; overflow: hidden;"):
+        with Div(
+            style=(
+                "{position: 'relative', width: '100%', height: '100%', overflow: 'hidden', cursor: `${"
+                + f"{active_view_cursor}"
+                + "}`}",
+            )
+        ):
             RemoteControlledArea(
                 name=view_id,
                 display="image",
