@@ -113,7 +113,7 @@ class SliceView(AbstractView):
         self.logic = vtkMRMLSliceLogic()
         self.logic.SetMRMLApplicationLogic(app_logic)
         self.logic.AddObserver(vtkCommand.ModifiedEvent, self._on_slice_logic_modified_event)
-        self._modified_dispatcher.attach_vtk_observer(self.logic, "ModifiedEvent")
+        self._event_observer.UpdateObserver(None, self.logic, vtkCommand.ModifiedEvent)
         app_logic.GetSliceLogics().AddItem(self.logic)
         self.interactor_observer.SetSliceLogic(self.logic)
         self.interactor_observer.SetDisplayableManagers(self.displayable_manager_group)
@@ -122,6 +122,12 @@ class SliceView(AbstractView):
         self.set_mrml_scene(scene)
         self.interactor().SetInteractorStyle(vtkInteractorStyleUser())
         self.interactor_observer.SetInteractor(self.interactor())
+
+    def _on_object_event(self, _obj, _event_id, _call_data):
+        if _obj == self.logic:
+            self._on_slice_logic_modified_event()
+
+        super()._on_object_event(_obj, _event_id, _call_data)
 
     def _reset_node_view_properties(self):
         super()._reset_node_view_properties()

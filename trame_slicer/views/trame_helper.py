@@ -59,7 +59,7 @@ def connect_slice_view_slider_to_state(
             state.flush()
         _is_updating_from_slicer[slider_id.value_id] = False
 
-    view.add_modified_observer(_on_slice_view_modified)
+    view.modified.connect(_on_slice_view_modified)
     _on_slice_view_modified(view)
 
     return slider_id

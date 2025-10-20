@@ -14,7 +14,6 @@ from .scripted_module_node_dataclass_proxy import (
 )
 from .singleton_meta import Singleton
 from .slicer_wrapper import SlicerWrapper, wrap
-from .vtk_event_dispatcher import VtkEventDispatcher
 from .vtk_numpy import vtk_image_to_np
 
 __all__ = [
@@ -22,7 +21,6 @@ __all__ = [
     "ClosestToCameraPicker",
     "Singleton",
     "SlicerWrapper",
-    "VtkEventDispatcher",
     "create_scripted_module_dataclass_proxy",
     "create_scripted_module_dataclass_proxy_name",
     "ensure_node_in_scene",
