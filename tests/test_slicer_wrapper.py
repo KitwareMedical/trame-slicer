@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+from slicer import vtkMRMLModelNode
 
 from trame_slicer.utils import SlicerWrapper, wrap
 
@@ -43,7 +44,7 @@ def test_raises_attribute_error_for_invalid_pascal_case_attribute(a_slicer_app):
 
 
 def test_can_be_used_in_inheritance(a_slicer_app):
-    class MyModelNode(SlicerWrapper):
+    class MyModelNode(SlicerWrapper[vtkMRMLModelNode]):
         def my_name(self):
             return "MyPrefix " + self.get_name()
 
@@ -58,7 +59,7 @@ def test_can_be_used_in_inheritance(a_slicer_app):
 
 
 def test_errors_when_fetching_information_are_informative():
-    class MyModelNode(SlicerWrapper):
+    class MyModelNode(SlicerWrapper[vtkMRMLModelNode]):
         @property
         def my_name_property(self):
             return "MyPrefix " + self.get_name()

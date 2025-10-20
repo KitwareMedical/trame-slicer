@@ -16,7 +16,7 @@ class VRShiftMode(Flag):
     BOTH = OPACITY | COLOR
 
 
-class VolumeProperty(SlicerWrapper):
+class VolumeProperty(SlicerWrapper[vtkMRMLVolumePropertyNode]):
     """
     Thin facade for volume property node.
     Allows more pythonic access to the scalar / opacity properties of a volume rendering display node.

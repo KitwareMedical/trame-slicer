@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from .slicer_app import SlicerApp
 
 
-class VolumeRendering(SlicerWrapper):
+class VolumeRendering(SlicerWrapper[vtkSlicerVolumeRenderingLogic]):
     """
     Simple facade for volume rendering logic.
     """
