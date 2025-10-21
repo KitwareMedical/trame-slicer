@@ -21,6 +21,7 @@ from undo_stack import Signal, UndoStack
 
 from trame_slicer.core import SlicerApp
 from trame_slicer.segmentation import (
+    SegmentationDisplay,
     SegmentationEffect,
     SegmentationEffectErase,
     SegmentationEffectNoTool,
@@ -371,9 +372,7 @@ class SegmentationButton(VMenu):
             self._segmentation_node,
             get_current_volume_node(self._server, self._slicer_app),
         )
-        self.segmentation_editor.set_opacity_mode(
-            SegmentationOpacityEnum(self.state[SegmentationId.segment_opacity_mode])
-        )
+        self.on_opacity_mode_changed()
         self.on_add_segment()
 
     @change(SegmentationId.active_segment_id)
@@ -446,18 +445,31 @@ class SegmentationButton(VMenu):
         self._update_segment_properties()
 
     def on_toggle_2d_opacity_mode(self):
+        if not self._segmentation_display:
+            return
         current_opacity_mode = self.state[SegmentationId.segment_opacity_mode]
         new_opacity_mode = SegmentationOpacityEnum(current_opacity_mode).next()
         self.state[SegmentationId.segment_opacity_mode] = new_opacity_mode.value
-        self.segmentation_editor.set_opacity_mode(new_opacity_mode)
 
     @change(SegmentationId.opacity_2d)
     def on_opacity_2d_changed(self, **_kwargs):
-        self.segmentation_editor.set_2d_opacity(self.state[SegmentationId.opacity_2d])
+        if not self._segmentation_display:
+            return
+        self._segmentation_display.set_opacity_2d(self.state[SegmentationId.opacity_2d])
 
     @change(SegmentationId.opacity_3d)
     def on_opacity_3d_changed(self, **_kwargs):
-        self.segmentation_editor.set_3d_opacity(self.state[SegmentationId.opacity_3d])
+        if not self._segmentation_display:
+            return
+        self._segmentation_display.set_opacity_3d(self.state[SegmentationId.opacity_3d])
+
+    @change(SegmentationId.segment_opacity_mode)
+    def on_opacity_mode_changed(self, **_kwargs):
+        if not self._segmentation_display:
+            return
+        self._segmentation_display.set_opacity_mode(
+            SegmentationOpacityEnum(self.state[SegmentationId.segment_opacity_mode])
+        )
 
     def _on_segment_editor_changed(self, *_):
         self.state[SegmentationId.active_segment_id] = self.segmentation_editor.get_active_segment_id()
@@ -469,3 +481,7 @@ class SegmentationButton(VMenu):
         self.state[SegmentationId.can_undo] = self._undo_stack.can_undo()
         self.state[SegmentationId.can_redo] = self._undo_stack.can_redo()
         self.state[SegmentationId.active_segment_id] = self.segmentation_editor.get_active_segment_id()
+
+    @property
+    def _segmentation_display(self) -> SegmentationDisplay | None:
+        return self.segmentation_editor.active_segmentation_display

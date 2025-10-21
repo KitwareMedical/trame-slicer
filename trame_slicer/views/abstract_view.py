@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Generator
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Literal, TypeVar
+from typing import Any, Literal, TypeVar
 
 from slicer import (
     vtkMRMLAbstractDisplayableManager,
@@ -11,18 +11,18 @@ from slicer import (
     vtkMRMLApplicationLogic,
     vtkMRMLDisplayableManagerFactory,
     vtkMRMLDisplayableManagerGroup,
+    vtkMRMLLayerDMObjectEventObserverScripted,
     vtkMRMLScene,
     vtkMRMLViewNode,
 )
-from vtkmodules.vtkCommonCore import vtkCommand
+from undo_stack import Signal
+from vtkmodules.vtkCommonCore import vtkCommand, vtkObject
 from vtkmodules.vtkRenderingCore import (
     vtkInteractorStyle,
     vtkRenderer,
     vtkRenderWindow,
     vtkRenderWindowInteractor,
 )
-
-from trame_slicer.utils import VtkEventDispatcher
 
 from .render_scheduler import DirectRendering, ScheduledRenderStrategy
 
@@ -77,6 +77,8 @@ class AbstractView:
     Simple container class for a VTK Render Window, Renderers and VTK MRML Displayable Manager Group
     """
 
+    modified = Signal("AbstractView")
+
     def __init__(
         self,
         scheduled_render_strategy: ScheduledRenderStrategy | None = None,
@@ -104,8 +106,8 @@ class AbstractView:
         self.set_scheduled_render(scheduled_render_strategy or DirectRendering())
         self._view_properties = ViewProps()
 
-        self._modified_dispatcher = VtkEventDispatcher()
-        self._modified_dispatcher.set_dispatch_information(self)
+        self._event_observer = vtkMRMLLayerDMObjectEventObserverScripted()
+        self._event_observer.SetPythonCallback(self._on_object_event)
         self._mrml_node_obs_id = None
 
         self._is_render_blocked = False
@@ -182,11 +184,10 @@ class AbstractView:
             return
 
         with self.trigger_modified_once():
-            self._modified_dispatcher.detach_vtk_observer(self._mrml_node_obs_id)
+            self._event_observer.UpdateObserver(self.mrml_view_node, node)
             self.mrml_view_node = node
             self.displayable_manager_group.SetMRMLDisplayableNode(node)
             self._reset_node_view_properties()
-            self._mrml_node_obs_id = self._modified_dispatcher.attach_vtk_observer(node, "ModifiedEvent")
 
     def set_view_properties(self, view_properties: ViewProps):
         self._view_properties = view_properties
@@ -231,12 +232,6 @@ class AbstractView:
         for renderer in self._render_window.GetRenderers():
             renderer.ResetCamera()
 
-    def add_modified_observer(self, observer: Callable) -> None:
-        self._modified_dispatcher.add_dispatch_observer(observer)
-
-    def remove_modified_observer(self, observer: Callable) -> None:
-        self._modified_dispatcher.remove_dispatch_observer(observer)
-
     def get_view_node_id(self) -> str:
         return self.mrml_view_node.GetID() if self.mrml_view_node else ""
 
@@ -279,17 +274,15 @@ class AbstractView:
         return [int_color.red, int_color.green, int_color.blue]
 
     def _trigger_modified(self) -> None:
-        self._modified_dispatcher.trigger_dispatch()
+        self.modified.emit(self)
 
     @contextmanager
     def trigger_modified_once(self):
-        prev_blocked = self._modified_dispatcher.is_blocked()
-        self._modified_dispatcher.set_blocked(True)
-        try:
-            yield
-        finally:
-            self._modified_dispatcher.set_blocked(prev_blocked)
-            self._trigger_modified()
+        with self.modified.emit_once():
+            try:
+                yield
+            finally:
+                self._trigger_modified()
 
     def set_orientation_marker(
         self,
@@ -356,3 +349,6 @@ class AbstractView:
 
     def set_mapped_in_layout(self, is_mapped_in_layout: bool):
         self.mrml_view_node.SetMappedInLayout(is_mapped_in_layout)
+
+    def _on_object_event(self, _obj: vtkObject, _event_id: int, _call_data: Any | None) -> None:
+        self._trigger_modified()

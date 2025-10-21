@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from .slicer_app import SlicerApp
 
 
-class MarkupsLogic(SlicerWrapper):
+class MarkupsLogic(SlicerWrapper[vtkSlicerMarkupsLogic]):
     """
     Thin wrapper around vtkSlicerMarkupsLogic
     """

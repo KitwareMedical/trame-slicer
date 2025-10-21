@@ -1,21 +1,29 @@
 from __future__ import annotations
 
 import re
+from typing import Any, Generic, TypeVar
+
+from slicer import vtkMRMLLayerDMObjectEventObserverScripted
+from undo_stack import Signal
+from vtkmodules.vtkCommonCore import vtkObject
 
 
-def _to_camel_case(attr: str) -> str:
+def to_camel_case(attr: str) -> str:
     """
     Copied from https://github.com/jpvanhal/inflection/blob/master/inflection/__init__.py
+    Also capitalizes letters that follow digits.
     """
-    return re.sub(r"(?:^|_)(.)", lambda m: m.group(1).upper(), attr)
+    return re.sub(r"(?:^|_|(?<=\d))(.)", lambda m: m.group(1).upper(), attr)
 
 
-def _to_snake_case(attr: str) -> str:
+def to_snake_case(attr: str) -> str:
     """
     Copied from https://github.com/jpvanhal/inflection/blob/master/inflection/__init__.py
+    Preserves digit-letter sequences like '3D' as single tokens.
     """
+    attr = re.sub(r"([a-zA-Z])(\d)", r"\1_\2", attr)
     attr = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1_\2", attr)
-    attr = re.sub(r"([a-z\d])([A-Z])", r"\1_\2", attr)
+    attr = re.sub(r"(?<!\d)([a-z])([A-Z])", r"\1_\2", attr)
     attr = attr.replace("-", "_")
     return attr.lower()
 
@@ -24,7 +32,10 @@ class SlicerWrappingAttributeError(AttributeError):
     pass
 
 
-class SlicerWrapper:
+T = TypeVar("T")
+
+
+class SlicerWrapper(Generic[T]):
     """
     This class provides automatic conversion of snake_case attributes to CamelCase if
     the original attribute is not found in any slicer object. If neither form exists,
@@ -33,11 +44,16 @@ class SlicerWrapper:
     Delegates calls to the wrapped object.
     """
 
-    def __init__(self, slicer_obj: object | None = None):
+    modified = Signal(T)
+
+    def __init__(self, slicer_obj: T | None = None):
         self._slicer_obj = None
+        self._observer = vtkMRMLLayerDMObjectEventObserverScripted()
+        self._observer.SetPythonCallback(self._on_wrapped_object_event)
         self.set_wrapped_obj(slicer_obj)
 
     def set_wrapped_obj(self, slicer_obj: object | None):
+        self._observer.UpdateObserver(self._slicer_obj, slicer_obj)
         self._slicer_obj = slicer_obj
 
     def __getattribute__(self, attr: str):
@@ -59,7 +75,7 @@ class SlicerWrapper:
             raise AttributeError(_error_msg) from e
         except AttributeError:
             # Return slicer attr if present either in snake_case or CamelCaseCase
-            attr_names = {attr, _to_camel_case(attr)}
+            attr_names = {attr, to_camel_case(attr)}
 
             for attr_name in attr_names:
                 try:
@@ -74,9 +90,12 @@ class SlicerWrapper:
 
     def __dir__(self):
         """Return all attributes for IDE autocompletion"""
-        slicer_obj_dir = dir(self._slicer_obj) + list(map(_to_snake_case, dir(self._slicer_obj)))
+        slicer_obj_dir = dir(self._slicer_obj) + list(map(to_snake_case, dir(self._slicer_obj)))
         self_dir = list(self.__dict__) + list(dir(type(self)))
         return self_dir + slicer_obj_dir
+
+    def _on_wrapped_object_event(self, _obj: vtkObject, _event_id: int, _call_data: Any | None):
+        self.modified(self)
 
 
 def wrap(obj):

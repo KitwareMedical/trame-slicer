@@ -50,7 +50,7 @@ def test_slice_view_can_display_empty(a_slice_view, render_interactive):
 
 def test_slice_view_can_register_modified_observers(a_slice_view, a_volume_node):
     mock_obs = MagicMock()
-    a_slice_view.add_modified_observer(mock_obs)
+    a_slice_view.modified.connect(mock_obs)
     a_slice_view.set_background_volume_id(a_volume_node.GetID())
 
     a_slice_view.set_orientation("Coronal")
@@ -58,7 +58,7 @@ def test_slice_view_can_register_modified_observers(a_slice_view, a_volume_node)
     mock_obs.assert_called_with(a_slice_view)
     mock_obs.reset_mock()
 
-    a_slice_view.remove_modified_observer(mock_obs)
+    a_slice_view.modified.disconnect(mock_obs)
 
     a_slice_view.set_orientation("Sagittal")
     mock_obs.assert_not_called()

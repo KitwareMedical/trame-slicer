@@ -29,13 +29,13 @@ from vtkmodules.vtkCommonDataModel import vtkImageData
 
 from trame_slicer.segmentation import (
     Segmentation,
+    SegmentationDisplay,
     SegmentationEffect,
     SegmentationEffectErase,
     SegmentationEffectNoTool,
     SegmentationEffectPaint,
     SegmentationEffectPipeline,
     SegmentationEffectScissors,
-    SegmentationOpacityEnum,
     SegmentModifier,
     SegmentProperties,
 )
@@ -151,6 +151,10 @@ class SegmentationEditor(SignalContainer):
     @property
     def active_segmentation(self) -> Segmentation | None:
         return self._active_modifier.segmentation if self._active_modifier else None
+
+    @property
+    def active_segmentation_display(self) -> SegmentationDisplay | None:
+        return self.active_segmentation.get_display() if self.active_segmentation else None
 
     @property
     def active_segmentation_node(self):
@@ -428,44 +432,14 @@ class SegmentationEditor(SignalContainer):
         self.segmentation_modified()
 
     def set_segment_visibility(self, segment_id, visibility: bool) -> None:
-        if not self.active_segmentation:
+        if not self.active_segmentation_display:
             return None
-        return self.active_segmentation.set_segment_visibility(segment_id, visibility)
+        return self.active_segmentation_display.set_segment_visibility(segment_id, visibility)
 
     def get_segment_visibility(self, segment_id) -> bool | None:
-        if not self.active_segmentation:
+        if not self.active_segmentation_display:
             return None
-        return self.active_segmentation.get_segment_visibility(segment_id)
-
-    def set_opacity_mode(self, opacity_mode: SegmentationOpacityEnum) -> None:
-        if not self.active_segmentation:
-            return
-        self.active_segmentation.set_opacity_mode(opacity_mode)
-
-    def get_opacity_mode(self) -> SegmentationOpacityEnum | None:
-        if not self.active_segmentation:
-            return None
-        return self.active_segmentation.get_opacity_mode()
-
-    def get_2d_opacity(self) -> float | None:
-        if not self.active_segmentation:
-            return None
-        return self.active_segmentation.get_2d_opacity()
-
-    def set_2d_opacity(self, opacity: float) -> None:
-        if not self.active_segmentation:
-            return
-        self.active_segmentation.set_2d_opacity(opacity)
-
-    def get_3d_opacity(self) -> float | None:
-        if not self.active_segmentation:
-            return None
-        return self.active_segmentation.get_3d_opacity()
-
-    def set_3d_opacity(self, opacity: float) -> None:
-        if not self.active_segmentation:
-            return
-        self.active_segmentation.set_3d_opacity(opacity)
+        return self.active_segmentation_display.get_segment_visibility(segment_id)
 
     def get_effect_parameter_node(
         self, effect: SegmentationEffect | type[SegmentationEffect]

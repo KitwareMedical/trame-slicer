@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from enum import Flag, auto
-
 from numpy.typing import NDArray
 from slicer import (
     vtkMRMLSegmentationNode,
@@ -19,25 +17,12 @@ from vtkmodules.vtkSegmentationCore import vtkOrientedImageData
 from trame_slicer.utils import vtk_image_to_np
 
 from .segment_properties import SegmentProperties
+from .segmentation_display import SegmentationDisplay
 from .segmentation_undo_command import (
     SegmentationAddUndoCommand,
     SegmentationRemoveUndoCommand,
     SegmentPropertyChangeUndoCommand,
 )
-
-
-class SegmentationOpacityEnum(Flag):
-    FILL = auto()
-    OUTLINE = auto()
-    BOTH = FILL | OUTLINE
-
-    @classmethod
-    def toggle_order(cls):
-        return [cls.BOTH, cls.OUTLINE, cls.FILL]
-
-    def next(self):
-        values = self.toggle_order()
-        return values[(values.index(self) + 1) % len(values)]
 
 
 class Segmentation:
@@ -74,9 +59,6 @@ class Segmentation:
         self.editor_logic.SetSegmentationNode(self._segmentation_node)
         self.editor_logic.SetSourceVolumeNode(self._volume_node)
         self.editor_logic.UpdateReferenceGeometryImage()
-
-    def __del__(self):
-        self.segmentation_node.RemoveObserver(self._node_obs)
 
     def set_undo_stack(self, undo_stack):
         if self._undo_stack == undo_stack:
@@ -288,71 +270,5 @@ class Segmentation:
             self.get_segment_labelmap(segment_id, as_numpy_array=True)[:] = label_map
         self.segmentation_modified()
 
-    def set_segment_visibility(self, segment_id, visibility: bool) -> None:
-        if segment_id not in self.get_segment_ids():
-            return
-
-        display_node = self._segmentation_node.GetDisplayNode()
-        if display_node:
-            display_node.SetSegmentVisibility(segment_id, visibility)
-
-    def get_segment_visibility(self, segment_id) -> bool | None:
-        if segment_id not in self.get_segment_ids():
-            return None
-
-        display_node = self._segmentation_node.GetDisplayNode()
-        if display_node:
-            return display_node.GetSegmentVisibility(segment_id)
-        return None
-
-    def set_opacity_mode(self, opacity_mode: SegmentationOpacityEnum) -> None:
-        if not self._segmentation_node:
-            return
-        display_node = self._segmentation_node.GetDisplayNode()
-        display_node.SetVisibility2DFill(SegmentationOpacityEnum.FILL in opacity_mode)
-        display_node.SetVisibility2DOutline(SegmentationOpacityEnum.OUTLINE in opacity_mode)
-
-    def get_opacity_mode(self) -> SegmentationOpacityEnum | None:
-        if not self._segmentation_node:
-            return None
-        display_node = self._segmentation_node.GetDisplayNode()
-        if display_node is None:
-            return None
-        fill_visibility = display_node.GetVisibility2DFill()
-        outline_visibility = display_node.GetVisibility2DOutline()
-        if outline_visibility and not fill_visibility:
-            return SegmentationOpacityEnum.OUTLINE
-        if fill_visibility and not outline_visibility:
-            return SegmentationOpacityEnum.FILL
-        return SegmentationOpacityEnum.FILL | SegmentationOpacityEnum.OUTLINE
-
-    def get_2d_opacity(self) -> float | None:
-        if not self._segmentation_node:
-            return None
-        display_node = self._segmentation_node.GetDisplayNode()
-        if display_node:
-            return display_node.GetOpacity2DFill()
-        return None
-
-    def set_2d_opacity(self, opacity: float) -> None:
-        if not self._segmentation_node:
-            return
-        display_node = self._segmentation_node.GetDisplayNode()
-        if display_node:
-            display_node.SetOpacity2DFill(opacity)
-            display_node.SetOpacity2DOutline(opacity)
-
-    def get_3d_opacity(self) -> float | None:
-        if not self._segmentation_node:
-            return None
-        display_node = self._segmentation_node.GetDisplayNode()
-        if display_node:
-            return display_node.GetOpacity3D()
-        return None
-
-    def set_3d_opacity(self, opacity: float) -> None:
-        if not self._segmentation_node:
-            return
-        display_node = self._segmentation_node.GetDisplayNode()
-        if display_node:
-            display_node.SetOpacity3D(opacity)
+    def get_display(self) -> SegmentationDisplay | None:
+        return SegmentationDisplay(self._segmentation_node.GetDisplayNode()) if self._segmentation_node else None
