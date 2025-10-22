@@ -1,0 +1,4 @@
+[submodule "tests/data"]
+	path = tests/data
+	url = https://github.com/KitwareMedical/trame-slicer-test-data.git
+	branch = main
