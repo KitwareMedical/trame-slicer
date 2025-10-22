@@ -1,6 +1,9 @@
 # Contributing to trame-slicer
 
 1. Clone the repository using `git clone`
+1. Initialize and pull the test directory with
+   `git submodule update --init --recursive`
+1. Pull the test directory files with `git submodule foreach 'git lfs pull'`
 1. Install the dev dependencies via `pip install pre-commit`
 1. Run `pre-commit install` to set up pre-commit hooks
 1. Make changes to the code, and commit your changes to a separate branch
