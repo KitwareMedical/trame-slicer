@@ -18,6 +18,8 @@ environment :
 1. Install the test requirements using pip using the `pip install .[dev]`
    command
 1. Install playwright browsers using the `playwright install` command
+1. [Linux] Install playwright dependencies using the `playwright install-deps`
+   command
 1. Run the tests using the pytest module `python -m pytest tests`
 
 ## Interactivity
@@ -25,7 +27,7 @@ environment :
 Some tests allow for interactive interaction with the views and can be activated
 by using the following arguments :
 
-`python -m pytest tests --render_interactive=<interaction_time_limit_s>`
+`python -m pytest tests --render-interactive=<interaction_time_limit_s>`
 
 The interactivity time limit will apply to tests using a trame server in an
 asyncio tasks. Interactivity for VTK render window logic will require manually

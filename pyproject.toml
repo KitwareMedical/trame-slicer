@@ -50,12 +50,13 @@ classifiers = [
 
 [project.optional-dependencies]
 dev = [
+    "async-timeout",
+    "nox",
+    "pixelmatch",
     "pytest",
     "pytest-asyncio",
-    "pytest-xprocess",
     "pytest-playwright",
-    "pixelmatch",
-    "nox",
+    "pytest-xprocess",
 ]
 
 [build-system]

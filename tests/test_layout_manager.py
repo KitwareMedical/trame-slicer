@@ -4,6 +4,7 @@ from io import BytesIO
 from unittest import mock
 
 import pytest
+from async_timeout import timeout
 from PIL import Image
 from pixelmatch.contrib.PIL import pixelmatch
 from playwright.async_api import async_playwright
@@ -297,10 +298,10 @@ def assert_images_differ(img_buffer1: str, img_buffer2: str, threshold: float = 
 async def test_layout_manager_is_compatible_with_child_server_pattern(async_server, a_server_port):
     server_with_child(async_server)
     async_server.start(port=a_server_port, exec_mode="task", thread=True)
-    assert await async_server.ready
-    assert async_server.port
 
-    async with async_playwright() as p:
+    async with timeout(10), async_playwright() as p:
+        assert await async_server.ready
+        assert async_server.port
         url = f"http://127.0.0.1:{async_server.port}/"
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
