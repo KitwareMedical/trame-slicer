@@ -20,7 +20,6 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
-tests/data/
 
 __pycache__
 *egg-info
