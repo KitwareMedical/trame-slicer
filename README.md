@@ -17,24 +17,35 @@ generated wheels are provided for Python 3.10 for Windows and Linux WSL.
 The API has not been stabilized / reviewed by the 3D Slicer core developers so
 please use this library with caution.
 
+## Downloading the latest wheels
+
+Links to the latest VTK MRML wheels necessary to use this library in a Python
+environment can be downloaded here:
+
+- [Windows](https://github.com/KitwareMedical/trame-slicer/releases/download/v1.4.0.wheels/vtk_mrml-9.4.0-cp310-cp310-win_amd64.whl)
+- [Linux](https://github.com/KitwareMedical/trame-slicer/releases/download/v1.4.0.wheels/vtk_mrml-9.4.0-cp310-cp310-manylinux_2_35_x86_64.whl)
+
+To use the library with other platforms (and Python 3.12), you can use the
+[Slicer Trame module](https://github.com/KitwareMedical/SlicerTrame) directly
+available in the Slicer 5.9+ extension manager.
+
 ## Installing
 
 The library can be installed as follows :
 
 - Setup a Python 3.10 environment
 - Activate your environment
-- Git clone the library
-- cd into the library
-- Use the [pip install -e . command]{.title-ref} to install the library along
-  it\'s dependencies
-- Copy the vtk_mrml wheel file matching your OS
-- Pip install the wheel using the find links command (see below)
-
-```console
-pip install -e .
-pip install vtk_mrml-9.4.0-cp310-cp310-win_amd64.whl  --find-links . # Windows
-pip install vtk_mrml-9.4.0-cp310-cp310-manylinux_2_35_x86_64.whl  --find-links . # Linux WSL
-```
+- From PyPI
+  - Use `pip install trame-slicer` to install the latest release
+- From GitHub
+  - Git clone the library
+  - cd into the library
+  - Use the `pip install -e .` command to install the library along it\'s
+    dependencies
+- Copy the vtk_mrml wheel file matching your OS (see
+  [Downloading the latest wheels](#Downloading-the-latest-wheels))
+  - Windows: `pip install vtk_mrml-9.4.0-cp310-cp310-win_amd64.whl`
+  - Linux: `pip install vtk_mrml-9.4.0-cp310-cp310-manylinux_2_35_x86_64.whl`
 
 ## Getting started
 
@@ -70,7 +81,7 @@ progress :
 
 ## Troubleshooting
 
-If you get the following error:
+If you get the following error on Linux:
 
 `ImportError: cannot import name 'vtkMRMLDisplayableNode' from 'slicer' (XXX/lib/python3.10/site-packages/slicer/__init__.py)`
 
