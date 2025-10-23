@@ -16,7 +16,7 @@ from .render_scheduler import (
     NoScheduleRendering,
     ScheduledRenderStrategy,
 )
-from .slice_view import SliceView
+from .slice_view import SliceLayer, SliceView
 from .threed_view import ThreeDView
 from .trame_helper import (
     connect_slice_view_slider_to_state,
@@ -39,6 +39,7 @@ __all__ = [
     "LayoutGrid",
     "NoScheduleRendering",
     "ScheduledRenderStrategy",
+    "SliceLayer",
     "SliceView",
     "ThreeDView",
     "ViewLayout",

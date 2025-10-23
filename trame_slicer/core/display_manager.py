@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from slicer import vtkMRMLDisplayableNode, vtkMRMLVolumeNode
 
+from trame_slicer.views import SliceLayer
+
 from .view_manager import ViewManager
 from .volume_rendering import VolumeRendering
 
@@ -42,6 +44,19 @@ class DisplayManager:
 
         if do_reset_views:
             self.reset_views(view_group)
+
+    def hide_volume(self, volume_node: vtkMRMLVolumeNode, view_group: int | None = None):
+        if not volume_node:
+            return
+
+        display_node = self._vr.get_vr_display_node(volume_node)
+        if display_node:
+            display_node.SetVisibility(False)
+
+        for view in self._view_manager.get_slice_views(view_group):
+            for layer in SliceLayer:
+                if view.get_layer_volume_id(layer) == volume_node.GetID():
+                    view.set_layer_volume_id(layer, None)
 
     def reset_views(self, view_group: int | None = None):
         for view in self._view_manager.get_views(view_group):

@@ -7,6 +7,8 @@ import pytest
 import vtk
 from slicer import vtkMRMLAbstractViewNode
 
+from trame_slicer.views import SliceLayer
+
 
 def test_slice_view_can_display_volume(
     a_slice_view,
@@ -176,3 +178,9 @@ def test_slice_views_can_set_foreground_opacity(
     assert a_slice_view.get_foreground_opacity() == 0.5
     if render_interactive:
         a_slice_view.start_interactor()
+
+
+@pytest.mark.parametrize("layer", [0, 1, SliceLayer.Background, SliceLayer.Foreground])
+def test_slice_view_layers_can_be_set_using_enum(a_slice_view, a_volume_node, layer):
+    a_slice_view.set_layer_volume_id(layer, a_volume_node.GetID())
+    assert a_slice_view.get_layer_volume_id(layer) == a_volume_node.GetID()

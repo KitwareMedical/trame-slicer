@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import IntEnum, auto
 from typing import Literal
 
 import vtk
@@ -63,6 +64,22 @@ class SliceRendererManager:
             return
 
         renderer.AddViewProp(self.image_actor)
+
+
+class SliceLayer(IntEnum):
+    """
+    Int enum to manage Slice Layers.
+
+    """
+
+    Background = auto()
+    Foreground = auto()
+
+    @classmethod
+    def as_int(cls, layer: int | SliceLayer) -> int:
+        if isinstance(layer, SliceLayer):
+            return layer.value
+        return layer
 
 
 class SliceView(AbstractView):
@@ -175,16 +192,16 @@ class SliceView(AbstractView):
         self.logic.SnapSliceOffsetToIJK()
 
     def set_background_volume_id(self, volume_id: str | None) -> None:
-        self.logic.GetSliceCompositeNode().SetBackgroundVolumeID(volume_id)
+        self.set_layer_volume_id(SliceLayer.Background, volume_id)
 
     def get_background_volume_id(self) -> str | None:
-        return self.logic.GetSliceCompositeNode().GetBackgroundVolumeID()
+        return self.get_layer_volume_id(SliceLayer.Background)
 
     def set_foreground_volume_id(self, volume_id: str | None) -> None:
-        self.logic.GetSliceCompositeNode().SetForegroundVolumeID(volume_id)
+        self.set_layer_volume_id(SliceLayer.Foreground, volume_id)
 
     def get_foreground_volume_id(self) -> str | None:
-        return self.logic.GetSliceCompositeNode().GetForegroundVolumeID()
+        return self.get_layer_volume_id(SliceLayer.Foreground)
 
     def get_slice_range(self) -> tuple[float, float]:
         (range_min, range_max), _ = self._get_slice_range_resolution()
@@ -270,3 +287,20 @@ class SliceView(AbstractView):
 
     def get_foreground_opacity(self) -> float:
         return self.logic.GetSliceCompositeNode().GetForegroundOpacity()
+
+    def set_layer_volume_id(self, layer: int | SliceLayer, volume_id: str | None) -> None:
+        setter = (
+            self.logic.GetSliceCompositeNode().SetBackgroundVolumeID
+            if SliceLayer.as_int(layer) == SliceLayer.Background.value
+            else self.logic.GetSliceCompositeNode().SetForegroundVolumeID
+        )
+        setter(volume_id)
+        self.schedule_render()
+
+    def get_layer_volume_id(self, layer: int | SliceLayer) -> str | None:
+        getter = (
+            self.logic.GetSliceCompositeNode().GetBackgroundVolumeID
+            if SliceLayer.as_int(layer) == SliceLayer.Background.value
+            else self.logic.GetSliceCompositeNode().GetForegroundVolumeID
+        )
+        return getter()

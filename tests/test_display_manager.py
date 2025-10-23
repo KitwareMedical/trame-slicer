@@ -122,3 +122,26 @@ def test_a_display_manager_can_show_node_to_slice_foreground(
     assert all(slice_view.get_foreground_volume_id() == a_volume_node.GetID() for slice_view in slice_view_group_0)
 
     assert all(slice_view.get_foreground_volume_id() is None for slice_view in slice_view_group_1)
+
+
+def test_can_hide_volume_from_views(a_background_volume_node, a_foreground_volume_node, a_slicer_app_with_two_groups):
+    v1 = a_background_volume_node
+    v2 = a_foreground_volume_node
+
+    display_man = DisplayManager(
+        a_slicer_app_with_two_groups.view_manager,
+        a_slicer_app_with_two_groups.volume_rendering,
+    )
+    display_man.show_volume(v1, view_group=0)
+    display_man.show_volume(v2, view_group=1)
+    display_man.show_volume_in_slice_foreground(v2)
+
+    display_man.hide_volume(v1)
+    assert not a_slicer_app_with_two_groups.volume_rendering.get_vr_display_node(v1).GetVisibility()
+    assert a_slicer_app_with_two_groups.volume_rendering.get_vr_display_node(v2).GetVisibility()
+
+    for view in a_slicer_app_with_two_groups.view_manager.get_slice_views():
+        assert view.get_foreground_volume_id() == v2.GetID()
+
+    for view in a_slicer_app_with_two_groups.view_manager.get_slice_views(view_group=1):
+        assert view.get_background_volume_id() == v2.GetID()
