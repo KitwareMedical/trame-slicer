@@ -88,3 +88,26 @@ def test_a_volume_can_be_cropped(a_volume_rendering, a_volume_node, a_threed_vie
 
     if render_interactive:
         a_threed_view.start_interactor()
+
+
+def test_a_volume_roi_node_visibility_can_be_toggled(a_volume_rendering, a_volume_node):
+    a_volume_rendering.create_display_node(a_volume_node, "MR-Default")
+    a_volume_rendering.set_cropping_enabled(a_volume_node, None, True)
+    assert a_volume_rendering.get_cropping_roi_visiblity(a_volume_node)
+
+    a_volume_rendering.toggle_cropping_visibility(a_volume_node)
+    assert not a_volume_rendering.get_cropping_roi_visiblity(a_volume_node)
+
+    a_volume_rendering.toggle_cropping_visibility(a_volume_node)
+    assert a_volume_rendering.get_cropping_roi_visiblity(a_volume_node)
+
+
+def test_a_volume_roi_node_if_not_set_cannot_be_set_visible(a_volume_rendering, a_volume_node):
+    a_volume_rendering.create_display_node(a_volume_node, "MR-Default")
+    assert a_volume_rendering.get_cropping_roi_node(a_volume_node) is None
+    assert not a_volume_rendering.set_cropping_roi_node_visibile(a_volume_node, True)
+    assert not a_volume_rendering.get_cropping_roi_visiblity(a_volume_node)
+
+
+def test_accessing_a_roi_node_of_volume_without_vr_display_returns_none(a_volume_rendering, a_volume_node):
+    assert a_volume_rendering.get_cropping_roi_node(a_volume_node) is None

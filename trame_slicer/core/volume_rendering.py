@@ -179,7 +179,17 @@ class VolumeRendering(SlicerWrapper[vtkSlicerVolumeRenderingLogic]):
         roi_node: vtkMRMLMarkupsROINode | None,
         is_enabled: bool,
     ) -> vtkMRMLMarkupsROINode | None:
+        """
+        Enable or disable the VR cropping for the input volume node.
+        If the volume node doesn't have a cropping ROI node and is_enabled is True, a new ROI node will be initialized
+        and encompass the full volume node.
+
+        The ROI Node attached to the display node will be returned.
+        """
         display_node = self.get_vr_display_node(volume_node)
+        if roi_node is None:
+            roi_node = display_node.GetROINode()
+
         if not is_enabled:
             display_node.CroppingEnabledOff()
             return roi_node
@@ -200,3 +210,49 @@ class VolumeRendering(SlicerWrapper[vtkSlicerVolumeRenderingLogic]):
         display_node.SetAndObserveROINodeID(roi_node.GetID())
         display_node.CroppingEnabledOn()
         return roi_node
+
+    def get_cropping_roi_node(self, volume_node: vtkMRMLVolumeNode | None) -> vtkMRMLMarkupsROINode | None:
+        """
+        Returns the ROI node instance attached to the input volume node's VR display node if any.
+        """
+        if not volume_node:
+            return None
+        display_node = self.get_vr_display_node(volume_node)
+        return display_node.GetROINode() if display_node is not None else None
+
+    def get_cropping_roi_visiblity(self, volume_node: vtkMRMLVolumeNode | None) -> bool:
+        """
+        Returns the input volume node's VR crop ROI node's visibility.
+        If the input volume node doesn't have a ROI node, returns False.
+        """
+        roi_node = self.get_cropping_roi_node(volume_node)
+        if not roi_node:
+            return False
+        return roi_node.GetDisplayVisibility()
+
+    def set_cropping_roi_node_visibile(self, volume_node: vtkMRMLVolumeNode | None, is_visible: bool) -> bool:
+        """
+        Sets the inputs volume node's VR cropping ROI visible.
+        If the input volume node doesn't have a cropping node, does nothgin.
+
+        :return visibility state of the ROI node
+        """
+
+        roi_node = self.get_cropping_roi_node(volume_node)
+        if not roi_node:
+            return False
+        roi_node.SetDisplayVisibility(is_visible)
+        return is_visible
+
+    def toggle_cropping_visibility(self, volume_node: vtkMRMLVolumeNode | None) -> bool:
+        """
+        Toggle input volume node cropping visibility.
+        Toggling the visibility will activate and initialize the cropping ROI Node if needed.
+
+        :return: New visibility state of the Cropping ROI Node
+        """
+        if not volume_node:
+            return False
+
+        is_visible = not self.get_cropping_roi_visiblity(volume_node)
+        return self.set_cropping_roi_node_visibile(volume_node, is_visible)
