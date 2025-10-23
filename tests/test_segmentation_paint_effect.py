@@ -7,6 +7,7 @@ from tests.view_events import ViewEvents
 from trame_slicer.segmentation import (
     SegmentationEffectErase,
     SegmentationEffectPaint,
+    SegmentationEffectNoTool,
 )
 from trame_slicer.segmentation.segmentation_paint_pipeline import (
     SegmentationPaintPipeline,
@@ -89,3 +90,30 @@ def test_erase_effect_removes_segmentation_from_selected_segment(
 
     if render_interactive:
         view.interactor().Start()
+
+
+@pytest.mark.parametrize("view", [a_sagittal_view, a_threed_view])
+def test_scene_can_be_cleared_when_effect_is_active(
+    a_slicer_app,
+    a_segmentation_editor,
+    a_volume_node,
+    view,
+    request,
+    render_interactive,
+):
+    request.getfixturevalue(view.__name__)
+    a_slicer_app.display_manager.show_volume(a_volume_node, vr_preset="MR-Default")
+
+    # Configure the segmentation with an empty segment
+    segmentation_node = a_segmentation_editor.create_empty_segmentation_node()
+    a_segmentation_editor.set_active_segmentation(segmentation_node, a_volume_node)
+    a_segmentation_editor.add_empty_segment()
+    a_segmentation_editor.add_empty_segment()
+
+    # Activate the segmentation paint effect
+    a_segmentation_editor.set_active_effect_type(SegmentationEffectPaint)
+
+    a_slicer_app.scene.Clear()
+
+    assert a_segmentation_editor.active_segmentation is None
+    assert isinstance(a_segmentation_editor.active_effect, SegmentationEffectNoTool)

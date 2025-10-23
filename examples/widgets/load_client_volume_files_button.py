@@ -64,10 +64,8 @@ class LoadClientVolumeFilesButton(Div):
         if not files:
             return
 
-        # Remove previous volume nodes
-        vol_nodes: vtkCollection = self._slicer_app.scene.GetNodesByClass("vtkMRMLVolumeNode")
-        for i_vol in range(vol_nodes.GetNumberOfItems()):
-            self._slicer_app.scene.RemoveNode(vol_nodes.GetItemAsObject(i_vol))
+        # Remove previous data
+        self._slicer_app.scene.Clear()
 
         # Load new volumes and display the first one
         with TemporaryDirectory() as tmp_dir:

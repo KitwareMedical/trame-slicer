@@ -248,3 +248,16 @@ def test_registers_effect_when_accessing_effect_parameter_node_if_needed(editor)
     assert not editor.is_effect_type_registered(MyNewEffect)
     assert editor.get_effect_parameter_node(MyNewEffect)
     assert editor.is_effect_type_registered(MyNewEffect)
+
+
+def test_scene_clear_clears_segmentation_stack(editor, a_slicer_app, undo_stack, active_segmentation_node):
+    assert active_segmentation_node
+    editor.add_empty_segment()
+    assert undo_stack.can_undo()
+    a_slicer_app.scene.Clear()
+    assert not undo_stack.can_undo()
+
+
+def test_scene_clear_without_undo_stack_does_nothing(editor, a_slicer_app):
+    assert editor.undo_stack is None
+    a_slicer_app.scene.Clear()
