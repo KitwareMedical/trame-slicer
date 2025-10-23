@@ -4,6 +4,7 @@ from numpy.typing import NDArray
 from slicer import (
     vtkMRMLSegmentationNode,
     vtkMRMLVolumeNode,
+    vtkOrientedImageData,
     vtkSegment,
     vtkSegmentation,
     vtkSegmentationConverter,
@@ -12,7 +13,6 @@ from slicer import (
 from undo_stack import Signal, UndoStack
 from vtkmodules.vtkCommonCore import vtkCommand
 from vtkmodules.vtkCommonDataModel import vtkImageData
-from vtkmodules.vtkSegmentationCore import vtkOrientedImageData
 
 from trame_slicer.utils import vtk_image_to_np
 

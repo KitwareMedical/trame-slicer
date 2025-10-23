@@ -29,13 +29,20 @@ class ViewManager:
         self._app_logic = application_logic
         self._factories: list[IViewFactory] = []
         self._current_view_ids: set[str] = set()
+        self._scene.AddObserver(vtkMRMLScene.EndCloseEvent, self._refresh_views_mapped_in_layout)
 
     def set_current_view_ids(self, view_ids: list[str]) -> None:
         """
         Set which views are currently displayed in the application.
         To be used by layout manager or equivalent classes.
         """
-        self._current_view_ids = set(view_ids)
+        view_ids = set(view_ids)
+        if self._current_view_ids == view_ids:
+            return
+
+        self._current_view_ids = view_ids
+        self._block_non_active_view_render()
+        self._refresh_views_mapped_in_layout()
 
     def get_current_view_ids(self) -> list[str]:
         return list(self._current_view_ids)
@@ -113,10 +120,17 @@ class ViewManager:
             return views
         return [view for view in views if view.get_singleton_tag() in self._current_view_ids]
 
-    def block_non_active_view_render(self) -> None:
+    def _block_non_active_view_render(self) -> None:
         """
         Iterates over all views and blocks rendering of non active views.
         """
         for view in self.get_views():
             view.set_render_blocked(view.get_singleton_tag() not in self._current_view_ids)
+
+    def _refresh_views_mapped_in_layout(self, *_):
+        """
+        Update view mapped in layout tag.
+        Tag may be reset by scene clear.
+        """
+        for view in self.get_views():
             view.set_mapped_in_layout(view.get_singleton_tag() in self._current_view_ids)

@@ -98,43 +98,43 @@ class ThreeDView(RenderView):
             vtkMRMLLayerDisplayableManager,
         ]
 
-        self.initialize_displayable_manager_group(vtkMRMLThreeDViewDisplayableManagerFactory, app_logic, managers)
-        self.interactor_observer = vtkMRMLThreeDViewInteractorStyle()
-        self.interactor_observer.SetDisplayableManagers(self.displayable_manager_group)
-        self.interactor_observer.SetInteractor(self.interactor())
+        self._initialize_displayable_manager_group(vtkMRMLThreeDViewDisplayableManagerFactory, app_logic, managers)
+        self._interactor_observer = vtkMRMLThreeDViewInteractorStyle()
+        self._interactor_observer.SetDisplayableManagers(self._displayable_manager_group)
+        self._interactor_observer.SetInteractor(self.interactor())
         self.interactor().SetInteractorStyle(vtkInteractorStyle3D())
 
         self.name = name
-        self.logic = vtkMRMLViewLogic()
-        self.logic.SetMRMLApplicationLogic(app_logic)
+        self._logic = vtkMRMLViewLogic()
+        self._logic.SetMRMLApplicationLogic(app_logic)
 
-        app_logic.GetViewLogics().AddItem(self.logic)
-        self.set_mrml_scene(scene)
+        app_logic.GetViewLogics().AddItem(self._logic)
+        self.set_scene(scene)
 
-    def set_mrml_scene(self, scene: vtkMRMLScene) -> None:
-        super().set_mrml_scene(scene)
-        self.logic.SetMRMLScene(scene)
-        if self.mrml_view_node is None:
-            self.set_mrml_view_node(self.logic.AddViewNode(self.name))
+    def set_scene(self, scene: vtkMRMLScene) -> None:
+        super().set_scene(scene)
+        self._logic.SetMRMLScene(scene)
+        if self._view_node is None:
+            self.set_view_node(self._logic.AddViewNode(self.name))
 
     def reset_focal_point(self):
         saved_box_visible = True
         saved_axis_label_visible = True
 
-        if self.mrml_view_node:
+        if self._view_node:
             # Save current visibility state of Box and AxisLabel
-            saved_box_visible = self.mrml_view_node.GetBoxVisible()
-            saved_axis_label_visible = self.mrml_view_node.GetAxisLabelsVisible()
+            saved_box_visible = self._view_node.GetBoxVisible()
+            saved_axis_label_visible = self._view_node.GetAxisLabelsVisible()
 
-            was_modifying = self.mrml_view_node.StartModify()
+            was_modifying = self._view_node.StartModify()
             # Hide Box and AxisLabel so they don't get taken into account when computing
             # the view boundaries
-            self.mrml_view_node.SetBoxVisible(0)
-            self.mrml_view_node.SetAxisLabelsVisible(0)
-            self.mrml_view_node.EndModify(was_modifying)
+            self._view_node.SetBoxVisible(0)
+            self._view_node.SetAxisLabelsVisible(0)
+            self._view_node.EndModify(was_modifying)
 
         # Exclude crosshair from focal point computation
-        crosshair_node = vtkMRMLCrosshairDisplayableManager().FindCrosshairNode(self.mrml_scene)
+        crosshair_node = vtkMRMLCrosshairDisplayableManager().FindCrosshairNode(self._scene)
         crosshairMode = 0
         if crosshair_node:
             crosshairMode = crosshair_node.GetCrosshairMode()
@@ -143,15 +143,15 @@ class ThreeDView(RenderView):
         # Superclass resets the camera.
         super().reset_focal_point()
 
-        if self.mrml_view_node:
+        if self._view_node:
             # Restore visibility state
-            was_modifying = self.mrml_view_node.StartModify()
-            self.mrml_view_node.SetBoxVisible(saved_box_visible)
-            self.mrml_view_node.SetAxisLabelsVisible(saved_axis_label_visible)
-            self.mrml_view_node.EndModify(was_modifying)
+            was_modifying = self._view_node.StartModify()
+            self._view_node.SetBoxVisible(saved_box_visible)
+            self._view_node.SetAxisLabelsVisible(saved_axis_label_visible)
+            self._view_node.EndModify(was_modifying)
             # Inform the displayable manager that the view is reset, so it can
             # update the box/labels bounds.
-            self.mrml_view_node.InvokeEvent(vtkMRMLViewNode.ResetFocalPointRequestedEvent)
+            self._view_node.InvokeEvent(vtkMRMLViewNode.ResetFocalPointRequestedEvent)
 
         if crosshair_node:
             crosshair_node.SetCrosshairMode(crosshairMode)
@@ -161,17 +161,17 @@ class ThreeDView(RenderView):
 
     def set_background_gradient_color(self, color1_rgb_int, color2_rgb_int):
         super().set_background_gradient_color(color1_rgb_int, color2_rgb_int)
-        if not self.mrml_view_node:
+        if not self._view_node:
             return
 
-        self.mrml_view_node.SetBackgroundColor(*self._to_float_color(color1_rgb_int))
-        self.mrml_view_node.SetBackgroundColor2(*self._to_float_color(color2_rgb_int))
+        self._view_node.SetBackgroundColor(*self._to_float_color(color1_rgb_int))
+        self._view_node.SetBackgroundColor2(*self._to_float_color(color2_rgb_int))
 
     def set_box_visible(self, is_visible):
-        if not self.mrml_view_node:
+        if not self._view_node:
             return
-        self.mrml_view_node.SetBoxVisible(is_visible)
-        self.mrml_view_node.SetAxisLabelsVisible(is_visible)
+        self._view_node.SetBoxVisible(is_visible)
+        self._view_node.SetAxisLabelsVisible(is_visible)
 
     def rotate_to_view_direction(self, view_direction: ViewDirection) -> None:
         camera_node = self.get_camera_node()
@@ -181,7 +181,7 @@ class ThreeDView(RenderView):
         camera_node.RotateTo(view_direction.value)
 
     def get_camera_node(self) -> vtkMRMLCameraNode | None:
-        camera_dm = self.displayable_manager_group.GetDisplayableManagerByClassName("vtkMRMLCameraDisplayableManager")
+        camera_dm = self._displayable_manager_group.GetDisplayableManagerByClassName("vtkMRMLCameraDisplayableManager")
         if not camera_dm:
             return None
         return camera_dm.GetCameraNode()
@@ -194,7 +194,7 @@ class ThreeDView(RenderView):
 
     def _reset_node_view_properties(self):
         super()._reset_node_view_properties()
-        if not self.mrml_view_node:
+        if not self._view_node:
             return
 
         self._call_if_value_not_none(self.set_box_visible, self._view_properties.box_visible)
@@ -205,13 +205,13 @@ class ThreeDView(RenderView):
         super().set_ruler(ruler_type, ruler_color)
 
     def set_render_mode_to_orthographic(self):
-        self.mrml_view_node.SetRenderMode(1)
+        self._view_node.SetRenderMode(1)
 
     def set_render_mode_to_perspective(self):
-        self.mrml_view_node.SetRenderMode(0)
+        self._view_node.SetRenderMode(0)
 
     def is_render_mode_perspective(self) -> bool:
-        return self.mrml_view_node.GetRenderMode() == 0
+        return self._view_node.GetRenderMode() == 0
 
     def zoom(self, factor):
         """

@@ -92,7 +92,6 @@ class LayoutManager:
         views = layout.get_views(is_recursive=True)
         view_ids = [view.singleton_tag for view in views]
         self._view_manager.set_current_view_ids(view_ids)
-        self._view_manager.block_non_active_view_render()
 
     def _save_layout_to_scene(self, layout_id: str, layout: Layout) -> None:
         self._scene_node.SetParameter("layout_id", layout_id)

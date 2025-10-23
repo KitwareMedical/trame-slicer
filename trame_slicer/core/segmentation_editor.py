@@ -105,6 +105,9 @@ class SegmentationEditor(SignalContainer):
         vtkMRMLLayerDMPipelineFactory.GetInstance().AddPipelineCreator(self._pipeline_creator)
         self.segmentation_modified.connect(self._on_segmentation_modified)
 
+        # Observe scene close event to clear undo stack
+        self._scene.AddObserver(vtkMRMLScene.EndCloseEvent, self._on_scene_close)
+
     def _create_editor_node(self):
         """
         Create unique editor node for the segmentation editor.
@@ -502,3 +505,19 @@ class SegmentationEditor(SignalContainer):
 
         if self._do_show_3d != self.is_surface_representation_enabled():
             self.active_segmentation.set_surface_representation_enabled(self._do_show_3d)
+
+    def _on_scene_close(self, *_):
+        self.clear()
+
+    def clear(self):
+        self._clear_undo_stack()
+        self.deactivate_effect()
+        self._active_modifier = None
+        self._modified_obs = None
+        self._effect_parameters.clear()
+        self.trigger_all_signals()
+
+    def _clear_undo_stack(self):
+        if not self.undo_stack:
+            return
+        self.undo_stack.clear()

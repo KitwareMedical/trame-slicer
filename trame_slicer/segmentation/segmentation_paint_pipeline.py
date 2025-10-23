@@ -126,13 +126,23 @@ class SegmentationPaintPipeline(SegmentationEffectPipeline):
         return vtkMRMLAbstractWidget.WidgetStateUser
 
     def _SetFeedbackVisible(self, isVisible):
-        if self._modelNode:
-            self._modelNode.GetDisplayNode().SetVisibility(isVisible)
-        if self._feedbackNode:
-            self._feedbackNode.GetDisplayNode().SetVisibility(isVisible)
+        self._SetVisible(self._modelNode, isVisible)
+        self._SetVisible(self._feedbackNode, isVisible)
+
+    @classmethod
+    def _SetVisible(cls, modelNode, isVisible):
+        if not modelNode:
+            return
+        displayNode = modelNode.GetDisplayNode()
+        if not displayNode:
+            return
+        displayNode.SetVisibility(isVisible)
 
 
 class SegmentationPaintPipeline2D(SegmentationPaintPipeline):
+    def __init__(self) -> None:
+        super().__init__()
+
     def CreateWidget(self):
         if self.widget is not None or not isinstance(self._view, SliceView):
             return

@@ -5,6 +5,7 @@ from weakref import ref
 
 from slicer import (
     vtkMRMLAbstractViewNode,
+    vtkMRMLLayerDMObjectEventObserverScripted,
     vtkMRMLNode,
     vtkMRMLScene,
     vtkMRMLScriptedModuleNode,
@@ -24,6 +25,8 @@ class SegmentationEffect(ABC):
         self._is_active = False
         self._scene: vtkMRMLScene | None = None
         self._param_node: vtkMRMLScriptedModuleNode | None = None
+        self._obs = vtkMRMLLayerDMObjectEventObserverScripted()
+        self._obs.SetPythonCallback(self._on_object_event)
 
     @property
     def modifier(self) -> SegmentModifier:
@@ -38,6 +41,7 @@ class SegmentationEffect(ABC):
         return self._is_active
 
     def set_scene(self, scene: vtkMRMLScene):
+        self._obs.UpdateObserver(self._scene, scene, vtkMRMLScene.EndCloseEvent)
         self._scene = scene
 
     def set_modifier(self, modifier: SegmentModifier | None) -> None:
@@ -128,3 +132,14 @@ class SegmentationEffect(ABC):
         self, view_node: vtkMRMLAbstractViewNode, parameter: vtkMRMLNode
     ) -> SegmentationEffectPipeline | None:
         pass
+
+    def _on_object_event(self, vtk_object, event_id, _call_data):
+        if vtk_object == self._scene and event_id == vtkMRMLScene.EndCloseEvent:
+            self._clear()
+
+    def _clear(self):
+        self.set_active(False)
+        self._pipelines.clear()
+        self._param_node = None
+        self._modifier = None
+        self._is_active = False

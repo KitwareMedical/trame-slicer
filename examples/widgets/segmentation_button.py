@@ -284,7 +284,6 @@ class SegmentationButton(VMenu):
         super().__init__(location="right", close_on_content_click=False)
         self._server = server
         self._slicer_app = slicer_app
-        self._segmentation_node = None
 
         self._undo_stack = UndoStack(undo_limit=5)
         self.segmentation_editor.set_undo_stack(self._undo_stack)
@@ -365,11 +364,10 @@ class SegmentationButton(VMenu):
 
     @change(StateId.current_volume_node_id)
     def on_volume_changed(self, **_kwargs):
-        self.scene.RemoveNode(self._segmentation_node)
-        self._segmentation_node = self.segmentation_editor.create_empty_segmentation_node()
+        segmentation_node = self.segmentation_editor.create_empty_segmentation_node()
         self.segmentation_editor.deactivate_effect()
         self.segmentation_editor.set_active_segmentation(
-            self._segmentation_node,
+            segmentation_node,
             get_current_volume_node(self._server, self._slicer_app),
         )
         self.on_opacity_mode_changed()

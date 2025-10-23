@@ -7,7 +7,6 @@ from trame_client.widgets.html import Div, Input
 from trame_server import Server
 from trame_server.utils.asynchronous import create_task
 from trame_vuetify.widgets.vuetify3 import VProgressCircular
-from vtkmodules.vtkCommonCore import vtkCollection
 
 from trame_slicer.core import SlicerApp
 from trame_slicer.utils import write_client_files_to_dir
@@ -64,10 +63,8 @@ class LoadClientVolumeFilesButton(Div):
         if not files:
             return
 
-        # Remove previous volume nodes
-        vol_nodes: vtkCollection = self._slicer_app.scene.GetNodesByClass("vtkMRMLVolumeNode")
-        for i_vol in range(vol_nodes.GetNumberOfItems()):
-            self._slicer_app.scene.RemoveNode(vol_nodes.GetItemAsObject(i_vol))
+        # Remove previous data
+        self._slicer_app.scene.Clear()
 
         # Load new volumes and display the first one
         with TemporaryDirectory() as tmp_dir:
@@ -89,3 +86,4 @@ class LoadClientVolumeFilesButton(Div):
                 do_reset_views=True,
             )
             self.state[StateId.current_volume_node_id] = volume_node.GetID()
+            self.state.dirty(StateId.current_volume_node_id)

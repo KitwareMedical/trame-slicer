@@ -115,11 +115,11 @@ def test_view_manager_with_default_factories_created_nodes_are_added_to_slicer_s
 
     slice_nodes: vtkCollection = a_slicer_app.scene.GetNodesByClass("vtkMRMLSliceNode")
     assert slice_nodes.GetNumberOfItems() == 1
-    assert slice_nodes.GetItemAsObject(0) == slice_view.mrml_view_node
+    assert slice_nodes.GetItemAsObject(0) == slice_view._view_node
 
     threed_nodes: vtkCollection = a_slicer_app.scene.GetNodesByClass("vtkMRMLViewNode")
     assert threed_nodes.GetNumberOfItems() == 1
-    assert threed_nodes.GetItemAsObject(0) == threed_view.mrml_view_node
+    assert threed_nodes.GetItemAsObject(0) == threed_view._view_node
     a_server.start()
 
 
@@ -151,8 +151,8 @@ def test_a_2d_view_factory_creates_views_with_the_right_properties(
     )
     view = a_view_manager.create_view(slice_view)
 
-    assert view.mrml_view_node.GetOrientation() == "Sagittal"
-    assert view.mrml_view_node.GetViewGroup() == 2
+    assert view._view_node.GetOrientation() == "Sagittal"
+    assert view._view_node.GetViewGroup() == 2
 
 
 def test_2d_factory_views_have_sliders_and_reset_camera_connected_to_slicer(
@@ -219,9 +219,9 @@ def test_default_slice_views_names_are_consistent_with_slicer(
     a_view_manager.register_factory(RemoteSliceViewFactory(a_server))
     view = a_view_manager.create_view(view_definition())
     assert view
-    assert view.mrml_view_node.GetID() == scene_id
-    assert view.mrml_view_node.GetName() == name
-    assert view.mrml_view_node.GetSingletonTag() == name
+    assert view._view_node.GetID() == scene_id
+    assert view._view_node.GetName() == name
+    assert view._view_node.GetSingletonTag() == name
 
 
 @dataclass
@@ -307,4 +307,4 @@ def test_get_view_is_compatible_with_view_node_instance(a_view_manager, a_server
     factory = RemoteSliceViewFactory(a_server)
     a_view_manager.register_factory(factory)
     view: SliceView = a_view_manager.create_view(a_2d_view)
-    assert a_view_manager.get_view(view.mrml_view_node) == view
+    assert a_view_manager.get_view(view._view_node) == view

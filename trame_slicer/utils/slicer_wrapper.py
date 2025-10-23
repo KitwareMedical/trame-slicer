@@ -65,14 +65,6 @@ class SlicerWrapper(Generic[T]):
 
         try:
             return super().__getattribute__(attr)
-        except SlicerWrappingAttributeError as e:
-            # If attribute is present in the class but raised because of the wrapping, inform of the error
-            _error_msg = (
-                f"Failed to access attribute '{attr}' of class '{class_name}' due to the following error : {e}."
-            )
-            if self._slicer_obj is None:
-                _error_msg += " This error is likely due to the wrapped Slicer object being None."
-            raise AttributeError(_error_msg) from e
         except AttributeError:
             # Return slicer attr if present either in snake_case or CamelCaseCase
             attr_names = {attr, to_camel_case(attr)}
@@ -86,6 +78,8 @@ class SlicerWrapper(Generic[T]):
             # Raise error otherwise
             _attr_msg = " or ".join([f"'{attr_name}'" for attr_name in attr_names])
             _error_msg = f"Type '{class_name}' does not contain attribute {_attr_msg}."
+            if self._slicer_obj is None:
+                _error_msg += " This error is likely due to the wrapped Slicer object being None."
             raise SlicerWrappingAttributeError(_error_msg) from None
 
     def __dir__(self):
@@ -96,6 +90,9 @@ class SlicerWrapper(Generic[T]):
 
     def _on_wrapped_object_event(self, _obj: vtkObject, _event_id: int, _call_data: Any | None):
         self.modified(self)
+
+    def __bool__(self):
+        return self._slicer_obj is not None
 
 
 def wrap(obj):

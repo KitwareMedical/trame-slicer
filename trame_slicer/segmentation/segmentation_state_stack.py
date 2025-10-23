@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import deque
 
-from vtkmodules.vtkSegmentationCore import vtkSegmentation
+from slicer import vtkSegmentation
 
 
 class SegmentationStateStack:

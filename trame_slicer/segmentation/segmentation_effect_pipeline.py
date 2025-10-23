@@ -23,7 +23,7 @@ class SegmentationEffectPipeline(vtkMRMLLayerDMScriptedPipeline):
         return self._effect.modifier if self._effect else None
 
     def IsActive(self) -> bool:
-        return self._isActive
+        return self._isActive and self.GetModifier()
 
     def SetSegmentationEffect(self, effect: "SegmentationEffect"):
         self._effect = effect

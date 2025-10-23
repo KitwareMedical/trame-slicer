@@ -18,7 +18,7 @@ from slicer import (
 from undo_stack import Signal
 from vtkmodules.vtkCommonCore import vtkCommand, vtkObject
 from vtkmodules.vtkRenderingCore import (
-    vtkInteractorStyle,
+    vtkInteractorObserver,
     vtkRenderer,
     vtkRenderWindow,
     vtkRenderWindowInteractor,
@@ -96,11 +96,11 @@ class AbstractView:
         self._render_window_interactor.SetRenderWindow(self._render_window)
         self._render_window_interactor.Initialize()
 
-        self.displayable_manager_group = vtkMRMLDisplayableManagerGroup()
-        self.displayable_manager_group.SetRenderer(self._renderer)
-        self.displayable_manager_group.AddObserver(vtkCommand.UpdateEvent, self.schedule_render)
-        self.mrml_scene: vtkMRMLScene | None = None
-        self.mrml_view_node: vtkMRMLAbstractViewNode | None = None
+        self._displayable_manager_group = vtkMRMLDisplayableManagerGroup()
+        self._displayable_manager_group.SetRenderer(self._renderer)
+        self._displayable_manager_group.AddObserver(vtkCommand.UpdateEvent, self.schedule_render)
+        self._scene: vtkMRMLScene | None = None
+        self._view_node: vtkMRMLAbstractViewNode | None = None
 
         self._scheduled_render: ScheduledRenderStrategy | None = None
         self.set_scheduled_render(scheduled_render_strategy or DirectRendering())
@@ -112,7 +112,7 @@ class AbstractView:
 
         self._is_render_blocked = False
 
-    def initialize_displayable_manager_group(
+    def _initialize_displayable_manager_group(
         self,
         factory_type: vtkMRMLDisplayableManagerFactory,
         app_logic: vtkMRMLApplicationLogic,
@@ -135,7 +135,7 @@ class AbstractView:
             if not factory.IsDisplayableManagerRegistered(manager):
                 factory.RegisterDisplayableManager(manager)
 
-        self.displayable_manager_group.Initialize(factory, self.renderer())
+        self._displayable_manager_group.Initialize(factory, self.renderer())
 
     def set_scheduled_render(self, scheduled_render_strategy: ScheduledRenderStrategy) -> None:
         self._scheduled_render = scheduled_render_strategy or DirectRendering()
@@ -176,17 +176,17 @@ class AbstractView:
     def interactor(self) -> vtkRenderWindowInteractor:
         return self.render_window().GetInteractor()
 
-    def interactor_style(self) -> vtkInteractorStyle | None:
+    def interactor_style(self) -> vtkInteractorObserver | None:
         return self.interactor().GetInteractorStyle()
 
-    def set_mrml_view_node(self, node: vtkMRMLViewNode) -> None:
-        if self.mrml_view_node == node:
+    def set_view_node(self, node: vtkMRMLViewNode) -> None:
+        if self._view_node == node:
             return
 
         with self.trigger_modified_once():
-            self._event_observer.UpdateObserver(self.mrml_view_node, node)
-            self.mrml_view_node = node
-            self.displayable_manager_group.SetMRMLDisplayableNode(node)
+            self._event_observer.UpdateObserver(self._view_node, node)
+            self._view_node = node
+            self._displayable_manager_group.SetMRMLDisplayableNode(node)
             self._reset_node_view_properties()
 
     def set_view_properties(self, view_properties: ViewProps):
@@ -194,11 +194,11 @@ class AbstractView:
         self._reset_node_view_properties()
 
     def _reset_node_view_properties(self):
-        if not self.mrml_view_node:
+        if not self._view_node:
             return
 
         with self.trigger_modified_once():
-            self._call_if_value_not_none(self.mrml_view_node.SetViewGroup, self._view_properties.group)
+            self._call_if_value_not_none(self._view_node.SetViewGroup, self._view_properties.group)
             self._call_if_value_not_none(
                 self.set_background_color_from_string,
                 self._view_properties.background_color,
@@ -206,34 +206,35 @@ class AbstractView:
             self._call_if_value_not_none(self.set_layout_color_from_string, self._view_properties.color)
 
     def get_view_group(self) -> int:
-        if not self.mrml_view_node:
+        if not self._view_node:
             return 0
-        return self.mrml_view_node.GetViewGroup()
+        return self._view_node.GetViewGroup()
 
     def get_singleton_tag(self) -> str:
-        if not self.mrml_view_node:
+        if not self._view_node:
             return ""
-        return self.mrml_view_node.GetSingletonTag()
+        return self._view_node.GetSingletonTag()
 
     @classmethod
     def _call_if_value_not_none(cls, setter, value):
         if value is not None:
             setter(value)
 
-    def set_mrml_scene(self, scene: vtkMRMLScene) -> None:
-        if self.mrml_scene == scene:
+    def set_scene(self, scene: vtkMRMLScene) -> None:
+        if self._scene == scene:
             return
 
-        self.mrml_scene = scene
-        if self.mrml_view_node and self.mrml_view_node.GetScene() != scene:
-            self.mrml_view_node = None
+        self._event_observer.UpdateObserver(self._scene, scene, vtkMRMLScene.EndCloseEvent)
+        self._scene = scene
+        if self._view_node and self._view_node.GetScene() != scene:
+            self._view_node = None
 
     def reset_camera(self):
         for renderer in self._render_window.GetRenderers():
             renderer.ResetCamera()
 
     def get_view_node_id(self) -> str:
-        return self.mrml_view_node.GetID() if self.mrml_view_node else ""
+        return self._view_node.GetID() if self._view_node else ""
 
     def fit_view_to_content(self):
         self.reset_camera()
@@ -243,7 +244,6 @@ class AbstractView:
             self._reset_node_view_properties()
             self.fit_view_to_content()
             self.schedule_render()
-            self._trigger_modified()
 
     def set_background_color(self, rgb_int_color: list[int]) -> None:
         self.set_background_gradient_color(rgb_int_color, rgb_int_color)
@@ -294,10 +294,10 @@ class AbstractView:
         Orientation Enums are defined in the vtkMRMLAbstractViewNode class.
         """
         if orientation_marker is not None:
-            self.mrml_view_node.SetOrientationMarkerType(orientation_marker)
+            self._view_node.SetOrientationMarkerType(orientation_marker)
 
         if orientation_marker_size is not None:
-            self.mrml_view_node.SetOrientationMarkerSize(orientation_marker_size)
+            self._view_node.SetOrientationMarkerSize(orientation_marker_size)
 
     def set_ruler(self, ruler_type: int | None = None, ruler_color: int | None = None):
         """
@@ -305,10 +305,10 @@ class AbstractView:
         Ruler Enums are defined in the vtkMRMLAbstractViewNode class.
         """
         if ruler_type is not None:
-            self.mrml_view_node.SetRulerType(ruler_type)
+            self._view_node.SetRulerType(ruler_type)
 
         if ruler_color is not None:
-            self.mrml_view_node.SetRulerColor(ruler_color)
+            self._view_node.SetRulerColor(ruler_color)
 
     def start_interactor(self) -> None:
         self.interactor().Start()
@@ -345,10 +345,15 @@ class AbstractView:
         self.set_layout_color(self._str_to_color(color))
 
     def set_layout_color(self, color: list[int]):
-        self.mrml_view_node.SetLayoutColor(*self._to_float_color(color))
+        self._view_node.SetLayoutColor(*self._to_float_color(color))
 
     def set_mapped_in_layout(self, is_mapped_in_layout: bool):
-        self.mrml_view_node.SetMappedInLayout(is_mapped_in_layout)
+        self._view_node.SetMappedInLayout(is_mapped_in_layout)
 
     def _on_object_event(self, _obj: vtkObject, _event_id: int, _call_data: Any | None) -> None:
-        self._trigger_modified()
+        with self.trigger_modified_once():
+            if _obj == self._scene and _event_id == vtkMRMLScene.EndCloseEvent:
+                self.reset_view()
+
+    def get_view_node(self) -> vtkMRMLViewNode:
+        return self._view_node

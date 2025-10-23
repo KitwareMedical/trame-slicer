@@ -6,6 +6,7 @@ from tests.conftest import a_threed_view
 from tests.view_events import ViewEvents
 from trame_slicer.segmentation import (
     SegmentationEffectErase,
+    SegmentationEffectNoTool,
     SegmentationEffectPaint,
 )
 from trame_slicer.segmentation.segmentation_paint_pipeline import (
@@ -89,3 +90,47 @@ def test_erase_effect_removes_segmentation_from_selected_segment(
 
     if render_interactive:
         view.interactor().Start()
+
+
+@pytest.mark.parametrize("view", [a_sagittal_view, a_threed_view])
+def test_scene_can_be_cleared_when_effect_is_active(
+    a_slicer_app,
+    a_segmentation_editor,
+    a_nrrd_volume_file_path,
+    view,
+    request,
+):
+    view = request.getfixturevalue(view.__name__)
+
+    for _ in range(2):
+        volume_node = a_slicer_app.io_manager.load_volumes([a_nrrd_volume_file_path.as_posix()])[0]
+        a_slicer_app.display_manager.show_volume(volume_node, vr_preset="MR-Default")
+
+        # Configure the segmentation with an empty segment
+        segmentation_node = a_segmentation_editor.create_empty_segmentation_node()
+        a_segmentation_editor.set_active_segmentation(segmentation_node, volume_node)
+        a_segmentation_editor.add_empty_segment()
+
+        # Activate the segmentation paint effect
+        a_segmentation_editor.set_active_effect_type(SegmentationEffectPaint)
+
+        # Paint at center
+        segment_id = a_segmentation_editor.add_empty_segment()
+        a_segmentation_editor.set_active_segment_id(segment_id)
+        ViewEvents(view).click_at_center()
+
+        a_slicer_app.scene.Clear()
+
+        assert a_segmentation_editor.active_segmentation is None
+        assert isinstance(a_segmentation_editor.active_effect, SegmentationEffectNoTool)
+
+
+@pytest.mark.parametrize("view", [a_sagittal_view, a_threed_view])
+def test_painting_with_empty_segmentation_does_nothing(
+    a_segmentation_editor,
+    view,
+    request,
+):
+    view = request.getfixturevalue(view.__name__)
+    a_segmentation_editor.set_active_effect_type(SegmentationEffectPaint)
+    ViewEvents(view).click_at_center()

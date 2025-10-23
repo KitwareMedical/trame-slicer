@@ -98,3 +98,11 @@ def test_to_snake_case(camel_case, exp_snake_case):
 )
 def test_to_camel_case(snake_case, exp_camel_case):
     assert to_camel_case(snake_case) == exp_camel_case
+
+
+def test_bool_conversion_is_false_if_wrapped_object_is_none():
+    class MyModelNode(SlicerWrapper[vtkMRMLModelNode]):
+        pass
+
+    assert not MyModelNode(None)
+    assert MyModelNode(vtkMRMLModelNode())

@@ -150,14 +150,14 @@ class SegmentationPaintWidget(Generic[T], ABC):
 
 class SegmentationPaintWidget2D(SegmentationPaintWidget[SliceView]):
     def _get_view_mm_per_pix(self):
-        xy_to_slice: vtkMatrix4x4 = self._view.mrml_view_node.GetXYToSlice()
+        xy_to_slice: vtkMatrix4x4 = self._view._view_node.GetXYToSlice()
         return math.sqrt(sum([xy_to_slice.GetElement(i, 1) ** 2 for i in range(3)]))
 
     def _update_brush_shape(self) -> None:
         if self._params.use_sphere_brush:
             self._brush_model.set_shape(BrushShape.Sphere)
         else:
-            slice_to_ras: vtkMatrix4x4 = self._view.mrml_view_node.GetSliceToRAS()
+            slice_to_ras: vtkMatrix4x4 = self._view._view_node.GetSliceToRAS()
             self._brush_model.set_shape(BrushShape.Cylinder)
             self._brush_model.set_brush_rotation(slice_to_ras)
             self._brush_model.set_cylinder_height(self._view.get_slice_step() / 2.0)

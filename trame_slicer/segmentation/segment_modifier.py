@@ -6,7 +6,12 @@ import math
 from enum import auto
 
 from numpy.typing import NDArray
-from slicer import vtkMRMLTransformNode, vtkSlicerSegmentEditorLogic
+from slicer import (
+    vtkMRMLTransformNode,
+    vtkOrientedImageData,
+    vtkOrientedImageDataResample,
+    vtkSlicerSegmentEditorLogic,
+)
 from undo_stack import Signal
 from vtkmodules.vtkCommonCore import VTK_UNSIGNED_CHAR, vtkPoints
 from vtkmodules.vtkCommonDataModel import vtkImageData, vtkPolyData
@@ -18,10 +23,6 @@ from vtkmodules.vtkImagingCore import vtkImageChangeInformation
 from vtkmodules.vtkImagingStencil import (
     vtkImageStencilToImage,
     vtkPolyDataToImageStencil,
-)
-from vtkmodules.vtkSegmentationCore import (
-    vtkOrientedImageData,
-    vtkOrientedImageDataResample,
 )
 
 from .segmentation import Segmentation

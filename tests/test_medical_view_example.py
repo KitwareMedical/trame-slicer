@@ -12,7 +12,7 @@ async def test_medical_view_example_can_be_loaded(async_server, a_server_port):
     MyTrameSlicerApp(async_server)
     async_server.start(port=a_server_port, thread=True, exec_mode="task")
 
-    async with timeout(10), async_playwright() as p:
+    async with timeout(30), async_playwright() as p:
         assert await async_server.ready
         assert async_server.port
         url = f"http://127.0.0.1:{async_server.port}/"

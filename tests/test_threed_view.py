@@ -123,4 +123,4 @@ def test_three_d_view_can_zoom_out(a_threed_view, render_interactive, is_orthogr
 def test_threed_view_can_set_layout_color(a_threed_view):
     a_threed_view.set_layout_color([60, 60, 60])
     a_threed_view.set_layout_color_from_string("red")
-    assert a_threed_view.mrml_view_node.GetLayoutColor() == (1.0, 0.0, 0.0)
+    assert a_threed_view._view_node.GetLayoutColor() == (1.0, 0.0, 0.0)
