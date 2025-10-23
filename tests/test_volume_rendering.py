@@ -111,3 +111,17 @@ def test_a_volume_roi_node_if_not_set_cannot_be_set_visible(a_volume_rendering, 
 
 def test_accessing_a_roi_node_of_volume_without_vr_display_returns_none(a_volume_rendering, a_volume_node):
     assert a_volume_rendering.get_cropping_roi_node(a_volume_node) is None
+
+
+def test_can_set_vr_opacity(a_volume_rendering, a_volume_node):
+    a_volume_rendering.create_display_node(a_volume_node, "MR-Default")
+    a_volume_rendering.set_vr_opacity(a_volume_node, 0.5)
+
+
+def test_setting_vr_opacity_to_zero_hides_volume_rendering(a_volume_rendering, a_volume_node):
+    a_volume_rendering.create_display_node(a_volume_node, "MR-Default")
+    a_volume_rendering.set_vr_opacity(a_volume_node, 0.0)
+    assert not a_volume_rendering.get_vr_display_node(a_volume_node).GetVisibility()
+
+    a_volume_rendering.set_vr_opacity(a_volume_node, 0.5)
+    assert a_volume_rendering.get_vr_display_node(a_volume_node).GetVisibility()
