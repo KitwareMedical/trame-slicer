@@ -22,8 +22,8 @@ please use this library with caution.
 Links to the latest VTK MRML wheels necessary to use this library in a Python
 environment can be downloaded here:
 
-- [Windows](https://github.com/KitwareMedical/trame-slicer/releases/download/v1.4.0.wheels/vtk_mrml-9.4.0-cp310-cp310-win_amd64.whl)
-- [Linux](https://github.com/KitwareMedical/trame-slicer/releases/download/v1.4.0.wheels/vtk_mrml-9.4.0-cp310-cp310-manylinux_2_35_x86_64.whl)
+- [Windows](https://github.com/KitwareMedical/trame-slicer/releases/download/v1.4.0/vtk_mrml-9.4.0-cp310-cp310-win_amd64.whl)
+- [Linux](https://github.com/KitwareMedical/trame-slicer/releases/download/v1.4.0/vtk_mrml-9.4.0-cp310-cp310-manylinux_2_35_x86_64.whl)
 
 To use the library with other platforms (and Python 3.12), you can use the
 [Slicer Trame module](https://github.com/KitwareMedical/SlicerTrame) directly
