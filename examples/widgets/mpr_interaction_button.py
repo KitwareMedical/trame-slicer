@@ -1,4 +1,4 @@
-from slicer import vtkMRMLApplicationLogic
+from slicer import vtkMRMLApplicationLogic, vtkMRMLScene
 from trame_server import Server
 
 from trame_slicer.core import SlicerApp
@@ -20,8 +20,8 @@ class MprInteractionButton(ControlButton):
         self._slicer_app = slicer_app
 
         @self.server.state.change(StateId.is_mpr_interaction_active)
-        def set_slice_interactive(**kwargs):
-            is_interactive = kwargs[StateId.is_mpr_interaction_active]
+        def set_slice_interactive(*_args, **_kwargs):
+            is_interactive = self.state[StateId.is_mpr_interaction_active]
             self._slicer_app.app_logic.SetIntersectingSlicesEnabled(
                 vtkMRMLApplicationLogic.IntersectingSlicesVisibility, is_interactive
             )
@@ -37,3 +37,5 @@ class MprInteractionButton(ControlButton):
             self._slicer_app.app_logic.SetIntersectingSlicesEnabled(
                 vtkMRMLApplicationLogic.IntersectingSlicesThickSlabInteractive, is_interactive
             )
+
+        self._slicer_app.scene.AddObserver(vtkMRMLScene.EndBatchProcessEvent, set_slice_interactive)

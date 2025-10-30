@@ -29,7 +29,7 @@ class ViewManager:
         self._app_logic = application_logic
         self._factories: list[IViewFactory] = []
         self._current_view_ids: set[str] = set()
-        self._scene.AddObserver(vtkMRMLScene.EndCloseEvent, self._refresh_views_mapped_in_layout)
+        self._scene.AddObserver(vtkMRMLScene.EndBatchProcessEvent, self._refresh_views_mapped_in_layout)
 
     def set_current_view_ids(self, view_ids: list[str]) -> None:
         """
