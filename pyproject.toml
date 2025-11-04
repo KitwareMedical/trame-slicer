@@ -1,6 +1,6 @@
 [project]
 name = "trame-slicer"
-version = "1.5.0"
+version = "1.5.1"
 description = "trame-slicer library"
 authors = [
     { name = "Alexy Pellegrini", email = "alexy.pellegrini@kitware.com" },
