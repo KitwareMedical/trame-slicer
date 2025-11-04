@@ -230,8 +230,7 @@ class AbstractView:
             self._view_node = None
 
     def reset_camera(self):
-        for renderer in self._render_window.GetRenderers():
-            renderer.ResetCamera()
+        self.first_renderer().ResetCameraScreenSpace()
 
     def get_view_node_id(self) -> str:
         return self._view_node.GetID() if self._view_node else ""
