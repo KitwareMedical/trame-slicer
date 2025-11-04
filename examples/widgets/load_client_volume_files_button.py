@@ -68,22 +68,38 @@ class LoadClientVolumeFilesButton(Div):
 
         # Load new volumes and display the first one
         with TemporaryDirectory() as tmp_dir:
-            volumes = self._slicer_app.io_manager.load_volumes(write_client_files_to_dir(files, tmp_dir))
-            if not volumes:
-                return
+            loaded_files = write_client_files_to_dir(files, tmp_dir)
+            if len(loaded_files) == 1 and loaded_files[0].endswith(".mrb"):
+                self._on_load_scene(loaded_files[0])
+            else:
+                self._on_load_volume(loaded_files)
 
-            # Show the largest volume
-            def bounds_volume(v):
-                b = [0] * 6
-                v.GetImageData().GetBounds(b)
-                return (b[1] - b[0]) * (b[3] - b[2]) * (b[5] - b[4])
+    def _on_load_scene(self, scene_file):
+        self._slicer_app.io_manager.load_scene(scene_file)
+        self._show_largest_volume(list(self._slicer_app.scene.GetNodesByClass("vtkMRMLVolumeNode")))
 
-            volumes = sorted(volumes, key=bounds_volume)
-            volume_node = volumes[-1]
-            self._slicer_app.display_manager.show_volume(
-                volume_node,
-                vr_preset=self.state[StateId.vr_preset_value],
-                do_reset_views=True,
-            )
-            self.state[StateId.current_volume_node_id] = volume_node.GetID()
-            self.state.dirty(StateId.current_volume_node_id)
+    def _on_load_volume(self, loaded_files):
+        volumes = self._slicer_app.io_manager.load_volumes(loaded_files)
+        if not volumes:
+            return
+        self._show_largest_volume(volumes)
+
+    def _show_largest_volume(self, volumes):
+        if not volumes:
+            return
+
+        def bounds_volume(v):
+            b = [0] * 6
+            v.GetImageData().GetBounds(b)
+            return (b[1] - b[0]) * (b[3] - b[2]) * (b[5] - b[4])
+
+        volumes = sorted(volumes, key=bounds_volume)
+        volume_node = volumes[-1]
+
+        self._slicer_app.display_manager.show_volume(
+            volume_node,
+            vr_preset=self.state[StateId.vr_preset_value],
+            do_reset_views=True,
+        )
+        self.state[StateId.current_volume_node_id] = volume_node.GetID()
+        self.state.dirty(StateId.current_volume_node_id)

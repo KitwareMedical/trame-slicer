@@ -364,14 +364,21 @@ class SegmentationButton(VMenu):
 
     @change(StateId.current_volume_node_id)
     def on_volume_changed(self, **_kwargs):
-        segmentation_node = self.segmentation_editor.create_empty_segmentation_node()
+        segmentation_nodes = list(self.scene.GetNodesByClass("vtkMRMLSegmentationNode"))
+        if segmentation_nodes:
+            segmentation_node = segmentation_nodes[0]
+        else:
+            segmentation_node = self.segmentation_editor.create_empty_segmentation_node()
+
         self.segmentation_editor.deactivate_effect()
         self.segmentation_editor.set_active_segmentation(
             segmentation_node,
             get_current_volume_node(self._server, self._slicer_app),
         )
         self.on_opacity_mode_changed()
-        self.on_add_segment()
+
+        if self.segmentation_editor.active_segmentation.n_segments == 0:
+            self.on_add_segment()
 
     @change(SegmentationId.active_segment_id)
     def on_current_segment_id_changed(self, **_kwargs):

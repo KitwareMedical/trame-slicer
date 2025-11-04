@@ -42,6 +42,10 @@ class MyTrameSlicerApp:
         )
         default_layout = "Axial Primary"
         self.server.state.setdefault(StateId.current_layout_name, default_layout)
+        self.server.state["trame__title"] = "trame Slicer"
+        self.server.state["trame__favicon"] = (
+            "https://raw.githubusercontent.com/Slicer/Slicer/main/Applications/SlicerApp/Resources/Icons/Medium/Slicer-DesktopIcon.png"
+        )
 
         # Update the layout to the default layout
         self._layout_manager.set_layout(default_layout)
