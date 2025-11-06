@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from trame_slicer.core import VolumeWindowLevel
 
 

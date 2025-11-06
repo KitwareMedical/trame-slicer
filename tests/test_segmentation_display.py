@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from tests.view_events import ViewEvents
 from trame_slicer.segmentation import SegmentationOpacityEnum
 
@@ -20,11 +18,9 @@ def test_segmentation_opacity_can_be_toggled_by_keypress(
 
 
 def test_segmentation_opacity_2d(
-    a_slice_view,
-    a_segmentation_editor,
-    a_segmentation_node,
-    render_interactive,
+    a_slice_view, a_segmentation_editor, a_segmentation_node, render_interactive, an_active_segmentation
 ):
+    assert an_active_segmentation
     display_node = a_segmentation_node.GetDisplayNode()
     assert display_node is not None
 
@@ -38,11 +34,9 @@ def test_segmentation_opacity_2d(
 
 
 def test_segmentation_opacity_3d(
-    a_slice_view,
-    a_segmentation_editor,
-    a_segmentation_node,
-    render_interactive,
+    a_slice_view, a_segmentation_editor, a_segmentation_node, render_interactive, an_active_segmentation
 ):
+    assert an_active_segmentation
     display_node = a_segmentation_node.GetDisplayNode()
     assert display_node is not None
 
@@ -56,11 +50,9 @@ def test_segmentation_opacity_3d(
 
 
 def test_segmentation_opacity_mode(
-    a_slice_view,
-    a_segmentation_editor,
-    a_segmentation_node,
-    render_interactive,
+    a_slice_view, a_segmentation_editor, a_segmentation_node, render_interactive, an_active_segmentation
 ):
+    assert an_active_segmentation
     display_node = a_segmentation_node.GetDisplayNode()
     assert display_node is not None
 
@@ -85,7 +77,9 @@ def test_segment_visibility(
     a_segmentation_editor,
     a_segmentation_node,
     render_interactive,
+    an_active_segmentation,
 ):
+    assert an_active_segmentation
     display_node = a_segmentation_node.GetDisplayNode()
     assert display_node is not None
 

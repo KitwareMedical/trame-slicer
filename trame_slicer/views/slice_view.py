@@ -15,11 +15,13 @@ from slicer import (
     vtkMRMLScalarBarDisplayableManager,
     vtkMRMLScene,
     vtkMRMLSegmentationsDisplayableManager2D,
+    vtkMRMLSliceLayerLogic,
     vtkMRMLSliceLogic,
     vtkMRMLSliceViewDisplayableManagerFactory,
     vtkMRMLSliceViewInteractorStyle,
     vtkMRMLTransformsDisplayableManager2D,
     vtkMRMLVolumeGlyphSliceDisplayableManager,
+    vtkMRMLVolumeNode,
 )
 from vtkmodules.vtkCommonCore import reference, vtkCommand
 from vtkmodules.vtkInteractionStyle import vtkInteractorStyleUser
@@ -305,3 +307,11 @@ class SliceView(AbstractView):
             else self._logic.GetSliceCompositeNode().GetForegroundVolumeID
         )
         return getter()
+
+    def get_volume_layer_logic(self, volume_node: vtkMRMLVolumeNode) -> vtkMRMLSliceLayerLogic:
+        volume_id = volume_node.GetID() if volume_node else ""
+        return (
+            self._logic.GetForegroundLayer()
+            if self.get_foreground_volume_id() == volume_id
+            else self._logic.GetBackgroundLayer()
+        )

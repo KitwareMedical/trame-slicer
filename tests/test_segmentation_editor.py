@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import pytest
 from slicer import vtkMRMLAbstractViewNode, vtkMRMLNode, vtkMRMLScriptedModuleNode
 from undo_stack import SignalContainerSpy, UndoStack
@@ -205,7 +203,7 @@ def test_can_add_new_effects_to_segmentation_editor_by_type(editor, a_threed_vie
 
     assert effect.pipelines
     assert isinstance(effect.pipelines[0](), MyEffectPipeline)
-    assert effect.pipelines[0]().GetViewNode() == a_threed_view._view_node
+    assert effect.pipelines[0]().GetViewNode() == a_threed_view.get_view_node()
     assert effect.is_active
 
 

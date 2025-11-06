@@ -8,7 +8,7 @@ from slicer import (
 
 from trame_slicer.utils import create_scripted_module_dataclass_proxy
 
-from .paint_effect_parameters import PaintEffectParameters
+from .paint_effect_parameters import BrushDiameterMode, PaintEffectParameters
 from .segment_modifier import ModificationMode
 from .segmentation_effect import SegmentationEffect
 from .segmentation_effect_pipeline import SegmentationEffectPipeline
@@ -18,7 +18,7 @@ from .segmentation_paint_pipeline import (
 )
 
 
-class _SegmentationPaintEraseEffect(SegmentationEffect):
+class SegmentationEffectPaintErase(SegmentationEffect):
     def __init__(self, mode: ModificationMode) -> None:
         super().__init__()
         self.set_mode(mode)
@@ -44,7 +44,7 @@ class _SegmentationPaintEraseEffect(SegmentationEffect):
             return
 
         # Make sure nodes are present in the scene
-        proxy = create_scripted_module_dataclass_proxy(PaintEffectParameters, self._param_node, self._scene)
+        proxy = self._get_proxy()
         if proxy.brush_model_node is None:
             proxy.brush_model_node = self._create_model_node("BrushModel")
             proxy.paint_feedback_model_node = self._create_model_node("FeedbackModel")
@@ -53,6 +53,9 @@ class _SegmentationPaintEraseEffect(SegmentationEffect):
         # Toggle visibility depending on active
         proxy.brush_model_node.SetDisplayVisibility(self.is_active)
         proxy.paint_feedback_model_node.SetDisplayVisibility(self.is_active)
+
+    def _get_proxy(self) -> PaintEffectParameters:
+        return create_scripted_module_dataclass_proxy(PaintEffectParameters, self._param_node, self._scene)
 
     def _create_pipeline(
         self, view_node: vtkMRMLAbstractViewNode, _parameter: vtkMRMLNode
@@ -63,12 +66,30 @@ class _SegmentationPaintEraseEffect(SegmentationEffect):
             return SegmentationPaintPipeline3D()
         return None
 
+    def set_use_sphere_brush(self, use_sphere_brush):
+        proxy = self._get_proxy()
+        proxy.use_sphere_brush = use_sphere_brush
 
-class SegmentationEffectPaint(_SegmentationPaintEraseEffect):
+    def set_brush_diameter(self, diameter: float, diameter_mode: BrushDiameterMode):
+        proxy = self._get_proxy()
+        proxy.brush_diameter = diameter
+        proxy.brush_diameter_mode = diameter_mode
+
+    def is_sphere_brush(self) -> bool:
+        return self._get_proxy().use_sphere_brush
+
+    def get_brush_diameter(self) -> float:
+        return self._get_proxy().brush_diameter
+
+    def get_brush_diameter_mode(self) -> BrushDiameterMode:
+        return self._get_proxy().brush_diameter_mode
+
+
+class SegmentationEffectPaint(SegmentationEffectPaintErase):
     def __init__(self) -> None:
         super().__init__(ModificationMode.Add)
 
 
-class SegmentationEffectErase(_SegmentationPaintEraseEffect):
+class SegmentationEffectErase(SegmentationEffectPaintErase):
     def __init__(self) -> None:
         super().__init__(ModificationMode.Remove)

@@ -36,6 +36,7 @@ from trame_slicer.segmentation import (
     SegmentationEffectPaint,
     SegmentationEffectPipeline,
     SegmentationEffectScissors,
+    SegmentationEffectThreshold,
     SegmentModifier,
     SegmentProperties,
 )
@@ -52,10 +53,11 @@ class SegmentationEditor(SignalContainer):
     """
 
     builtin_effects: ClassVar[list[type[SegmentationEffect]]] = [
+        SegmentationEffectErase,
         SegmentationEffectNoTool,
         SegmentationEffectPaint,
-        SegmentationEffectErase,
         SegmentationEffectScissors,
+        SegmentationEffectThreshold,
     ]
 
     segmentation_modified = Signal()
@@ -69,8 +71,11 @@ class SegmentationEditor(SignalContainer):
         scene: vtkMRMLScene,
         logic: vtkSlicerSegmentationsModuleLogic,
         view_manager: ViewManager,
+        *,
+        builtin_effects: list[type[SegmentationEffect]] | None = None,
     ) -> None:
-        if SegmentationEffectNoTool not in self.builtin_effects:
+        builtin_effects = builtin_effects or self.builtin_effects
+        if SegmentationEffectNoTool not in builtin_effects:
             _error_msg = "The no tool effect is expected to be in the builtin effects to correctly deactivate the segmentation effects."
             raise RuntimeError(_error_msg)
 
@@ -96,7 +101,7 @@ class SegmentationEditor(SignalContainer):
         self._modified_obs = None
         self._do_show_3d = False
 
-        for effect in self.builtin_effects:
+        for effect in builtin_effects:
             self.register_effect_type(effect)
 
         # Register pipeline creator
@@ -175,7 +180,9 @@ class SegmentationEditor(SignalContainer):
     def active_effect(self) -> SegmentationEffect | None:
         return self._active_effect
 
-    def set_active_segmentation(self, segmentation_node, volume_node):
+    def set_active_segmentation(
+        self, segmentation_node: vtkMRMLSegmentationNode, volume_node: vtkMRMLVolumeNode
+    ) -> Segmentation:
         segmentation_node.SetReferenceImageGeometryParameterFromVolumeNode(volume_node)
 
         if self._modified_obs is not None:
@@ -198,6 +205,7 @@ class SegmentationEditor(SignalContainer):
 
         self.deactivate_effect()
         self.trigger_all_signals()
+        return self.active_segmentation
 
     @staticmethod
     def _initialize_segmentation_node(
@@ -239,9 +247,9 @@ class SegmentationEditor(SignalContainer):
         self.set_active_effect(effect)
         return effect
 
-    def set_active_effect(self, effect: SegmentationEffect | None):
+    def set_active_effect(self, effect: SegmentationEffect | None) -> SegmentationEffect | None:
         if self._active_effect == effect:
-            return None
+            return self._active_effect
 
         if self._active_effect:
             self._active_effect.set_modifier(None)

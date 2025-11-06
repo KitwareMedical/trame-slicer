@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import pytest
 
 from tests.conftest import a_slice_view, a_threed_view

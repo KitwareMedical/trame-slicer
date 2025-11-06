@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -115,11 +113,11 @@ def test_view_manager_with_default_factories_created_nodes_are_added_to_slicer_s
 
     slice_nodes: vtkCollection = a_slicer_app.scene.GetNodesByClass("vtkMRMLSliceNode")
     assert slice_nodes.GetNumberOfItems() == 1
-    assert slice_nodes.GetItemAsObject(0) == slice_view._view_node
+    assert slice_nodes.GetItemAsObject(0) == slice_view.get_view_node()
 
     threed_nodes: vtkCollection = a_slicer_app.scene.GetNodesByClass("vtkMRMLViewNode")
     assert threed_nodes.GetNumberOfItems() == 1
-    assert threed_nodes.GetItemAsObject(0) == threed_view._view_node
+    assert threed_nodes.GetItemAsObject(0) == threed_view.get_view_node()
     a_server.start()
 
 

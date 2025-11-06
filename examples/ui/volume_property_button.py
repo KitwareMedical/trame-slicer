@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from trame_client.widgets.core import Template
 from trame_server import Server
 from trame_vuetify.widgets.vuetify3 import VCard, VCardText, VMenu, VRow

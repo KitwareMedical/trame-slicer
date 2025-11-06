@@ -5,6 +5,7 @@ from slicer import vtkMRMLNode, vtkMRMLScriptedModuleNode
 from vtkmodules.vtkCommonCore import vtkObject
 
 from .segment_modifier import SegmentModifier
+from .segmentation import Segmentation
 
 if TYPE_CHECKING:
     from trame_slicer.views import AbstractViewChild
@@ -21,6 +22,9 @@ class SegmentationEffectPipeline(vtkMRMLLayerDMScriptedPipeline):
 
     def GetModifier(self) -> SegmentModifier | None:
         return self._effect.modifier if self._effect else None
+
+    def GetSegmentation(self) -> Segmentation | None:
+        return self.GetModifier().segmentation if self.GetModifier() else None
 
     def IsActive(self) -> bool:
         return self._isActive and self.GetModifier()
