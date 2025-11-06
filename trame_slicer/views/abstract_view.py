@@ -292,6 +292,9 @@ class AbstractView:
         Sets the orientation marker and size.
         Orientation Enums are defined in the vtkMRMLAbstractViewNode class.
         """
+        if not self._view_node:
+            return
+
         if orientation_marker is not None:
             self._view_node.SetOrientationMarkerType(orientation_marker)
 
@@ -303,6 +306,9 @@ class AbstractView:
         Sets the ruler type and color.
         Ruler Enums are defined in the vtkMRMLAbstractViewNode class.
         """
+        if not self._view_node:
+            return
+
         if ruler_type is not None:
             self._view_node.SetRulerType(ruler_type)
 
@@ -344,15 +350,17 @@ class AbstractView:
         self.set_layout_color(self._str_to_color(color))
 
     def set_layout_color(self, color: list[int]):
-        self._view_node.SetLayoutColor(*self._to_float_color(color))
+        if self._view_node:
+            self._view_node.SetLayoutColor(*self._to_float_color(color))
 
     def set_mapped_in_layout(self, is_mapped_in_layout: bool):
-        self._view_node.SetMappedInLayout(is_mapped_in_layout)
+        if self._view_node:
+            self._view_node.SetMappedInLayout(is_mapped_in_layout)
 
     def _on_object_event(self, _obj: vtkObject, _event_id: int, _call_data: Any | None) -> None:
         with self.trigger_modified_once():
             if _obj == self._scene and _event_id == vtkMRMLScene.EndCloseEvent:
                 self.reset_view()
 
-    def get_view_node(self) -> vtkMRMLViewNode:
+    def get_view_node(self) -> vtkMRMLViewNode | None:
         return self._view_node

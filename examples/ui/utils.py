@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from slicer import vtkMRMLVolumeNode
 from trame_server import Server
 
@@ -17,7 +15,6 @@ class IdName:
 
 class StateId:
     current_volume_node_id = IdName()
-    current_layout_name = IdName()
     file_loading_busy = IdName()
     vr_slider_value = IdName()
     vr_slider_min = IdName()

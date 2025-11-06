@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import asyncio
 import socket
 import uuid
@@ -35,6 +33,22 @@ def a_slicer_app():
 @pytest.fixture
 def a_segmentation_editor(a_slicer_app):
     return a_slicer_app.segmentation_editor
+
+
+@pytest.fixture
+def a_segmentation_node(a_segmentation_editor):
+    return a_segmentation_editor.create_empty_segmentation_node()
+
+
+@pytest.fixture
+def an_active_segmentation(a_segmentation_editor, a_volume_node, a_segmentation_node):
+    return a_segmentation_editor.set_active_segmentation(a_segmentation_node, a_volume_node)
+
+
+@pytest.fixture
+def a_segment_id(a_segmentation_editor, an_active_segmentation):
+    assert an_active_segmentation
+    return a_segmentation_editor.add_empty_segment()
 
 
 @pytest.fixture
@@ -177,13 +191,6 @@ def get_volume_node_from_filename(file_path: Path, a_slicer_app):
     return node
 
 
-@pytest.fixture
-def a_segmentation_node(a_segmentation_editor, a_volume_node):
-    segmentation_node = a_segmentation_editor.create_empty_segmentation_node()
-    a_segmentation_editor.set_active_segmentation(segmentation_node, a_volume_node)
-    return segmentation_node
-
-
 def pytest_addoption(parser):
     parser.addoption(
         "--render-interactive",
@@ -238,6 +245,11 @@ def a_server(render_interactive):
         yield server
     finally:
         server.start = _server_start
+
+
+@pytest.fixture
+def a_state(a_server):
+    return a_server.state
 
 
 @pytest_asyncio.fixture()

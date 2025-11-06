@@ -4,6 +4,7 @@ from slicer import vtkMRMLScene, vtkMRMLScriptedModuleNode
 from trame_client.ui.core import AbstractLayout
 from trame_client.widgets.core import VirtualNode
 from trame_server import Server
+from undo_stack import Signal
 
 from trame_slicer.views import (
     Layout,
@@ -26,6 +27,9 @@ class LayoutManager:
         - Can register layouts with their associated descriptions
         - Notifies view manager of requested view on layout change
     """
+
+    registered_layouts_changed = Signal()
+    current_layout_changed = Signal()
 
     def __init__(
         self,
@@ -53,19 +57,21 @@ class LayoutManager:
         If lazy_initialization is False, the views will not be instantiated unless the passed layout id matches the
         current selected layout id.
         """
-        self._layouts[layout_id] = layout
-        if not lazy_initialization:
-            self.create_layout_views_if_needed(layout_id)
+        with self.registered_layouts_changed.emit_once():
+            self._layouts[layout_id] = layout
+            if not lazy_initialization:
+                self.create_layout_views_if_needed(layout_id)
 
-        if self._current_layout == layout_id:
-            self._refresh_layout()
+            if self._current_layout == layout_id:
+                self._refresh_layout()
 
     def set_layout(self, layout_id: str) -> None:
         if layout_id == self._current_layout:
             return
 
-        self._current_layout = layout_id
-        self._refresh_layout()
+        with self.current_layout_changed.emit_once():
+            self._current_layout = layout_id
+            self._refresh_layout()
 
     def create_layout_views_if_needed(self, layout_id: str) -> None:
         self._create_views_if_needed(self.get_layout(layout_id, Layout.empty_layout()))

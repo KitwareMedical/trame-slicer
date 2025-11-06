@@ -13,7 +13,7 @@ class SegmentProperties:
     color: list[float]
     name: str
     label_value: int
-    terminology_tag: str
+    terminology_tag: str = ""
 
     @classmethod
     def from_segment(cls, segment: vtkSegment) -> SegmentProperties | None:

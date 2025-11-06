@@ -7,6 +7,7 @@ from enum import auto
 
 from numpy.typing import NDArray
 from slicer import (
+    vtkMRMLSegmentEditorNode,
     vtkMRMLTransformNode,
     vtkOrientedImageData,
     vtkOrientedImageDataResample,
@@ -86,6 +87,12 @@ class SegmentModifier:
     @property
     def logic(self) -> vtkSlicerSegmentEditorLogic:
         return self._segmentation.editor_logic
+
+    @property
+    def segment_editor_node(self) -> vtkMRMLSegmentEditorNode | None:
+        if not self.logic:
+            return None
+        return self.logic.GetSegmentEditorNode()
 
     @property
     def active_segment_id(self):
@@ -327,3 +334,36 @@ class SegmentModifier:
     def on_segmentation_modified(self):
         if self.active_segment_id not in self._segmentation.get_segment_ids():
             self.active_segment_id = ""
+
+    def get_source_image_data(self) -> vtkOrientedImageData | None:
+        if not self.logic:
+            return None
+        self.logic.UpdateAlignedSourceVolume()
+        return self.logic.GetAlignedSourceVolume()
+
+    def create_modifier_labelmap(self) -> vtkOrientedImageData | None:
+        if not self.segmentation:
+            return None
+        return self.segmentation.create_modifier_labelmap()
+
+    def set_source_volume_intensity_mask_range(self, min_value: float, max_value: float) -> None:
+        if not self.segment_editor_node:
+            return
+
+        self.segment_editor_node.SetSourceVolumeIntensityMaskRange(min_value, max_value)
+
+    def get_source_volume_intensity_mask_range(self) -> tuple[float, float] | None:
+        if not self.segment_editor_node:
+            return None
+        return self.segment_editor_node.GetSourceVolumeIntensityMaskRange()
+
+    def set_source_volume_intensity_mask_enabled(self, is_enabled: bool) -> None:
+        if not self.segment_editor_node:
+            return
+
+        self.segment_editor_node.SetSourceVolumeIntensityMask(is_enabled)
+
+    def is_source_volume_intensity_mask_enabled(self) -> bool:
+        if not self.segment_editor_node:
+            return False
+        return self.segment_editor_node.GetSourceVolumeIntensityMask()

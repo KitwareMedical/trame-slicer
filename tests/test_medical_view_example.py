@@ -1,15 +1,13 @@
-from __future__ import annotations
-
 import pytest
 from async_timeout import timeout
 from playwright.async_api import async_playwright
 
-from examples.medical_viewer_app import MyTrameSlicerApp
+from examples.medical_viewer_app import MedicalViewerApp
 
 
 @pytest.mark.asyncio
 async def test_medical_view_example_can_be_loaded(async_server, a_server_port):
-    MyTrameSlicerApp(async_server)
+    MedicalViewerApp(async_server)
     async_server.start(port=a_server_port, thread=True, exec_mode="task")
 
     async with timeout(30), async_playwright() as p:

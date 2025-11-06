@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from collections.abc import Callable
 from math import floor
 
@@ -12,7 +10,7 @@ class ControlButton(VBtn):
         self,
         *,
         name: str,
-        icon: str,
+        icon: str | tuple,
         click: Callable | str | None = None,
         size: int = 40,
         **kwargs,
