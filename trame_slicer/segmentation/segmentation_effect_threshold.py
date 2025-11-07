@@ -186,7 +186,7 @@ class SegmentationEffectThreshold(SegmentationEffect):
         threshold.SetOutputScalarType(label_map.GetScalarType())
         threshold.Update()
         label_map.DeepCopy(threshold.GetOutput())
-        self.modifier.modify_active_segment_by_labelmap(label_map)
+        self.modifier.apply_labelmap(label_map)
 
     def use_for_volume_intensity_masking(self):
         if not self.is_active:

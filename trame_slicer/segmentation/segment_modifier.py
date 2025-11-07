@@ -194,7 +194,7 @@ class SegmentModifier:
                 modifier_labelmap, oriented_brush_positioner_output, vtkOrientedImageDataResample.OPERATION_MAXIMUM
             )
 
-        self.apply_labelmap(modifier_labelmap, modifier_extent)
+        self.apply_labelmap(modifier_labelmap, modifier_extent=modifier_extent)
         self.trigger_active_segment_modified()
 
     def apply_polydata_world(self, poly_world: vtkPolyData):
@@ -225,15 +225,28 @@ class SegmentModifier:
         )
         return modifier_labelmap
 
-    def apply_labelmap(self, modifier_labelmap: vtkImageData, modifier_extent=None):
+    def apply_labelmap(
+        self,
+        modifier_labelmap: vtkImageData,
+        *,
+        modifier_extent=None,
+        is_per_segment: bool = True,
+        do_bypass_masking: bool = False,
+    ):
         """
-        :param modifier_labelmap: in source ijk coordinates, VTK image data version
+        Modify active segment using input modifier labelmap in source IJK coordinates.
+        When applying, pushes the modifications to the current undo stack if any is defined.
         """
         with SegmentationLabelMapUndoCommand.push_state_change(self.segmentation):
-            self.modify_active_segment_by_labelmap(modifier_labelmap, modifier_extent=modifier_extent)
+            self._modify_active_segment_by_labelmap(
+                modifier_labelmap,
+                modifier_extent=modifier_extent,
+                is_per_segment=is_per_segment,
+                do_bypass_masking=do_bypass_masking,
+            )
         self.trigger_active_segment_modified()
 
-    def modify_active_segment_by_labelmap(
+    def _modify_active_segment_by_labelmap(
         self,
         modifier_labelmap: vtkImageData,
         *,

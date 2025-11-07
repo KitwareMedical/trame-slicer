@@ -1,5 +1,6 @@
 import pytest
 from trame_vuetify.ui.vuetify3 import SinglePageLayout
+from undo_stack import UndoStack
 
 from trame_slicer.core import LayoutManager
 from trame_slicer.rca_view import register_rca_factories
@@ -7,6 +8,13 @@ from trame_slicer.segmentation import (
     SegmentationEffectThreshold,
     SegmentationThresholdPipeline2D,
 )
+
+
+@pytest.fixture
+def undo_stack(a_segmentation_editor):
+    undo_stack = UndoStack()
+    a_segmentation_editor.set_undo_stack(undo_stack)
+    return undo_stack
 
 
 @pytest.fixture
@@ -19,10 +27,11 @@ def a_sagittal_view(a_slice_view, a_volume_node):
 
 
 def test_can_apply_threshold(
+    a_sagittal_view,
     a_segmentation_editor,
     a_volume_node,
-    a_sagittal_view,
     render_interactive,
+    undo_stack,
 ):
     # Configure the segmentation with an empty segment
     segmentation_node = a_segmentation_editor.create_empty_segmentation_node()
@@ -43,6 +52,7 @@ def test_can_apply_threshold(
     # Activate the segment ID and apply segmentation
     a_segmentation_editor.set_active_segment_id(segment_id)
 
+    undo_stack.clear()
     min_value, max_value = effect.get_threshold_min_max_values()
     effect.auto_threshold()
     assert (min_value, max_value) != effect.get_threshold_min_max_values()
@@ -51,6 +61,7 @@ def test_can_apply_threshold(
     # Verify that a segmentation was correctly written
     array = a_segmentation_editor.get_segment_labelmap(segment_id, as_numpy_array=True)
     assert array.sum() > 0
+    assert undo_stack.can_undo()
 
     if render_interactive:
         a_sagittal_view.interactor().Start()
