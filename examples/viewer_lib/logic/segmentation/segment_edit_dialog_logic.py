@@ -1,8 +1,8 @@
 from trame_server import Server
 
-from examples.ui import SegmentEditDialog, SegmentEditDialogState, SegmentEditorUI
 from trame_slicer.core import SlicerApp
 
+from ...ui import SegmentEditDialog, SegmentEditDialogState, SegmentEditorUI
 from .base_segmentation_logic import BaseSegmentationLogic
 
 

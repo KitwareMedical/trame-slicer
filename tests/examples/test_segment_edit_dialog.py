@@ -1,8 +1,12 @@
 import pytest
 from trame_server.utils.typed_state import TypedState
 
-from examples.logic import SegmentEditDialogLogic
-from examples.ui import MedicalViewerLayout, SegmentEditDialog, SegmentEditDialogState
+from examples.viewer_lib.logic import SegmentEditDialogLogic
+from examples.viewer_lib.ui import (
+    MedicalViewerLayout,
+    SegmentEditDialog,
+    SegmentEditDialogState,
+)
 
 
 @pytest.fixture

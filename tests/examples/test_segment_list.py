@@ -1,6 +1,11 @@
 from trame_server.utils.typed_state import TypedState
 
-from examples.ui import MedicalViewerLayout, SegmentList, SegmentListState, SegmentState
+from examples.viewer_lib.ui import (
+    MedicalViewerLayout,
+    SegmentList,
+    SegmentListState,
+    SegmentState,
+)
 
 
 def test_can_be_displayed(a_server, a_server_port):

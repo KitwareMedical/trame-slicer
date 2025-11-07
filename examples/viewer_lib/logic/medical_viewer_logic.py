@@ -2,10 +2,10 @@ from dataclasses import dataclass
 
 from trame_server import Server
 
-from examples.ui import MedicalViewerUI, StateId
 from trame_slicer.core import LayoutManager, SlicerApp
 from trame_slicer.rca_view import register_rca_factories
 
+from ..ui import MedicalViewerUI, StateId
 from .base_logic import BaseLogic
 from .layout_button_logic import LayoutButtonLogic
 from .load_files_logic import LoadFilesLogic

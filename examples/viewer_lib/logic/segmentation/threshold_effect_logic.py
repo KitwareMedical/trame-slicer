@@ -1,9 +1,9 @@
 from trame_server import Server
 
-from examples.ui import SegmentEditorUI, ThresholdEffectUI, ThresholdState
 from trame_slicer.core import SlicerApp
 from trame_slicer.segmentation import SegmentationEffectThreshold
 
+from ...ui import SegmentEditorUI, ThresholdEffectUI, ThresholdState
 from .base_segmentation_logic import BaseEffectLogic
 
 

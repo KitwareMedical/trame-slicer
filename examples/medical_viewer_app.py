@@ -3,11 +3,9 @@ from trame.app.testing import enable_testing
 from trame.decorators import TrameApp
 
 try:
-    from logic import MedicalViewerLogic
-    from ui import MedicalViewerUI
+    from viewer_lib import MedicalViewerLogic, MedicalViewerUI
 except ModuleNotFoundError:
-    from .logic import MedicalViewerLogic
-    from .ui import MedicalViewerUI
+    from .viewer_lib import MedicalViewerLogic, MedicalViewerUI
 
 from trame_slicer.core import SlicerApp
 

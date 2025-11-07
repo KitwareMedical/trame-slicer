@@ -1,8 +1,8 @@
 from trame_server import Server
 
-from examples.ui import SlabState, SlabType
 from trame_slicer.core import SlicerApp
 
+from ..ui import SlabState, SlabType
 from .base_logic import BaseLogic
 
 

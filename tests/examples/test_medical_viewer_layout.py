@@ -1,6 +1,6 @@
 from trame_vuetify.widgets.vuetify3 import VLabel, VSlider
 
-from examples.ui import ControlButton, MedicalViewerLayout
+from examples.viewer_lib.ui import ControlButton, MedicalViewerLayout
 
 
 def test_can_be_displayed(a_server, a_server_port):

@@ -3,14 +3,15 @@ from tempfile import TemporaryDirectory
 
 from trame_server import Server
 
-from examples.logic import BaseLogic
-from examples.ui import (
+from trame_slicer.core import SlicerApp
+from trame_slicer.utils import write_client_files_to_dir
+
+from ..ui import (
     LoadClientVolumeFilesButton,
     LoadClientVolumeFilesButtonState,
     StateId,
 )
-from trame_slicer.core import SlicerApp
-from trame_slicer.utils import write_client_files_to_dir
+from .base_logic import BaseLogic
 
 
 class LoadFilesLogic(BaseLogic[LoadClientVolumeFilesButtonState]):

@@ -1,7 +1,7 @@
 import pytest
 
-from examples.logic import ThresholdEffectLogic
-from examples.ui import MedicalViewerLayout, ThresholdEffectUI
+from examples.viewer_lib.logic import ThresholdEffectLogic
+from examples.viewer_lib.ui import MedicalViewerLayout, ThresholdEffectUI
 
 
 @pytest.fixture

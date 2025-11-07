@@ -1,14 +1,6 @@
 from trame_server import Server
 from undo_stack import UndoStack
 
-from examples.ui import (
-    SegmentEditorState,
-    SegmentEditorUI,
-    SegmentOpacityState,
-    SegmentState,
-    StateId,
-    get_current_volume_node,
-)
 from trame_slicer.core import SlicerApp
 from trame_slicer.segmentation import (
     SegmentationDisplay,
@@ -16,6 +8,14 @@ from trame_slicer.segmentation import (
     SegmentationEffectThreshold,
 )
 
+from ...ui import (
+    SegmentEditorState,
+    SegmentEditorUI,
+    SegmentOpacityState,
+    SegmentState,
+    StateId,
+    get_current_volume_node,
+)
 from .base_segmentation_logic import BaseEffectLogic, BaseSegmentationLogic
 from .paint_erase_effect_logic import EraseEffectLogic, PaintEffectLogic
 from .segment_edit_dialog_logic import SegmentEditDialogLogic

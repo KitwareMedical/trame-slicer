@@ -1,9 +1,9 @@
 from slicer import vtkMRMLApplicationLogic, vtkMRMLScene
 from trame_server import Server
 
-from examples.ui import MprInteractionButton, MprInteractionButtonState
 from trame_slicer.core import SlicerApp
 
+from ..ui import MprInteractionButton, MprInteractionButtonState
 from .base_logic import BaseLogic
 
 

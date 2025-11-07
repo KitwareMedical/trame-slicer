@@ -2,8 +2,8 @@ import pytest
 from trame_server.utils.typed_state import TypedState
 from undo_stack import UndoStack
 
-from examples.logic import SegmentEditorLogic
-from examples.ui import (
+from examples.viewer_lib.logic import SegmentEditorLogic
+from examples.viewer_lib.ui import (
     MedicalViewerLayout,
     SegmentEditorState,
     SegmentEditorUI,

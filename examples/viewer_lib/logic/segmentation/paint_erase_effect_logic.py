@@ -2,7 +2,6 @@ from typing import Generic
 
 from trame_server import Server
 
-from examples.ui import PaintEffectState, SegmentEditorUI
 from trame_slicer.core import SlicerApp
 from trame_slicer.segmentation import (
     SegmentationEffectErase,
@@ -10,6 +9,7 @@ from trame_slicer.segmentation import (
     SegmentationEffectPaintErase,
 )
 
+from ...ui import PaintEffectState, SegmentEditorUI
 from .base_segmentation_logic import BaseEffectLogic, U
 
 

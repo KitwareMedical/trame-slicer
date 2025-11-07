@@ -1,8 +1,8 @@
 from trame_server import Server
 
-from examples.ui import LayoutButtonState
 from trame_slicer.core import LayoutManager, SlicerApp
 
+from ..ui import LayoutButtonState
 from .base_logic import BaseLogic
 
 

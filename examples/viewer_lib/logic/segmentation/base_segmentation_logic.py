@@ -3,9 +3,9 @@ from typing import Generic, TypeVar
 
 from trame_server import Server
 
-from examples.ui import SegmentEditorUI
 from trame_slicer.core import SlicerApp
 
+from ...ui import SegmentEditorUI
 from ..base_logic import BaseLogic, T
 
 

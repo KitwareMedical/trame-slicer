@@ -1,9 +1,9 @@
 from slicer import vtkMRMLMarkupsNode
 from trame_server import Server
 
-from examples.ui import MarkupsButton
 from trame_slicer.core import SlicerApp
 
+from ..ui import MarkupsButton
 from .base_logic import BaseLogic
 
 

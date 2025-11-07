@@ -1,7 +1,7 @@
 import pytest
 
-from examples.logic import PaintEffectLogic
-from examples.ui import MedicalViewerLayout, PaintEffectUI
+from examples.viewer_lib.logic import PaintEffectLogic
+from examples.viewer_lib.ui import MedicalViewerLayout, PaintEffectUI
 from trame_slicer.segmentation import BrushDiameterMode, SegmentationEffectPaint
 
 
