@@ -59,6 +59,13 @@ dev = [
     "pytest-xprocess",
 ]
 
+docs = [
+    "sphinx>=8,<9",
+    "sphinx_rtd_theme",
+    "sphinxcontrib-mermaid",
+    "myst-parser>=4",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

@@ -1,0 +1,17 @@
+classDiagram
+    vtkMRMLSegmentEditorNode *-- SegmentationEditor: Creates
+    vtkMRMLSegmentEditorLogic *-- SegmentationEditor: Creates
+    SegmentModifier "0..1" *-- SegmentationEditor: Creates
+    SegmentationEditor --* "1..*" SegmentationEffect: Creates
+    SegmentationEffect --o "1" SegmentModifier: Uses
+    SegmentationEffect --* "0..*" SegmentationEffectPipeline: Creates
+    SegmentationEffect --o vtkMRMLScriptedModuleNode: Creates
+    SegmentationEffectPipeline --|> vtkMRMLLayerDMScriptedPipeline: Inherits
+    SegmentationEffectPipeline --o vtkMRMLScriptedModuleNode: Uses
+    vtkMRMLLayerDMScriptedPipeline "0..*" o-- vtkMRMLLayerDisplayableManager
+    vtkMRMLLayerDisplayableManager "1" *-- AbstractView: Registers
+    AbstractView <|-- SliceView: Inherits
+    AbstractView <|-- ThreeDView: Inherits
+    SegmentModifier --o "1" Segmentation
+    Segmentation --o "1" vtkMRMLVolumeNode
+    Segmentation --o "1" vtkMRMLSegmentationNode
