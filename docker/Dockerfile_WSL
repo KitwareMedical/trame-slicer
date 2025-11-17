@@ -1,0 +1,26 @@
+FROM python:3.10-slim
+
+# Environment variables
+# avoid buffering the server URL
+ENV PYTHONUNBUFFERED=1
+
+# Install dependencies
+RUN apt-get update && apt-get -y upgrade && apt-get install -y \
+    git \
+    wget \
+    libturbojpeg0 \
+    libxrender1 \
+    mesa-utils \
+    mesa-utils-extra \
+    && apt-get -y autoremove \
+    && apt-get clean
+
+# Install trame-slicer
+COPY . ./trame-slicer
+RUN pip install ./trame-slicer
+RUN pip install --no-cache-dir https://github.com/KitwareMedical/trame-slicer/releases/download/v0.0.1/vtk_mrml-9.4.0-cp310-cp310-manylinux_2_35_x86_64.whl
+
+ENV MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA
+
+# Run medical example
+CMD ["python", "./trame-slicer/examples/medical_viewer_app.py", "--host" ,"0.0.0.0"]
