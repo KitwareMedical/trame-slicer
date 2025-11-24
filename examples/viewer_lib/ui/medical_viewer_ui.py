@@ -7,7 +7,7 @@ from trame_slicer.core import LayoutManager, SlicerApp
 
 from .control_button import ControlButton
 from .layout_button import LayoutButton
-from .load_client_volume_files_button import LoadClientVolumeFilesButton
+from .load_client_volume_files_button import LoadClientVolumeButtonsDiv
 from .markups_button import MarkupsButton
 from .medical_viewer_layout import MedicalViewerLayout
 from .mpr_interaction_button import MprInteractionButton
@@ -20,7 +20,7 @@ class MedicalViewerUI:
     def __init__(self, server: Server, slicer_app: SlicerApp, layout_manager: LayoutManager):
         with MedicalViewerLayout(server) as self.layout:
             with self.layout.toolbar:
-                self.load_client_volume_files_button = LoadClientVolumeFilesButton()
+                self.load_client_volume_buttons = LoadClientVolumeButtonsDiv()
                 self.volume_property_button = VolumePropertyButton(server=server, slicer_app=slicer_app)
                 self.layout_button = LayoutButton()
                 self.markups_button = MarkupsButton()

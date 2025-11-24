@@ -50,6 +50,6 @@ class MedicalViewerLogic(BaseLogic[MedicalViewerState]):
         self._segment_editor_logic.set_ui(ui.segment_editor_ui)
         self._layout_button_logic.set_ui(ui.layout_button)
         self._markups_logic.set_ui(ui.markups_button)
-        self._load_files_logic.set_ui(ui.load_client_volume_files_button)
+        self._load_files_logic.set_ui(ui.load_client_volume_buttons)
         self._slab_logic.set_ui(ui.slab_button)
         self._mpr_logic.set_ui(ui.mpr_interaction_button)
