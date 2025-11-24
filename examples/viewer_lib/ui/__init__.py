@@ -1,6 +1,7 @@
 from .control_button import ControlButton
 from .layout_button import LayoutButton, LayoutButtonState
 from .load_client_volume_files_button import (
+    LoadClientVolumeButtonsDiv,
     LoadClientVolumeFilesButton,
     LoadClientVolumeFilesButtonState,
 )
@@ -37,6 +38,7 @@ __all__ = [
     "LayoutButton",
     "LayoutButton",
     "LayoutButtonState",
+    "LoadClientVolumeButtonsDiv",
     "LoadClientVolumeFilesButton",
     "LoadClientVolumeFilesButtonState",
     "MarkupsButton",
