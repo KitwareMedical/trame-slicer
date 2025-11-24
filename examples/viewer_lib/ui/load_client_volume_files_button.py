@@ -1,11 +1,10 @@
 from dataclasses import dataclass
 
-from trame_client.widgets.html import Div, Input
+from trame.widgets import client
+from trame_client.widgets.html import Div, Span
 from trame_server.utils.typed_state import TypedState
-from trame_vuetify.widgets.vuetify3 import VProgressCircular
+from trame_vuetify.widgets.vuetify3 import VFileInput, VProgressCircular, VTooltip
 from undo_stack import Signal
-
-from .control_button import ControlButton
 
 
 @dataclass
@@ -21,10 +20,12 @@ class LoadClientVolumeFilesButton(Div):
         self._typed_state = TypedState(self.state, LoadClientVolumeFilesButtonState)
 
         with self:
-            files_input_ref = "open_files_input"
-            Input(
-                type="file",
+            client.Style(".v-input__prepend .v-icon { opacity: 1.0; }")  # Overwrite vuetify's opacity
+            VFileInput(
+                v_bind="props",
+                prepend_icon="mdi-folder-open",
                 multiple=True,
+                hide_input=True,
                 change=(
                     f"{self._typed_state.name.file_loading_busy} = true;"
                     "trigger('"
@@ -32,14 +33,13 @@ class LoadClientVolumeFilesButton(Div):
                     "', [$event.target.files]"
                     ")"
                 ),
-                __events=["change"],
-                style="display: none;",
-                ref=files_input_ref,
-            )
-            ControlButton(
-                name="Open files",
-                icon="mdi-folder-open",
-                click=lambda: self.server.js_call(ref=files_input_ref, method="click"),
+                style="width: 40px; height: 40px; opacity: 1.0;",
                 v_if=(f"!{self._typed_state.name.file_loading_busy}",),
             )
-            VProgressCircular(v_if=(self._typed_state.name.file_loading_busy,), indeterminate=True, size=24)
+            VProgressCircular(v_else=True, indeterminate=True, size=24, style="margin: 8px;")
+            with VTooltip(
+                activator="parent",
+                transition="slide-x-transition",
+                location="right",
+            ):
+                Span("Open files")
