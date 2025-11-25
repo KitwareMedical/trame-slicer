@@ -46,6 +46,8 @@ The library can be installed as follows :
   [Downloading the latest wheels](#Downloading-the-latest-wheels))
   - Windows: `pip install vtk_mrml-9.4.0-cp310-cp310-win_amd64.whl`
   - Linux: `pip install vtk_mrml-9.4.0-cp310-cp310-manylinux_2_35_x86_64.whl`
+- For better FPS, you can optionally install
+  [turbo-jpeg](<[url](https://github.com/Kitware/trame-rca?tab=readme-ov-file#optional-dependencies)>)
 
 ## Getting started
 
