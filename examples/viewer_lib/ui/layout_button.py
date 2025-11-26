@@ -4,7 +4,7 @@ from trame_client.widgets.core import Template
 from trame_server.utils.typed_state import TypedState
 from trame_vuetify.widgets.vuetify3 import VCard, VCardText, VMenu, VRadio, VRadioGroup
 
-from .control_button import ControlButton
+from .utils import ControlButton
 
 
 @dataclass

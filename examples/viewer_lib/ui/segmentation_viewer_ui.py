@@ -1,35 +1,26 @@
 from trame_server import Server
 
-from trame_slicer.core import LayoutManager, SlicerApp
+from trame_slicer.core import LayoutManager
 
 from .layout_button import LayoutButton
 from .load_client_volume_files_button import LoadClientVolumeButtonsDiv
-from .markups_button import MarkupsButton
-from .mpr_interaction_button import MprInteractionButton
 from .segmentation import SegmentEditorUI
-from .slab_button import SlabButton
 from .utils import AbstractToolUI, ControlButton, FlexContainer
 from .viewer_layout import ViewerLayout
-from .volume_property_button import VolumePropertyButton
 
 
-class MedicalViewerUI:
-    def __init__(self, server: Server, slicer_app: SlicerApp, layout_manager: LayoutManager):
+class SegmentationViewerUI:
+    def __init__(self, server: Server, layout_manager: LayoutManager):
         with ViewerLayout(server) as self.layout:
             self.segment_editor_ui = SegmentEditorUI()
             with self.layout.toolbar, FlexContainer(fill_height=True):
-                self.load_client_volume_buttons = LoadClientVolumeButtonsDiv()
-                self.volume_property_button = VolumePropertyButton(server=server, slicer_app=slicer_app)
+                self.load_client_volume_items_buttons = LoadClientVolumeButtonsDiv()
                 self.layout_button = LayoutButton()
-                self.markups_button = MarkupsButton()
                 self._create_tool_button(
                     icon="mdi-brush",
                     name="segmentation panel",
                     tool_name=self.segment_editor_ui.name,
                 )
-                self.slab_button = SlabButton()
-                self.mpr_interaction_button = MprInteractionButton()
-
                 self._register_toolbar_ui(self.segment_editor_ui)
 
             with self.layout.drawer:
@@ -56,7 +47,6 @@ class MedicalViewerUI:
         async def change_drawer_ui():
             if self.data.is_drawer_visible and self.data.active_tool == tool_name:
                 self.data.is_drawer_visible = False
-                self.data.active_tool = None
             else:
                 self.data.active_tool = tool_name
                 self.data.is_drawer_visible = True

@@ -4,7 +4,7 @@ from trame_vuetify.widgets.vuetify3 import VCard, VCardText, VMenu, VRow
 
 from trame_slicer.core import SlicerApp
 
-from .control_button import ControlButton
+from .utils import ControlButton
 from .volume_window_level_slider import VolumeWindowLevelSlider
 from .vr_crop_button import VRCropButton
 from .vr_preset_select import VRPresetSelect

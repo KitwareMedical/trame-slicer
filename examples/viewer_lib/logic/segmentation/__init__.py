@@ -5,7 +5,7 @@ from .paint_erase_effect_logic import (
     PaintEffectLogic,
     PaintEraseEffectLogic,
 )
-from .segment_edit_dialog_logic import SegmentEditDialogLogic
+from .segment_edit_logic import SegmentEditLogic
 from .segment_editor_logic import SegmentEditorLogic
 from .threshold_effect_logic import ThresholdEffectLogic
 
@@ -16,7 +16,7 @@ __all__ = [
     "IslandsEffectLogic",
     "PaintEffectLogic",
     "PaintEraseEffectLogic",
-    "SegmentEditDialogLogic",
+    "SegmentEditLogic",
     "SegmentEditorLogic",
     "ThresholdEffectLogic",
 ]

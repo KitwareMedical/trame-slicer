@@ -5,8 +5,7 @@ from trame_vuetify.widgets.vuetify3 import VRangeSlider
 
 from trame_slicer.core import SlicerApp, VolumeWindowLevel
 
-from .control_button import ControlButton
-from .utils import IdName, StateId, get_current_volume_node
+from .utils import ControlButton, IdName, StateId, get_current_volume_node
 
 
 @TrameApp()

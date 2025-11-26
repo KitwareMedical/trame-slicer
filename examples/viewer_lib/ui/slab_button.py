@@ -14,7 +14,7 @@ from trame_vuetify.widgets.vuetify3 import (
     VSlider,
 )
 
-from .control_button import ControlButton
+from .utils import ControlButton
 
 
 class SlabType(Enum):

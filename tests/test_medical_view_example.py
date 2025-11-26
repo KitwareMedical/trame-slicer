@@ -2,7 +2,7 @@ import pytest
 from async_timeout import timeout
 from playwright.async_api import async_playwright
 
-from examples.medical_viewer_app import MedicalViewerApp
+from examples.medical_viewer.medical_viewer_app import MedicalViewerApp
 
 
 @pytest.mark.asyncio
