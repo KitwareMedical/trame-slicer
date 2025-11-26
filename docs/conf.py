@@ -20,13 +20,13 @@ author = "Kitware"
 # -- General configuration ---------------------------------------------------
 
 extensions = [
-    "sphinx.ext.duration",
-    "sphinx.ext.doctest",
+    "myst_parser",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "sphinx.ext.doctest",
+    "sphinx.ext.duration",
     "sphinx.ext.intersphinx",
     "sphinxcontrib.mermaid",
-    "myst_parser",
 ]
 
 intersphinx_mapping = {
@@ -52,7 +52,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # -- Options for autodoc -----------------------------------------------------
 autodoc_member_order = "bysource"
-autodoc_mock_imports = ["slicer"]
+autodoc_mock_imports = ["slicer", "LayerDMLib", "vtkITK"]
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -67,30 +67,17 @@ html_css_files = [
 # -- Hooks for sphinx events -------------------------------------------------
 
 
-def run_apidoc(_):
-    # Override the apidoc options with what we want
-    apidoc.OPTIONS.clear()
-    apidoc.OPTIONS.extend(
-        [
-            "members",
-            "imported-members",
-            "show-inheritance",
-        ]
-    )
-
-    templates_path = str(cur_path / "apidoc_templates")
+def run_apidoc(*_):
     module_path = str(Path(trame_slicer.__file__).parent)
-
     output_dir = str(cur_path / "developer_guide")
+    templates_path = str(cur_path / "apidoc_templates")
 
     argv = [
-        "-f",
-        "-T",
-        "-e",
-        "-M",
-        "-o",
+        "--force",
+        "--module-first",
+        "--output-dir",
         output_dir,
-        "-t",
+        "--templatedir",
         templates_path,
         module_path,
     ]

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any
 
 from LayerDMLib import vtkMRMLLayerDMScriptedPipeline
@@ -29,14 +31,14 @@ class SegmentationEffectPipeline(vtkMRMLLayerDMScriptedPipeline):
     def IsActive(self) -> bool:
         return self._isActive and self.GetModifier()
 
-    def SetSegmentationEffect(self, effect: "SegmentationEffect"):
+    def SetSegmentationEffect(self, effect: SegmentationEffect):
         self._effect = effect
 
     def SetDisplayNode(self, displayNode: vtkMRMLNode) -> None:
         super().SetDisplayNode(displayNode)
         self.OnEffectParameterUpdate()
 
-    def SetView(self, view: "AbstractViewChild"):
+    def SetView(self, view: AbstractViewChild):
         self._view = view
 
     def SetActive(self, isActive: bool):

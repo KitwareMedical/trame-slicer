@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from enum import Enum
 from functools import lru_cache
 
@@ -59,7 +61,7 @@ class CursorId(Enum):
 
     @classmethod
     @lru_cache
-    def from_vtk_cursor_id(cls, vtk_cursor: int) -> "CursorId":
+    def from_vtk_cursor_id(cls, vtk_cursor: int) -> CursorId:
         """
         VTK cursor int to cursor enum.
         """

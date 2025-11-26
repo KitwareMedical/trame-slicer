@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from vtkmodules.vtkCommonCore import vtkMath, vtkPoints
 from vtkmodules.vtkRenderingCore import (
     vtkAbstractPropPicker,

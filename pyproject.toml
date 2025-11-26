@@ -63,7 +63,9 @@ docs = [
     "sphinx>=8,<9",
     "sphinx_rtd_theme",
     "sphinxcontrib-mermaid",
+    "sphinx-autodoc-typehints",
     "myst-parser>=4",
+    "vtk==9.4.0",
 ]
 
 [build-system]

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from slicer import vtkMRMLAbstractViewNode, vtkMRMLNode
 
 from .segmentation_effect import SegmentationEffect

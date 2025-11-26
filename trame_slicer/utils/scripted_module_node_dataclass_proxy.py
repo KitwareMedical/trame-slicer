@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 from dataclasses import MISSING, Field
 from datetime import date, datetime, time, timezone

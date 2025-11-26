@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from slicer import (
     vtkMRMLAbstractViewNode,
     vtkMRMLModelNode,
