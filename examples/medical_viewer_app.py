@@ -17,7 +17,7 @@ class MedicalViewerApp:
         self._slicer_app = SlicerApp()
 
         self._logic = MedicalViewerLogic(self._server, self._slicer_app)
-        self._ui = MedicalViewerUI(self._server, self._slicer_app, self._logic.layout_manager)
+        self._ui = MedicalViewerUI(self._server, self._logic.layout_manager)
         self._logic.set_ui(self._ui)
 
     @property

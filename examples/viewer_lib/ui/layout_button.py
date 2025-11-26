@@ -14,7 +14,7 @@ class LayoutButtonState:
 
 
 class LayoutButton(VMenu):
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__(location="right", close_on_content_click=True)
         self._typed_state = TypedState(self.state, LayoutButtonState)
 
@@ -24,6 +24,7 @@ class LayoutButton(VMenu):
                     v_bind="props",
                     icon="mdi-view-dashboard",
                     name="Layouts",
+                    **kwargs,
                 )
 
             with (

@@ -1,7 +1,9 @@
-from .logic import MedicalViewerLogic
-from .ui import MedicalViewerUI
+from .logic import MedicalViewerLogic, SegmentationAppLogic
+from .ui import MedicalViewerUI, SegmentationAppUI
 
 __all__ = [
     "MedicalViewerLogic",
     "MedicalViewerUI",
+    "SegmentationAppLogic",
+    "SegmentationAppUI",
 ]
