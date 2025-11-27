@@ -19,6 +19,9 @@ from trame_slicer.views.view_factory import V
 class _View(Generic[AbstractViewChild]):
     slicer_view: AbstractViewChild
 
+    def __post_init__(self):
+        self.slicer_view.render_window().OffScreenRenderingOff()
+
 
 class DirectViewFactory(IViewFactory):
     def can_create_view(self, _view: ViewLayoutDefinition) -> bool:

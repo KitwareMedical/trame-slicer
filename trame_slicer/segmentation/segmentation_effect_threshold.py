@@ -177,8 +177,6 @@ class SegmentationEffectThreshold(SegmentationEffect):
 
         # Get modifier labelmap
         label_map = self.modifier.create_modifier_labelmap()
-        original_image_to_world_matrix = vtkMatrix4x4()
-        label_map.GetImageToWorldMatrix(original_image_to_world_matrix)
 
         # Perform thresholding
         threshold = vtkImageThreshold()

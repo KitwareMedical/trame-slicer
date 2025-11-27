@@ -11,8 +11,9 @@ from slicer import (
     vtkSlicerSegmentEditorLogic,
 )
 from undo_stack import Signal, UndoStack
-from vtkmodules.vtkCommonCore import vtkCommand
+from vtkmodules.vtkCommonCore import vtkCommand, vtkStringArray
 from vtkmodules.vtkCommonDataModel import vtkImageData
+from vtkmodules.vtkCommonMath import vtkMatrix4x4
 
 from trame_slicer.utils import vtk_image_to_np
 
@@ -54,11 +55,11 @@ class Segmentation:
         return self._editor_logic
 
     def set_active(self):
-        if not self.editor_logic:
+        if not self._editor_logic:
             return
-        self.editor_logic.SetSegmentationNode(self._segmentation_node)
-        self.editor_logic.SetSourceVolumeNode(self._volume_node)
-        self.editor_logic.UpdateReferenceGeometryImage()
+        self._editor_logic.SetSegmentationNode(self._segmentation_node)
+        self._editor_logic.SetSourceVolumeNode(self._volume_node)
+        self._editor_logic.UpdateReferenceGeometryImage()
 
     def set_undo_stack(self, undo_stack):
         if self._undo_stack == undo_stack:
@@ -239,7 +240,9 @@ class Segmentation:
             return None
 
         self._editor_logic.ResetModifierLabelmapToDefault()
-        return self._editor_logic.GetModifierLabelmap()
+        label_map = self._editor_logic.GetModifierLabelmap()
+        self._set_label_map_transform_to_volume_transform(label_map)
+        return label_map
 
     def trigger_modified(self):
         self.segmentation.Modified()
@@ -272,3 +275,58 @@ class Segmentation:
 
     def get_display(self) -> SegmentationDisplay | None:
         return SegmentationDisplay(self._segmentation_node.GetDisplayNode()) if self._segmentation_node else None
+
+    def get_source_image_data(self) -> vtkOrientedImageData | None:
+        if not self._editor_logic:
+            return None
+        self._editor_logic.UpdateAlignedSourceVolume()
+        return self._editor_logic.GetAlignedSourceVolume()
+
+    def get_merged_label_map(self, segment_ids: list[str] | None = None) -> vtkOrientedImageData | None:
+        self.set_active()
+        if not self.segmentation_node or not self._editor_logic:
+            return None
+
+        label_map = vtkOrientedImageData()
+        self.segmentation_node.GenerateMergedLabelmapForAllSegments(
+            label_map,
+            vtkSegmentation.EXTENT_REFERENCE_GEOMETRY,
+            self._editor_logic.GetReferenceGeometryImage(),
+            self._to_vtk_string_array(segment_ids),
+        )
+        self._set_label_map_transform_to_volume_transform(label_map)
+        return label_map
+
+    @staticmethod
+    def _to_vtk_string_array(segment_ids: list[str] | None) -> vtkStringArray | None:
+        if not segment_ids:
+            return None
+        segment_ids_array = vtkStringArray()
+        for segment_id in segment_ids:
+            segment_ids_array.InsertNextValue(segment_id)
+        return segment_ids_array
+
+    def _set_label_map_transform_to_volume_transform(self, label_map: vtkOrientedImageData) -> None:
+        if not label_map:
+            return
+
+        source_image_data = self.get_source_image_data()
+        if not source_image_data:
+            return
+
+        # Configure modifier label map with the source volume's image to world matrix
+        image_to_world = vtkMatrix4x4()
+        source_image_data.GetImageToWorldMatrix(image_to_world)
+        label_map.SetImageToWorldMatrix(image_to_world)
+
+    def get_mask_label_map(self) -> vtkOrientedImageData | None:
+        if not self._editor_logic:
+            return None
+        self._editor_logic.UpdateMaskLabelmap()
+        return self._editor_logic.GetMaskLabelmap()
+
+    def get_selected_segment_label_map(self) -> vtkOrientedImageData | None:
+        if not self._editor_logic:
+            return None
+        self._editor_logic.UpdateSelectedSegmentLabelmap()
+        return self._editor_logic.GetSelectedSegmentLabelmap()

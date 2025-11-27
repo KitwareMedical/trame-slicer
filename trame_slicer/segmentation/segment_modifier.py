@@ -8,6 +8,7 @@ from enum import auto
 from numpy.typing import NDArray
 from slicer import (
     vtkMRMLSegmentEditorNode,
+    vtkMRMLSegmentationNode,
     vtkMRMLTransformNode,
     vtkOrientedImageData,
     vtkOrientedImageDataResample,
@@ -113,8 +114,12 @@ class SegmentModifier:
         self._modification_mode = mode
 
     @property
-    def segmentation(self) -> Segmentation:
+    def segmentation(self) -> Segmentation | None:
         return self._segmentation
+
+    @property
+    def segmentation_node(self) -> vtkMRMLSegmentationNode | None:
+        return self.segmentation.segmentation_node if self.segmentation else None
 
     @property
     def volume_node(self):
@@ -164,7 +169,7 @@ class SegmentModifier:
         # Pre-rotated polydata
         brush_model: vtkPolyData = world_origin_to_modifier_labelmap_ijk_transformer.GetOutput()
         brush_labelmap = self._poly_to_image_data(brush_model)
-        modifier_labelmap = self.segmentation.create_modifier_labelmap()
+        modifier_labelmap = self.create_modifier_labelmap()
 
         points_ijk = self._world_points_to_ijk(world_locations)
         brush_positioner = vtkImageChangeInformation()
@@ -210,7 +215,7 @@ class SegmentModifier:
         self.apply_labelmap(modifier_labelmap)
 
     def _poly_image_data_to_modifier_labelmap(self, poly_modifier: vtkOrientedImageData) -> vtkOrientedImageData | None:
-        modifier_labelmap = self.segmentation.create_modifier_labelmap()
+        modifier_labelmap = self.create_modifier_labelmap()
         brush_positioner = vtkImageChangeInformation()
         brush_positioner.SetInputData(poly_modifier)
         brush_positioner.SetOutputSpacing(modifier_labelmap.GetSpacing())
@@ -300,7 +305,7 @@ class SegmentModifier:
         brush_poly_data_to_stencil = vtkPolyDataToImageStencil()
         brush_poly_data_to_stencil.SetInputData(filled_poly)
         brush_poly_data_to_stencil.SetOutputSpacing(1.0, 1.0, 1.0)
-        brush_poly_data_to_stencil.SetOutputWholeExtent(extent)
+        brush_poly_data_to_stencil.SetOutputWholeExtent(extent)  # type: ignore
 
         stencilToImage = vtkImageStencilToImage()
         stencilToImage.SetInputConnection(brush_poly_data_to_stencil.GetOutputPort())
@@ -349,10 +354,9 @@ class SegmentModifier:
             self.active_segment_id = ""
 
     def get_source_image_data(self) -> vtkOrientedImageData | None:
-        if not self.logic:
+        if not self.segmentation:
             return None
-        self.logic.UpdateAlignedSourceVolume()
-        return self.logic.GetAlignedSourceVolume()
+        return self.segmentation.get_source_image_data()
 
     def create_modifier_labelmap(self) -> vtkOrientedImageData | None:
         if not self.segmentation:
@@ -380,3 +384,34 @@ class SegmentModifier:
         if not self.segment_editor_node:
             return False
         return self.segment_editor_node.GetSourceVolumeIntensityMask()
+
+    def get_merged_label_map(self, segment_ids: list[str] | None = None) -> vtkOrientedImageData | None:
+        if not self.segmentation:
+            return None
+        return self.segmentation.get_merged_label_map(segment_ids)
+
+    def get_mask_label_map(self) -> vtkOrientedImageData | None:
+        if not self.segmentation:
+            return None
+        return self.segmentation.get_mask_label_map()
+
+    def get_selected_segment_label_map(self) -> vtkOrientedImageData | None:
+        if not self.segmentation:
+            return None
+        return self.segmentation.get_selected_segment_label_map()
+
+    def create_new_modifier(self, segmentation_node: vtkMRMLSegmentationNode) -> SegmentModifier:
+        segmentation_node.GetSegmentation().DeepCopy(self.segmentation_node.GetSegmentation())
+
+        # Create a segment modifier with an independent editor logic to avoid new modifier corrupting the current one
+        return SegmentModifier(Segmentation(segmentation_node, self.volume_node, editor_logic=self._new_editor_logic()))
+
+    def _new_editor_logic(self):
+        if not self.logic:
+            return None
+
+        editor_logic = vtkSlicerSegmentEditorLogic()
+        editor_logic.SetMRMLScene(self.logic.GetMRMLScene())
+        editor_logic.SetSegmentEditorNode(self.segment_editor_node)
+        editor_logic.SetSegmentationHistory(None)
+        return editor_logic

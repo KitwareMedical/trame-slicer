@@ -37,6 +37,8 @@ from .segmentation_paint_widget import (
     SegmentationPaintWidget3D,
 )
 
+from .segmentation_effect_grow_from_seeds import SegmentationEffectGrowFromSeeds
+
 __all__ = [
     "AutoThresholdMethod",
     "AutoThresholdMode",
@@ -51,6 +53,7 @@ __all__ = [
     "SegmentationDisplay",
     "SegmentationEffect",
     "SegmentationEffectErase",
+    "SegmentationEffectGrowFromSeeds",
     "SegmentationEffectNoTool",
     "SegmentationEffectPaint",
     "SegmentationEffectPaintErase",
