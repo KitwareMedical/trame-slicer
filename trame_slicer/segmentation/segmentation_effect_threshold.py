@@ -7,7 +7,6 @@ from enum import Enum, IntFlag, auto
 from slicer import vtkMRMLAbstractViewNode, vtkMRMLNode, vtkMRMLSliceNode
 from vtkmodules.vtkCommonCore import VTK_UNSIGNED_INT, vtkLookupTable
 from vtkmodules.vtkCommonDataModel import vtkImageData
-from vtkmodules.vtkCommonMath import vtkMatrix4x4
 from vtkmodules.vtkImagingColor import vtkImageMapToRGBA
 from vtkmodules.vtkImagingCore import vtkImageThreshold
 from vtkmodules.vtkRenderingCore import vtkActor2D, vtkImageMapper, vtkRenderer
@@ -177,8 +176,6 @@ class SegmentationEffectThreshold(SegmentationEffect):
 
         # Get modifier labelmap
         label_map = self.modifier.create_modifier_labelmap()
-        original_image_to_world_matrix = vtkMatrix4x4()
-        label_map.GetImageToWorldMatrix(original_image_to_world_matrix)
 
         # Perform thresholding
         threshold = vtkImageThreshold()

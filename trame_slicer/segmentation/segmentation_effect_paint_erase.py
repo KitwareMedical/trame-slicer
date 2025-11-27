@@ -46,45 +46,45 @@ class SegmentationEffectPaintErase(SegmentationEffect):
             return
 
         # Make sure nodes are present in the scene
-        proxy = self._get_proxy()
-        if proxy.brush_model_node is None:
-            proxy.brush_model_node = self._create_model_node("BrushModel")
-            proxy.paint_feedback_model_node = self._create_model_node("FeedbackModel")
-            proxy.paint_feedback_model_node.GetDisplayNode().SetOpacity(0.5)
+        paint_param = self._get_paint_parameter()
+        if paint_param.brush_model_node is None:
+            paint_param.brush_model_node = self._create_model_node("BrushModel")
+            paint_param.paint_feedback_model_node = self._create_model_node("FeedbackModel")
+            paint_param.paint_feedback_model_node.GetDisplayNode().SetOpacity(0.5)
 
         # Toggle visibility depending on active
-        proxy.brush_model_node.SetDisplayVisibility(self.is_active)
-        proxy.paint_feedback_model_node.SetDisplayVisibility(self.is_active)
+        paint_param.brush_model_node.SetDisplayVisibility(self.is_active)
+        paint_param.paint_feedback_model_node.SetDisplayVisibility(self.is_active)
 
-    def _get_proxy(self) -> PaintEffectParameters:
+    def _get_paint_parameter(self) -> PaintEffectParameters:
         return create_scripted_module_dataclass_proxy(PaintEffectParameters, self._param_node, self._scene)
 
     def _create_pipeline(
         self, view_node: vtkMRMLAbstractViewNode, _parameter: vtkMRMLNode
     ) -> SegmentationEffectPipeline | None:
         if isinstance(view_node, vtkMRMLSliceNode):
-            return SegmentationPaintPipeline2D()
+            return SegmentationPaintPipeline2D(self._get_paint_parameter)
         if isinstance(view_node, vtkMRMLViewNode):
-            return SegmentationPaintPipeline3D()
+            return SegmentationPaintPipeline3D(self._get_paint_parameter)
         return None
 
     def set_use_sphere_brush(self, use_sphere_brush):
-        proxy = self._get_proxy()
-        proxy.use_sphere_brush = use_sphere_brush
+        paint_param = self._get_paint_parameter()
+        paint_param.use_sphere_brush = use_sphere_brush
 
     def set_brush_diameter(self, diameter: float, diameter_mode: BrushDiameterMode):
-        proxy = self._get_proxy()
-        proxy.brush_diameter = diameter
-        proxy.brush_diameter_mode = diameter_mode
+        paint_param = self._get_paint_parameter()
+        paint_param.brush_diameter = diameter
+        paint_param.brush_diameter_mode = diameter_mode
 
     def is_sphere_brush(self) -> bool:
-        return self._get_proxy().use_sphere_brush
+        return self._get_paint_parameter().use_sphere_brush
 
     def get_brush_diameter(self) -> float:
-        return self._get_proxy().brush_diameter
+        return self._get_paint_parameter().brush_diameter
 
     def get_brush_diameter_mode(self) -> BrushDiameterMode:
-        return self._get_proxy().brush_diameter_mode
+        return self._get_paint_parameter().brush_diameter_mode
 
 
 class SegmentationEffectPaint(SegmentationEffectPaintErase):

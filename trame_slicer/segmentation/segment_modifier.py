@@ -3,11 +3,13 @@ from __future__ import annotations
 import enum
 import logging
 import math
-from collections.abc import Generator
+from contextlib import AbstractContextManager
 from enum import auto
 
 from numpy.typing import NDArray
 from slicer import (
+    vtkMRMLScene,
+    vtkMRMLSegmentationNode,
     vtkMRMLSegmentEditorNode,
     vtkMRMLTransformNode,
     vtkOrientedImageData,
@@ -78,6 +80,8 @@ class SegmentModifier:
     segmentation_modified = Signal()
 
     def __init__(self, segmentation: Segmentation) -> None:
+        assert segmentation, "SegmentModifier expects a valid segmentation instance at creation"
+
         self._segmentation: Segmentation = segmentation
         self._active_segment_id = self._segmentation.get_nth_segment_id(0)
 
@@ -87,13 +91,11 @@ class SegmentModifier:
 
     @property
     def logic(self) -> vtkSlicerSegmentEditorLogic:
-        return self._segmentation.editor_logic
+        return self.segmentation.editor_logic
 
     @property
-    def segment_editor_node(self) -> vtkMRMLSegmentEditorNode | None:
-        if not self.logic:
-            return None
-        return self.logic.GetSegmentEditorNode()
+    def segment_editor_node(self) -> vtkMRMLSegmentEditorNode:
+        return self.segmentation.editor_node
 
     @property
     def active_segment_id(self):
@@ -114,17 +116,22 @@ class SegmentModifier:
         self._modification_mode = mode
 
     @property
-    def segmentation(self) -> Segmentation:
+    def segmentation(self) -> Segmentation | None:
         return self._segmentation
 
     @property
-    def volume_node(self):
-        return self._segmentation.volume_node
+    def segmentation_node(self) -> vtkMRMLSegmentationNode | None:
+        return self.segmentation.segmentation_node if self.segmentation else None
 
-    def apply_glyph(self, poly: vtkPolyData, world_locations: vtkPoints) -> None:
+    @property
+    def volume_node(self):
+        return self.segmentation.volume_node
+
+    def apply_glyph(self, poly: vtkPolyData, world_locations: vtkPoints, *, segment_id: str = "") -> None:
         """
         :param poly: in world origin coordinates (no transform but world-coords sized)
         :param world_locations: each location where glyph will be rendered at (world-coords)
+        :param segment_id: (optional) ID of the segment to modify. When empty, uses the active_segment_id.
         """
         if self.active_segment_id == "":
             logging.warning("No active segment in apply_poly_glyph")
@@ -165,7 +172,7 @@ class SegmentModifier:
         # Pre-rotated polydata
         brush_model: vtkPolyData = world_origin_to_modifier_labelmap_ijk_transformer.GetOutput()
         brush_labelmap = self._poly_to_image_data(brush_model)
-        modifier_labelmap = self.segmentation.create_modifier_labelmap()
+        modifier_labelmap = self.create_modifier_labelmap()
 
         points_ijk = self._world_points_to_ijk(world_locations)
         brush_positioner = vtkImageChangeInformation()
@@ -195,12 +202,13 @@ class SegmentModifier:
                 modifier_labelmap, oriented_brush_positioner_output, vtkOrientedImageDataResample.OPERATION_MAXIMUM
             )
 
-        self.apply_labelmap(modifier_labelmap, modifier_extent=modifier_extent)
+        self.apply_labelmap(modifier_labelmap, modifier_extent=modifier_extent, segment_id=segment_id)
         self.trigger_active_segment_modified()
 
-    def apply_polydata_world(self, poly_world: vtkPolyData):
+    def apply_polydata_world(self, poly_world: vtkPolyData, *, segment_id: str = ""):
         """
         :param poly_world: Poly in world coordinates
+        :param segment_id: (optional) ID of the segment to modify. When empty, uses the active_segment_id.
         """
         if self.active_segment_id == "":
             return
@@ -208,10 +216,10 @@ class SegmentModifier:
         poly_ijk = self._world_poly_to_ijk(poly_world)
         poly_modifier = self._poly_to_image_data(poly_ijk)
         modifier_labelmap = self._poly_image_data_to_modifier_labelmap(poly_modifier)
-        self.apply_labelmap(modifier_labelmap)
+        self.apply_labelmap(modifier_labelmap, segment_id=segment_id)
 
     def _poly_image_data_to_modifier_labelmap(self, poly_modifier: vtkOrientedImageData) -> vtkOrientedImageData | None:
-        modifier_labelmap = self.segmentation.create_modifier_labelmap()
+        modifier_labelmap = self.create_modifier_labelmap()
         brush_positioner = vtkImageChangeInformation()
         brush_positioner.SetInputData(poly_modifier)
         brush_positioner.SetOutputSpacing(modifier_labelmap.GetSpacing())
@@ -233,29 +241,33 @@ class SegmentModifier:
         modifier_extent=None,
         is_per_segment: bool = True,
         do_bypass_masking: bool = False,
+        segment_id: str = "",
     ):
         """
         Modify active segment using input modifier labelmap in source IJK coordinates.
         When applying, pushes the modifications to the current undo stack if any is defined.
         """
         with SegmentationLabelMapUndoCommand.push_state_change(self.segmentation):
-            self._modify_active_segment_by_labelmap(
+            self._modify_segment_by_labelmap(
                 modifier_labelmap,
                 modifier_extent=modifier_extent,
                 is_per_segment=is_per_segment,
                 do_bypass_masking=do_bypass_masking,
+                segment_id=segment_id,
             )
         self.trigger_active_segment_modified()
 
-    def _modify_active_segment_by_labelmap(
+    def _modify_segment_by_labelmap(
         self,
         modifier_labelmap: vtkImageData,
         *,
         modifier_extent=None,
         is_per_segment: bool = True,
         do_bypass_masking: bool = False,
+        segment_id: str = "",
     ):
-        if not self.logic or self.active_segment_id == "":
+        segment_id = segment_id or self.active_segment_id
+        if not self.logic or segment_id == "":
             return
 
         if modifier_extent is None:
@@ -270,7 +282,7 @@ class SegmentModifier:
 
         self.logic.ModifySegmentByLabelmap(
             self.segmentation.segmentation_node,
-            self.active_segment_id,
+            segment_id,
             modifier_labelmap,
             modifier_mode,
             modifier_extent,
@@ -279,7 +291,7 @@ class SegmentModifier:
         )
 
     def get_segment_labelmap(self, segment_id, *, as_numpy_array=False) -> NDArray | vtkImageData:
-        return self._segmentation.get_segment_labelmap(segment_id=segment_id, as_numpy_array=as_numpy_array)
+        return self.segmentation.get_segment_labelmap(segment_id=segment_id, as_numpy_array=as_numpy_array)
 
     @staticmethod
     def _poly_to_image_data(poly: vtkPolyData) -> vtkOrientedImageData:
@@ -301,7 +313,7 @@ class SegmentModifier:
         brush_poly_data_to_stencil = vtkPolyDataToImageStencil()
         brush_poly_data_to_stencil.SetInputData(filled_poly)
         brush_poly_data_to_stencil.SetOutputSpacing(1.0, 1.0, 1.0)
-        brush_poly_data_to_stencil.SetOutputWholeExtent(extent)
+        brush_poly_data_to_stencil.SetOutputWholeExtent(extent)  # type: ignore[call-arg]
 
         stencilToImage = vtkImageStencilToImage()
         stencilToImage.SetInputConnection(brush_poly_data_to_stencil.GetOutputPort())
@@ -350,37 +362,41 @@ class SegmentModifier:
             self.active_segment_id = ""
 
     def get_source_image_data(self) -> vtkOrientedImageData | None:
-        if not self.logic:
-            return None
-        self.logic.UpdateAlignedSourceVolume()
-        return self.logic.GetAlignedSourceVolume()
+        return self.segmentation.get_source_image_data()
 
     def create_modifier_labelmap(self) -> vtkOrientedImageData | None:
-        if not self.segmentation:
-            return None
         return self.segmentation.create_modifier_labelmap()
 
     def set_source_volume_intensity_mask_range(self, min_value: float, max_value: float) -> None:
-        if not self.segment_editor_node:
-            return
-
         self.segment_editor_node.SetSourceVolumeIntensityMaskRange(min_value, max_value)
 
     def get_source_volume_intensity_mask_range(self) -> tuple[float, float] | None:
-        if not self.segment_editor_node:
-            return None
         return self.segment_editor_node.GetSourceVolumeIntensityMaskRange()
 
     def set_source_volume_intensity_mask_enabled(self, is_enabled: bool) -> None:
-        if not self.segment_editor_node:
-            return
-
         self.segment_editor_node.SetSourceVolumeIntensityMask(is_enabled)
 
     def is_source_volume_intensity_mask_enabled(self) -> bool:
-        if not self.segment_editor_node:
-            return False
         return self.segment_editor_node.GetSourceVolumeIntensityMask()
 
-    def group_undo_commands(self, text: str = "") -> Generator:
+    def group_undo_commands(self, text: str = "") -> AbstractContextManager:
         return self.segmentation.group_undo_commands(text)
+
+    def get_merged_label_map(self, segment_ids: list[str] | None = None) -> vtkOrientedImageData | None:
+        return self.segmentation.get_merged_label_map(segment_ids)
+
+    def get_mask_label_map(self) -> vtkOrientedImageData | None:
+        return self.segmentation.get_mask_label_map()
+
+    def get_selected_segment_label_map(self) -> vtkOrientedImageData | None:
+        return self.segmentation.get_selected_segment_label_map()
+
+    def create_new_modifier(self, segmentation_node: vtkMRMLSegmentationNode) -> SegmentModifier:
+        segmentation_node.GetSegmentation().DeepCopy(self.segmentation_node.GetSegmentation())
+
+        # Create a segment modifier with an independent editor logic to avoid new modifier corrupting the current one
+        return SegmentModifier(Segmentation(segmentation_node, self.volume_node, scene=self.segmentation.scene))
+
+    @property
+    def scene(self) -> vtkMRMLScene:
+        return self.segmentation.scene

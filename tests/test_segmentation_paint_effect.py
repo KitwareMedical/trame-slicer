@@ -36,7 +36,6 @@ def test_paint_effect_adds_segmentation_to_selected_segment(
     # Configure the segmentation with an empty segment
     segmentation_node = a_segmentation_editor.create_empty_segmentation_node()
     a_segmentation_editor.set_active_segmentation(segmentation_node, a_volume_node)
-    a_segmentation_editor.add_empty_segment()
     segment_id = a_segmentation_editor.add_empty_segment()
 
     # Activate the segmentation paint effect

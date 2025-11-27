@@ -11,7 +11,6 @@ from vtkmodules.vtkCommonCore import vtkCommand
 
 from trame_slicer.utils import (
     ClosestToCameraPicker,
-    create_scripted_module_dataclass_proxy,
 )
 from trame_slicer.views import SliceView, ThreeDView
 
@@ -25,10 +24,11 @@ from .segmentation_paint_widget import (
 
 
 class SegmentationPaintPipeline(SegmentationEffectPipeline):
-    def __init__(self) -> None:
+    def __init__(self, get_paint_parameter_f: Callable[[], PaintEffectParameters]) -> None:
         super().__init__()
 
         self.widget: SegmentationPaintWidget | None = None
+        self._get_paint_parameter_f = get_paint_parameter_f
 
         # Events we may consume and how we consume them
         self._supported_events: dict[int, Callable] = {
@@ -44,13 +44,11 @@ class SegmentationPaintPipeline(SegmentationEffectPipeline):
         if not self.GetEffectParameterNode() or not self.GetScene():
             return
 
-        proxy = create_scripted_module_dataclass_proxy(
-            PaintEffectParameters, self.GetEffectParameterNode(), self.GetScene()
-        )
-        self._modelNode = proxy.brush_model_node
-        self._feedbackNode = proxy.paint_feedback_model_node
+        paint_param = self._get_paint_parameter_f()
+        self._modelNode = paint_param.brush_model_node
+        self._feedbackNode = paint_param.paint_feedback_model_node
         if self.widget:
-            self.widget.update_paint_parameters(proxy)
+            self.widget.update_paint_parameters(paint_param)
 
     def _UpdateFeedbackConnection(self):
         if self._modelNode:
@@ -142,9 +140,6 @@ class SegmentationPaintPipeline(SegmentationEffectPipeline):
 
 
 class SegmentationPaintPipeline2D(SegmentationPaintPipeline):
-    def __init__(self) -> None:
-        super().__init__()
-
     def CreateWidget(self):
         if self.widget is not None or not isinstance(self._view, SliceView):
             return
@@ -157,8 +152,8 @@ class SegmentationPaintPipeline2D(SegmentationPaintPipeline):
 
 
 class SegmentationPaintPipeline3D(SegmentationPaintPipeline):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, get_paint_parameter_f: Callable[[], PaintEffectParameters]):
+        super().__init__(get_paint_parameter_f)
         self._picker = ClosestToCameraPicker()
         self._last_pick_position = None
 

@@ -14,6 +14,18 @@ class ButtonEvent(Enum):
     Release = auto()
 
 
+def _half(value):
+    return value // 2
+
+
+def _quarter(value):
+    return value // 4
+
+
+def _three_quarter(value):
+    return (value * 3) // 4
+
+
 class ViewEvents:
     def __init__(self, view):
         self._view = view
@@ -43,16 +55,34 @@ class ViewEvents:
         self.mouse_release_event(mouse_button)
 
     def view_center(self):
-        return (
-            self._view.render_window().GetSize()[0] // 2,
-            self._view.render_window().GetSize()[1] // 2,
-        )
+        return _half(self.view_width()), _half(self.view_height())
+
+    def view_left(self):
+        return _quarter(self.view_width()), _half(self.view_height())
+
+    def view_right(self):
+        return _three_quarter(self.view_width()), _half(self.view_height())
+
+    def view_top(self):
+        return _half(self.view_width()), _three_quarter(self.view_height())
+
+    def view_bottom(self):
+        return _half(self.view_width()), _quarter(self.view_height())
 
     def click_at_center(self):
         self.click_at_coordinate(*self.view_center())
+
+    def click_at_left(self):
+        self.click_at_coordinate(*self.view_left())
 
     def key_press(self, key: str):
         self.interactor.SetKeyEventInformation(0, 0, key, 0, key)
         self.interactor.InvokeEvent("KeyPressEvent")
         self.interactor.InvokeEvent("KeyReleaseEvent")
         self.interactor.SetKeyEventInformation(0, 0, " ", 0, " ")
+
+    def view_width(self) -> int:
+        return self._view.render_window().GetSize()[0]
+
+    def view_height(self) -> int:
+        return self._view.render_window().GetSize()[1]

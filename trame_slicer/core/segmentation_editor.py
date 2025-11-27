@@ -32,6 +32,7 @@ from trame_slicer.segmentation import (
     SegmentationDisplay,
     SegmentationEffect,
     SegmentationEffectErase,
+    SegmentationEffectGrowFromSeeds,
     SegmentationEffectIslands,
     SegmentationEffectNoTool,
     SegmentationEffectPaint,
@@ -56,6 +57,7 @@ class SegmentationEditor(SignalContainer):
     builtin_effects: ClassVar[list[type[SegmentationEffect]]] = [
         SegmentationEffectErase,
         SegmentationEffectIslands,
+        SegmentationEffectGrowFromSeeds,
         SegmentationEffectNoTool,
         SegmentationEffectPaint,
         SegmentationEffectScissors,
@@ -85,13 +87,6 @@ class SegmentationEditor(SignalContainer):
 
         self._scene = scene
         self._view_manager = view_manager
-        self._editor_node = self._create_editor_node()
-
-        # Configure segment editor logic (Set maximum of states to undo / redo to 0 to cherry pick undo / redo behavior)
-        self._editor_logic = vtkSlicerSegmentEditorLogic()
-        self._editor_logic.SetMRMLScene(scene)
-        self._editor_logic.SetSegmentEditorNode(self._editor_node)
-        self._editor_logic.SetSegmentationHistory(None)
 
         self._active_effect: SegmentationEffect | None = None
         self._active_effect_class_name: str = SegmentationEffectNoTool.get_effect_name()
@@ -115,23 +110,13 @@ class SegmentationEditor(SignalContainer):
         # Observe scene close event to clear undo stack
         self._scene.AddObserver(vtkMRMLScene.EndCloseEvent, self._on_scene_close)
 
-    def _create_editor_node(self):
-        """
-        Create unique editor node for the segmentation editor.
-        """
-        editor_node = vtkMRMLSegmentEditorNode()
-        editor_node.SetName(f"SegmentEditorNode_{id(self)}")
-        editor_node.SetSingletonOn()
-        self._scene.AddNode(editor_node)
-        return editor_node
+    @property
+    def editor_logic(self) -> vtkSlicerSegmentEditorLogic | None:
+        return self._active_modifier.logic if self._active_modifier else None
 
     @property
-    def editor_logic(self) -> vtkSlicerSegmentEditorLogic:
-        return self._editor_logic
-
-    @property
-    def editor_node(self) -> vtkMRMLSegmentEditorNode:
-        return self._editor_node
+    def editor_node(self) -> vtkMRMLSegmentEditorNode | None:
+        return self._active_modifier.segment_editor_node if self._active_modifier else None
 
     def is_effect_type_registered(self, effect_type: type[SegmentationEffect]) -> bool:
         return effect_type.get_effect_name() in self._effects
@@ -191,7 +176,7 @@ class SegmentationEditor(SignalContainer):
             self._active_modifier.segmentation_modified.disconnect(self._modified_obs)
 
         self._active_modifier = SegmentModifier(
-            Segmentation(segmentation_node, volume_node, editor_logic=self._editor_logic, undo_stack=self.undo_stack)
+            Segmentation(segmentation_node, volume_node, undo_stack=self.undo_stack, scene=self._scene)
         )
 
         self._active_modifier.segmentation_modified.connect(self.segmentation_modified)

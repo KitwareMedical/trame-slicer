@@ -36,10 +36,9 @@ def test_can_apply_threshold(
     # Configure the segmentation with an empty segment
     segmentation_node = a_segmentation_editor.create_empty_segmentation_node()
     a_segmentation_editor.set_active_segmentation(segmentation_node, a_volume_node)
-    a_segmentation_editor.add_empty_segment()
     segment_id = a_segmentation_editor.add_empty_segment()
 
-    # Activate the segmentation paint effect
+    # Activate the segmentation effect
     effect: SegmentationEffectThreshold = a_segmentation_editor.set_active_effect_type(SegmentationEffectThreshold)
     assert effect.is_active
     assert len(effect.pipelines) == 1
