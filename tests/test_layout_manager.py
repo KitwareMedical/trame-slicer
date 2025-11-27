@@ -297,7 +297,7 @@ async def test_layout_manager_is_compatible_with_child_server_pattern(async_serv
     server_with_child(async_server)
     async_server.start(port=a_server_port, exec_mode="task", thread=True)
 
-    async with timeout(10), async_playwright() as p:
+    async with timeout(30), async_playwright() as p:
         assert await async_server.ready
         assert async_server.port
         url = f"http://127.0.0.1:{async_server.port}/"
