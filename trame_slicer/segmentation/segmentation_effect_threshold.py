@@ -85,8 +85,8 @@ class SegmentationThresholdPipeline2D(SegmentationEffectPipeline):
         self.mapper.SetInputConnection(self.color_mapper.GetOutputPort())
 
         # Preview coroutine
-        self.preview_update_period_s = 0.1
-        self.preview_steps = 10
+        self.preview_update_period_s = 0.2
+        self.preview_steps = 6
         self.preview_state = 0
         self.preview_direction = 1
         loop = asyncio.get_event_loop()
@@ -98,6 +98,7 @@ class SegmentationThresholdPipeline2D(SegmentationEffectPipeline):
             self.preview_state += self.preview_direction
             if self.preview_state > self.preview_steps or self.preview_state < 0:
                 self.preview_direction *= -1
+                self.preview_state += self.preview_direction
             self.preview_state = max(0, min(self.preview_steps, self.preview_state))
             self._UpdateThreshold()
 
