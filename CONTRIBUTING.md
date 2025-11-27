@@ -25,6 +25,12 @@ environment :
    command
 1. Run the tests using the pytest module `python -m pytest tests`
 
+Test coverage is automatically generated and available in the CI / codecov when
+creating pull requests.
+
+The latest code coverage on main is available on
+[codecov](https://codecov.io/gh/KitwareMedical/trame-slicer/tree/main).
+
 ## Interactivity
 
 Some tests allow for interactive interaction with the views and can be activated
