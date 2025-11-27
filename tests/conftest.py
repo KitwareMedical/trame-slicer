@@ -215,7 +215,9 @@ def a_server_port():
     """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind(("", 0))
-        yield s.getsockname()[1]
+        port = s.getsockname()[1]
+        s.close()
+        yield port
 
 
 @pytest.fixture

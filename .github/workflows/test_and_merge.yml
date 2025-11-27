@@ -23,17 +23,14 @@ jobs:
           pre-commit run --all-files
 
   pytest:
-    if: false # Test running currently deactivated as it requires slicer lib wheel generation for each target
     name: Pytest ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.13"]
+        python-version: ["3.10"]
         config:
           - { name: "Linux", os: ubuntu-latest }
-          - { name: "MacOSX", os: macos-latest }
-          - { name: "Windows", os: windows-latest }
 
     defaults:
       run:
@@ -42,13 +39,40 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
+          submodules: recursive
+
+      - name: List workspace contents
+        run: |
+          echo "Workspace root: $GITHUB_WORKSPACE"
+          find $GITHUB_WORKSPACE -type f -print | sort
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Install vtk_mrml wheel (Linux)
+        if: matrix.config.os == 'ubuntu-latest'
+        run: |
+          pip install https://github.com/KitwareMedical/trame-slicer/releases/download/v1.4.0/vtk_mrml-9.4.0-cp310-cp310-manylinux_2_35_x86_64.whl
+
+      - name: Install Mesa (Linux)
+        if: matrix.config.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mesa-utils libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev
+          echo "VTK_DEFAULT_OPENGL_WINDOW=vtkOSOpenGLRenderWindow" >> $GITHUB_ENV
+
       - name: Install and Run Tests
         run: |
           pip install .[dev]
-          pytest -s ./tests
+          playwright install
+          playwright install-deps
+          pytest -s ./tests --cov=trame_slicer --cov-report=xml --cov-report=term-missing
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml

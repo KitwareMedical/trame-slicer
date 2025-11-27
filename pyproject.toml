@@ -55,6 +55,7 @@ dev = [
     "pixelmatch",
     "pytest",
     "pytest-asyncio",
+    "pytest-cov",
     "pytest-playwright",
     "pytest-xprocess",
 ]
