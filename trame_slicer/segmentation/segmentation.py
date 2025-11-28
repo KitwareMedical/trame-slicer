@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Generator
+
 from numpy.typing import NDArray
 from slicer import (
     vtkMRMLSegmentationNode,
@@ -272,3 +274,6 @@ class Segmentation:
 
     def get_display(self) -> SegmentationDisplay | None:
         return SegmentationDisplay(self._segmentation_node.GetDisplayNode()) if self._segmentation_node else None
+
+    def group_undo_commands(self, text: str = "") -> Generator:
+        return self.undo_stack.group_undo_commands(text)
