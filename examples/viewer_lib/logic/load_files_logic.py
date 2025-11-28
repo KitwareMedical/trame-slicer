@@ -7,7 +7,7 @@ from trame_slicer.core import SlicerApp
 from trame_slicer.utils import write_client_files_to_dir
 
 from ..ui import (
-    LoadClientVolumeFilesButton,
+    LoadClientVolumeButtonsDiv,
     LoadClientVolumeFilesButtonState,
     StateId,
 )
@@ -18,8 +18,9 @@ class LoadFilesLogic(BaseLogic[LoadClientVolumeFilesButtonState]):
     def __init__(self, server: Server, slicer_app: SlicerApp):
         super().__init__(server, slicer_app, LoadClientVolumeFilesButtonState)
 
-    def set_ui(self, ui: LoadClientVolumeFilesButton):
+    def set_ui(self, ui: LoadClientVolumeButtonsDiv):
         ui.on_load_client_files.connect(self._on_load_client_files)
+        ui.on_load_client_dir.connect(self._on_load_client_files)
 
     async def _on_load_client_files(self, files: list[dict]) -> None:
         self.data.file_loading_busy = True
