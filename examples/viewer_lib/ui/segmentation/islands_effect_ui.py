@@ -42,16 +42,10 @@ class IslandsEffectUI(VContainer):
             VNumberInput(
                 v_model=self._typed_state.name.minimum_size,
                 label="Minimum size",
-                disabled=(f"{self._typed_state.name.mode} != {IslandsSegmentationMode.REMOVE_SMALL_ISLANDS.value}",),
+                v_if=(f"{self._typed_state.name.mode} === {IslandsSegmentationMode.REMOVE_SMALL_ISLANDS.value}",),
                 min=(0,),
                 hide_details=True,
                 density="compact",
                 classes="mt-5",
             )
-            VBtn(
-                "Apply",
-                prepend_icon="mdi-check-outline",
-                block=True,
-                click=self.apply_clicked,
-                classes="mt-5",
-            )
+            VBtn("Apply", prepend_icon="mdi-check-outline", block=True, click=self.apply_clicked, classes="mt-5")

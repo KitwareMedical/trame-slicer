@@ -32,68 +32,35 @@ def set_up(a_slicer_app, a_volume_node, a_segmentation_editor, a_segmentation_sp
     a_segmentation_editor.set_undo_stack(undo_stack)
 
 
-def get_segment_array(
-    a_segmentation_editor,
-    segment_id,
-):
+def get_segment_array(a_segmentation_editor, segment_id):
     return a_segmentation_editor.get_segment_labelmap(segment_id, as_numpy_array=True)
 
 
-def test_keep_biggest_island(
-    a_segmentation_editor,
-    effect,
-    segment_id,
-):
+def test_keep_biggest_island(a_segmentation_editor, effect, segment_id):
     assert effect.is_active
-    source_array = get_segment_array(
-        a_segmentation_editor,
-        segment_id,
-    )
+    source_array = get_segment_array(a_segmentation_editor, segment_id)
     effect.keep_largest_island()
-    segment_array = get_segment_array(
-        a_segmentation_editor,
-        segment_id,
-    )
+    segment_array = get_segment_array(a_segmentation_editor, segment_id)
     # Assert that application created new zeros
     assert np.count_nonzero(source_array) > np.count_nonzero(segment_array)
 
 
-def test_split_islands_to_segments(
-    a_segmentation_editor,
-    effect,
-):
+def test_split_islands_to_segments(a_segmentation_editor, effect):
     assert effect.is_active
     effect.split_islands_to_segments()
     assert len(a_segmentation_editor.get_segment_ids()) == 3
 
 
-def test_with_0_min_voxel_size_remove_small_islands_does_nothing(
-    a_segmentation_editor,
-    effect,
-    segment_id,
-):
+def test_with_0_min_voxel_size_remove_small_islands_does_nothing(a_segmentation_editor, effect, segment_id):
     assert effect.is_active
-    source_array = get_segment_array(
-        a_segmentation_editor,
-        segment_id,
-    )
+    source_array = get_segment_array(a_segmentation_editor, segment_id)
     effect.remove_small_islands(1)
-    segment_array = get_segment_array(
-        a_segmentation_editor,
-        segment_id,
-    )
+    segment_array = get_segment_array(a_segmentation_editor, segment_id)
     assert np.array_equal(source_array, segment_array)
 
 
-def test_with_max_min_voxel_size_remove_small_islands_removes_all_islands(
-    a_segmentation_editor,
-    effect,
-    segment_id,
-):
+def test_with_max_min_voxel_size_remove_small_islands_removes_all_islands(a_segmentation_editor, effect, segment_id):
     assert effect.is_active
     effect.remove_small_islands(int(1e15))
-    segment_array = get_segment_array(
-        a_segmentation_editor,
-        segment_id,
-    )
+    segment_array = get_segment_array(a_segmentation_editor, segment_id)
     assert np.array_equal(segment_array, np.zeros_like(segment_array))
