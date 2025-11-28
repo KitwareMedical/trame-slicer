@@ -15,6 +15,7 @@ from undo_stack import Signal
 from trame_slicer.segmentation import (
     SegmentationEffect,
     SegmentationEffectErase,
+    SegmentationEffectIslands,
     SegmentationEffectNoTool,
     SegmentationEffectPaint,
     SegmentationEffectScissors,
@@ -22,6 +23,7 @@ from trame_slicer.segmentation import (
 )
 
 from ..control_button import ControlButton
+from .islands_effect_ui import IslandsEffectUI
 from .paint_effect_ui import PaintEffectUI
 from .segment_edit_dialog import SegmentEditDialog, SegmentEditDialogState
 from .segment_list import SegmentList, SegmentListState
@@ -105,12 +107,14 @@ class SegmentEditorUI(VContainer):
                 self._create_effect_button("Erase", "mdi-eraser", SegmentationEffectErase)
                 self._create_effect_button("Scissors", "mdi-content-cut", SegmentationEffectScissors)
                 self._create_effect_button("Threshold", "mdi-auto-fix", SegmentationEffectThreshold)
+                self._create_effect_button("Islands", "mdi-scatter-plot", SegmentationEffectIslands)
                 VDivider()
 
             with VRow():
                 self._register_effect_ui(SegmentationEffectThreshold, ThresholdEffectUI)
                 self._register_effect_ui(SegmentationEffectPaint, PaintEffectUI)
                 self._register_effect_ui(SegmentationEffectErase, PaintEffectUI)
+                self._register_effect_ui(SegmentationEffectIslands, IslandsEffectUI)
 
             with VRow():
                 VBtn(

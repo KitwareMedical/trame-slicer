@@ -17,6 +17,7 @@ from ...ui import (
     get_current_volume_node,
 )
 from .base_segmentation_logic import BaseEffectLogic, BaseSegmentationLogic
+from .islands_effect_logic import IslandsEffectLogic
 from .paint_erase_effect_logic import EraseEffectLogic, PaintEffectLogic
 from .segment_edit_dialog_logic import SegmentEditDialogLogic
 from .threshold_effect_logic import ThresholdEffectLogic
@@ -27,6 +28,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         super().__init__(server=server, slicer_app=slicer_app, state_type=SegmentEditorState)
 
         effect_logic = [
+            IslandsEffectLogic,
             ThresholdEffectLogic,
             PaintEffectLogic,
             EraseEffectLogic,
