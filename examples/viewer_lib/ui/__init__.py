@@ -10,6 +10,9 @@ from .medical_viewer_layout import MedicalViewerLayout, MedicalViewerLayoutState
 from .medical_viewer_ui import MedicalViewerUI
 from .mpr_interaction_button import MprInteractionButton, MprInteractionButtonState
 from .segmentation import (
+    IslandsEffectUI,
+    IslandsSegmentationMode,
+    IslandsState,
     PaintEffectState,
     PaintEffectUI,
     SegmentationOpacityUI,
@@ -35,6 +38,9 @@ from .vr_shift_slider import VRShiftSlider
 __all__ = [
     "ControlButton",
     "IdName",
+    "IslandsEffectUI",
+    "IslandsSegmentationMode",
+    "IslandsState",
     "LayoutButton",
     "LayoutButton",
     "LayoutButtonState",
