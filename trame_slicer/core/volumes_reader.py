@@ -342,7 +342,7 @@ class VolumesReader:
     @classmethod
     @lru_cache(dcm_read_lru_cache_size)
     def _dcm_read_file(cls, dcm_file):
-        return dcmread(dcm_file, stop_before_pixels=True)
+        return dcmread(dcm_file, stop_before_pixels=True, force=True)
 
     @classmethod
     @lru_cache(dcm_read_lru_cache_size)
