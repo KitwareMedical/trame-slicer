@@ -7,7 +7,7 @@ from trame_vuetify.widgets.vuetify3 import VImg, VListItem, VSelect
 from trame_slicer.core import SlicerApp
 from trame_slicer.resources import get_volume_rendering_presets_icon_url
 
-from .utils import StateId, get_current_volume_node
+from .state import StateId, get_current_volume_node
 
 
 @TrameApp()

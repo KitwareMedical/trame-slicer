@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Callable
 
 from trame.widgets.vuetify3 import (
     VBtn,
@@ -11,10 +11,11 @@ from trame.widgets.vuetify3 import (
     VSpacer,
     VTooltip,
 )
-from trame_client.widgets.core import Template
+from trame_client.widgets.core import AbstractElement, Template
 from trame_server.utils.typed_state import TypedState
 from undo_stack import Signal
 
+from examples.viewer_lib.ui.viewer_layout import ViewerLayoutState
 from trame_slicer.segmentation import (
     SegmentationEffect,
     SegmentationEffectErase,
@@ -25,25 +26,26 @@ from trame_slicer.segmentation import (
     SegmentationEffectThreshold,
 )
 
-from ..utils import AbstractToolUI, ControlButton, FlexContainer
+from ..control_button import ControlButton
+from ..flex_container import FlexContainer
 from .islands_effect_ui import IslandsEffectUI
 from .paint_effect_ui import PaintEffectUI
+from .segment_display_ui import SegmentDisplayState, SegmentDisplayUI
 from .segment_edit_ui import SegmentEditUI
 from .segment_list import SegmentList, SegmentListState
-from .segment_rendering_ui import SegmentationRenderingUI, SegmentRenderingState
 from .threshold_effect_ui import ThresholdEffectUI
 
 
 @dataclass
 class SegmentEditorState:
     segment_list: SegmentListState = field(default_factory=SegmentListState)
-    segment_rendering: SegmentRenderingState = field(default_factory=SegmentRenderingState)
+    segment_rendering: SegmentDisplayState = field(default_factory=SegmentDisplayState)
     can_undo: bool = False
     can_redo: bool = False
     active_effect_name: str = ""
 
 
-class SegmentEditorUI(AbstractToolUI):
+class SegmentEditorUI(AbstractElement):
     toggle_segment_visibility_clicked = Signal(str)
     edit_segment_color_clicked = Signal(str)
     delete_segment_clicked = Signal(str)
@@ -55,7 +57,8 @@ class SegmentEditorUI(AbstractToolUI):
     redo_clicked = Signal()
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(self.name, **kwargs)
+        self._viewer_state = TypedState(self.state, ViewerLayoutState)
         self._typed_state = TypedState(self.state, SegmentEditorState)
         self._effect_ui: dict[type[SegmentationEffect], Any] = {}
         self.edit_ui = SegmentEditUI()
@@ -64,8 +67,27 @@ class SegmentEditorUI(AbstractToolUI):
     def name(self):
         return "segment_editor"
 
-    def build_drawer_ui(self, **kwargs):
-        with FlexContainer(fill_height=True, **kwargs):
+    def _is_tool_active(self):
+        return f"{self._viewer_state.name.active_tool} === '{self.name}'"
+
+    def _is_tool_drawer_visible(self):
+        return f"{self._is_tool_active()} && {self._viewer_state.name.is_drawer_visible}"
+
+    def build_activator(self, click: Callable):
+        ControlButton(
+            icon="mdi-brush",
+            name="{{ "
+            + f"{self._is_tool_drawer_visible()} ? 'Close segmentation panel' : 'Open segmentation panel'"
+            + " }}",
+            click=lambda: click(self.name),
+            active=(self._is_tool_active(),),
+        )
+
+    def build_drawer_ui(self):
+        with FlexContainer(
+            v_if=(self._is_tool_drawer_visible(),),
+            fill_height=True,
+        ):
             self.edit_ui._build_color_dialog()
             VBtn(
                 v_if=(f"{self._typed_state.name.segment_list.segments}.length < 1",),
@@ -107,13 +129,16 @@ class SegmentEditorUI(AbstractToolUI):
                         self._register_effect_ui(SegmentationEffectIslands, IslandsEffectUI)
                 VSpacer(v_else=True)
                 VDivider()
-                SegmentationRenderingUI(
+                SegmentDisplayUI(
                     typed_state=self.sub_state(self._typed_state.name.segment_rendering),
                     variant="flat",
                 )
 
-    def build_toolbar_ui(self, **kwargs):
-        with FlexContainer(classes="flex-grow-1", **kwargs):
+    def build_toolbar_ui(self):
+        with FlexContainer(
+            v_if=(self._is_tool_active(),),
+            classes="flex-grow-1",
+        ):
             VDivider(classes="my-2")
             VSpacer()
             self._build_effect_buttons(

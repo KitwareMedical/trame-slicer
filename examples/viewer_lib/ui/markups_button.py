@@ -3,7 +3,7 @@ from trame_client.widgets.html import Div
 from trame_vuetify.widgets.vuetify3 import VCard, VCardText, VMenu, VRow
 from undo_stack import Signal
 
-from .utils import ControlButton
+from .control_button import ControlButton
 
 
 class MarkupsButton(VMenu):

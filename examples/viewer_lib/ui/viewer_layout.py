@@ -19,6 +19,7 @@ class ViewerLayout(SinglePageLayout):
         template_name="main",
         title: str = "trame Slicer",
         theme: str = "dark",
+        is_drawer_visible: bool = False,
     ):
         super().__init__(server, template_name=template_name)
         self.typed_state = TypedState(self.state, ViewerLayoutState)
@@ -32,7 +33,7 @@ class ViewerLayout(SinglePageLayout):
                 disable_route_watcher=True,
                 permanent=True,
                 location="left",
-                v_model=(self.typed_state.name.is_drawer_visible,),
+                v_model=(self.typed_state.name.is_drawer_visible, is_drawer_visible),
                 width=350,
             )
             self.toolbar = VNavigationDrawer(

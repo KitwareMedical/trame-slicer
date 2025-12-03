@@ -9,9 +9,9 @@ from trame_slicer.segmentation import (
 )
 
 from ...ui import (
+    SegmentDisplayState,
     SegmentEditorState,
     SegmentEditorUI,
-    SegmentRenderingState,
     SegmentState,
     StateId,
     get_current_volume_node,
@@ -79,7 +79,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         self._update_segment_list()
 
     def _on_edit_segment_color_clicked(self, *_args):
-        self._edit_segment_logic.show_dialog()
+        self._edit_segment_logic.show_color_dialog()
 
     def _on_active_segment_changed(self, segment_id: str):
         self._edit_segment_logic.set_segment_edit_values(segment_id)
@@ -136,13 +136,13 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
     def _segmentation_display(self) -> SegmentationDisplay | None:
         return self.segmentation_editor.active_segmentation_display
 
-    def _on_rendering_changed(self, rendering_state: SegmentRenderingState) -> None:
+    def _on_rendering_changed(self, rendering_state: SegmentDisplayState) -> None:
         if not self._segmentation_display:
             return
 
         self._segmentation_display.set_opacity_2d(rendering_state.opacity_2d)
         self._segmentation_display.set_opacity_3d(rendering_state.opacity_3d)
-        self._segmentation_display.set_opacity_mode(rendering_state.rendering_mode)
+        self._segmentation_display.set_opacity_mode(rendering_state.display_mode)
         self.segmentation_editor.set_surface_representation_enabled(rendering_state.show_3d)
 
     def _on_volume_changed(self, **_kwargs) -> None:

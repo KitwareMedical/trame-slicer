@@ -13,7 +13,7 @@ from trame_vuetify.widgets.vuetify3 import (
 )
 from undo_stack import Signal
 
-from ..utils import TextField
+from ..text_components import TextField
 from .segment_state import SegmentState
 
 
@@ -63,6 +63,6 @@ class SegmentEditUI(AbstractElement):
     def _build_name_textfield(self, **kwargs):
         TextField(
             v_model=(self._typed_state.name.segment_state.name,),
-            change=self.validate_name_clicked,
+            change=self.name_edited,
             **kwargs,
         )

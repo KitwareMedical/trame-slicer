@@ -5,8 +5,10 @@ from trame_server.utils.typed_state import TypedState
 
 from trame_slicer.segmentation.paint_effect_parameters import BrushDiameterMode
 
+from ..control_button import ControlButton
+from ..flex_container import FlexContainer
 from ..slider import Slider, SliderState
-from ..utils import ControlButton, FlexContainer, Text
+from ..text_components import Text
 
 
 @dataclass

@@ -11,7 +11,7 @@ from .segmentation import (
     SegmentEditorLogic,
     ThresholdEffectLogic,
 )
-from .segmentation_viewer_logic import SegmentationViewerLogic
+from .segmentation_logic import SegmentationLogic
 from .slab_logic import SlabLogic
 
 __all__ = [
@@ -25,7 +25,7 @@ __all__ = [
     "PaintEraseEffectLogic",
     "SegmentEditLogic",
     "SegmentEditorLogic",
-    "SegmentationViewerLogic",
+    "SegmentationLogic",
     "SlabLogic",
     "ThresholdEffectLogic",
 ]

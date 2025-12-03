@@ -5,7 +5,8 @@ from trame_vuetify.widgets.vuetify3 import VSlider
 
 from trame_slicer.core import SlicerApp
 
-from .utils import ControlButton, StateId, get_current_volume_node
+from .control_button import ControlButton
+from .state import StateId, get_current_volume_node
 
 
 @TrameApp()

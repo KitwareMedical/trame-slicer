@@ -10,7 +10,7 @@ from trame.widgets.vuetify3 import (
 from trame_server.utils.typed_state import TypedState
 from undo_stack import Signal
 
-from ..utils import TextField
+from ..text_components import TextField
 from .segment_edit_ui import SegmentEditUI
 from .segment_state import SegmentState
 

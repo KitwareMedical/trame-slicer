@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from undo_stack import Signal
 
-from .utils import ControlButton
+from .control_button import ControlButton
 
 
 @dataclass

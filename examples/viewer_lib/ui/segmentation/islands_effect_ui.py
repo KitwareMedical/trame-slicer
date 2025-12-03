@@ -5,7 +5,7 @@ from trame_server.utils.typed_state import TypedState
 from trame_vuetify.widgets.vuetify3 import VBtn, VBtnToggle, VNumberInput, VSpacer
 from undo_stack import Signal
 
-from ..utils import FlexContainer
+from ..flex_container import FlexContainer
 
 
 class IslandsSegmentationMode(Enum):

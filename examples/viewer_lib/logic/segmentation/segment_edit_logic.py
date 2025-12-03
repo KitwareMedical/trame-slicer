@@ -13,9 +13,9 @@ class SegmentEditLogic(BaseSegmentationLogic[SegmentEditState]):
     def set_ui(self, ui: SegmentEditUI):
         ui.name_edited.connect(self._save_segment_values)
         ui.validate_color_clicked.connect(self._on_color_validate)
-        ui.cancel_clicked.connect(self._hide_dialog)
+        ui.cancel_clicked.connect(self._hide_color_dialog)
 
-    def _save_segment_values(self, *_args):
+    def _save_segment_values(self):
         segment_properties = self.segmentation_editor.get_segment_properties(self.data.segment_state.segment_id)
         if not segment_properties:
             return
@@ -28,7 +28,7 @@ class SegmentEditLogic(BaseSegmentationLogic[SegmentEditState]):
         try:
             self._save_segment_values()
         finally:
-            self._hide_dialog()
+            self._hide_color_dialog()
 
     def set_segment_edit_values(self, segment_id: str):
         segment_properties = self.segmentation_editor.get_segment_properties(segment_id)
@@ -39,8 +39,11 @@ class SegmentEditLogic(BaseSegmentationLogic[SegmentEditState]):
         self.data.segment_state.color = segment_properties.color_hex
         self.data.segment_state.segment_id = segment_id
 
-    def show_dialog(self):
-        self.data.is_color_dialog_visible = True
+    def _set_color_dialog_visible(self, is_visible: bool):
+        self.data.is_color_dialog_visible = is_visible
 
-    def _hide_dialog(self):
-        self.data.is_color_dialog_visible = False
+    def show_color_dialog(self):
+        self._set_color_dialog_visible(True)
+
+    def _hide_color_dialog(self):
+        self._set_color_dialog_visible(False)

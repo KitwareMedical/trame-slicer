@@ -13,25 +13,27 @@ from trame_vuetify.widgets.vuetify3 import (
 
 from trame_slicer.segmentation import SegmentationOpacityEnum
 
-from ..utils import ControlButton, FlexContainer, Text
+from ..control_button import ControlButton
+from ..flex_container import FlexContainer
+from ..text_components import Text
 
 
 @dataclass
-class SegmentRenderingState:
-    rendering_mode: SegmentationOpacityEnum
+class SegmentDisplayState:
+    display_mode: SegmentationOpacityEnum = SegmentationOpacityEnum.BOTH
     opacity_2d: float = 0.5
     opacity_3d: float = 1.0
     show_3d: bool = False
-    rendering_options: list[str] = field(default_factory=lambda: ["filled", "outlined"])
+    display_options: list[str] = field(default_factory=lambda: ["filled", "outlined"])
     is_extended: bool = False
 
 
-class SegmentationRenderingUI(VCard):
-    def __init__(self, typed_state: TypedState[SegmentRenderingState], **kwargs):
+class SegmentDisplayUI(VCard):
+    def __init__(self, typed_state: TypedState[SegmentDisplayState], **kwargs):
         super().__init__(**kwargs)
 
         self._typed_state = typed_state
-        self._typed_state.bind_changes({self._typed_state.name.rendering_options: self._on_rendering_options_changed})
+        self._typed_state.bind_changes({self._typed_state.name.display_options: self._on_display_options_changed})
 
         with self:
             with VCardItem():
@@ -50,7 +52,7 @@ class SegmentationRenderingUI(VCard):
                     row=True,
                 ):
                     with VBtnToggle(
-                        v_model=(self._typed_state.name.rendering_options,),
+                        v_model=(self._typed_state.name.display_options,),
                         classes="align-center",
                         mandatory=True,
                         multiple=True,
@@ -95,11 +97,11 @@ class SegmentationRenderingUI(VCard):
                     step=0.01,
                 )
 
-    def _on_rendering_options_changed(self, rendering_options):
-        if "outlined" in rendering_options:
-            if "filled" in rendering_options:
-                self._typed_state.data.rendering_mode = SegmentationOpacityEnum.BOTH
+    def _on_display_options_changed(self, display_options):
+        if "outlined" in display_options:
+            if "filled" in display_options:
+                self._typed_state.data.display_mode = SegmentationOpacityEnum.BOTH
             else:
-                self._typed_state.data.rendering_mode = SegmentationOpacityEnum.OUTLINE
+                self._typed_state.data.display_mode = SegmentationOpacityEnum.OUTLINE
         else:
-            self._typed_state.data.rendering_mode = SegmentationOpacityEnum.FILL
+            self._typed_state.data.display_mode = SegmentationOpacityEnum.FILL

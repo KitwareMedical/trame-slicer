@@ -4,7 +4,8 @@ from trame_server import Server
 
 from trame_slicer.core import SlicerApp
 
-from .utils import ControlButton, IdName, get_current_volume_node
+from .control_button import ControlButton
+from .state import IdName, get_current_volume_node
 
 
 @TrameApp()

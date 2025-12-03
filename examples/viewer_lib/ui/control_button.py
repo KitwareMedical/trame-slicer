@@ -1,0 +1,39 @@
+from collections.abc import Callable
+from math import floor
+
+from trame.widgets.html import Span
+from trame_vuetify.widgets.vuetify3 import VBtn, VIcon, VTooltip
+
+
+class ControlButton(VBtn):
+    def __init__(
+        self,
+        *,
+        name: str,
+        icon: str | tuple,
+        click: Callable | str | None = None,
+        size: int = 35,
+        **kwargs,
+    ) -> None:
+        size = size or ""
+        super().__init__(
+            variant=kwargs.pop("variant", "text"),
+            rounded=0,
+            height=size,
+            width=size,
+            min_height=size,
+            min_width=size,
+            click=click,
+            **kwargs,
+        )
+
+        icon_size = floor(0.6 * size) if size else ""
+
+        with self:
+            VIcon(icon, size=icon_size)
+            with VTooltip(
+                activator="parent",
+                transition="slide-x-transition",
+                location="right",
+            ):
+                Span(f"{name}")

@@ -5,7 +5,7 @@ from trame_server import Server
 from trame_slicer.core import LayoutManager, SlicerApp
 from trame_slicer.rca_view import register_rca_factories
 
-from ..ui import SegmentationViewerUI, StateId
+from ..ui import SegmentationUI, StateId
 from .base_logic import BaseLogic
 from .layout_button_logic import LayoutButtonLogic
 from .load_files_logic import LoadFilesLogic
@@ -17,7 +17,7 @@ class SegmentationViewerState:
     pass
 
 
-class SegmentationViewerLogic(BaseLogic[SegmentationViewerState]):
+class SegmentationLogic(BaseLogic[SegmentationViewerState]):
     def __init__(self, server: Server, slicer_app: SlicerApp):
         super().__init__(server, slicer_app, SegmentationViewerState)
 
@@ -40,7 +40,7 @@ class SegmentationViewerLogic(BaseLogic[SegmentationViewerState]):
     def layout_manager(self) -> LayoutManager:
         return self._layout_button_logic.layout_manager
 
-    def set_ui(self, ui: SegmentationViewerUI):
+    def set_ui(self, ui: SegmentationUI):
         self._segment_editor_logic.set_ui(ui.segment_editor_ui)
         self._layout_button_logic.set_ui(ui.layout_button)
         self._load_files_logic.set_ui(ui.load_client_volume_items_buttons)
