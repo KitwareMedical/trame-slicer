@@ -8,7 +8,7 @@ from trame_slicer.rca_view import register_rca_factories
 from ..ui import MedicalViewerUI, StateId
 from .base_logic import BaseLogic
 from .layout_button_logic import LayoutButtonLogic
-from .load_files_logic import LoadFilesLogic
+from .load_volume_logic import LoadVolumeLogic
 from .markups_button_logic import MarkupsButtonLogic
 from .mpr_interaction_button_logic import MprInteractionButtonLogic
 from .segmentation import SegmentEditorLogic
@@ -31,7 +31,7 @@ class MedicalViewerLogic(BaseLogic[MedicalViewerState]):
         self._segment_editor_logic = SegmentEditorLogic(server, slicer_app)
         self._layout_button_logic = LayoutButtonLogic(server, slicer_app)
         self._markups_logic = MarkupsButtonLogic(server, slicer_app)
-        self._load_files_logic = LoadFilesLogic(server, slicer_app)
+        self._load_files_logic = LoadVolumeLogic(server, slicer_app)
         self._slab_logic = SlabLogic(server, slicer_app)
         self._mpr_logic = MprInteractionButtonLogic(server, slicer_app)
 
@@ -50,6 +50,6 @@ class MedicalViewerLogic(BaseLogic[MedicalViewerState]):
         self._segment_editor_logic.set_ui(ui.segment_editor_ui)
         self._layout_button_logic.set_ui(ui.layout_button)
         self._markups_logic.set_ui(ui.markups_button)
-        self._load_files_logic.set_ui(ui.load_client_volume_buttons)
+        self._load_files_logic.set_ui(ui.load_volume_buttons)
         self._slab_logic.set_ui(ui.slab_button)
         self._mpr_logic.set_ui(ui.mpr_interaction_button)

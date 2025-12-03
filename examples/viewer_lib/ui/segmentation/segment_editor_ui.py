@@ -39,7 +39,7 @@ from .threshold_effect_ui import ThresholdEffectUI
 @dataclass
 class SegmentEditorState:
     segment_list: SegmentListState = field(default_factory=SegmentListState)
-    segment_rendering: SegmentDisplayState = field(default_factory=SegmentDisplayState)
+    segment_display: SegmentDisplayState = field(default_factory=SegmentDisplayState)
     can_undo: bool = False
     can_redo: bool = False
     active_effect_name: str = ""
@@ -130,7 +130,7 @@ class SegmentEditorUI(AbstractElement):
                 VSpacer(v_else=True)
                 VDivider()
                 SegmentDisplayUI(
-                    typed_state=self.sub_state(self._typed_state.name.segment_rendering),
+                    typed_state=self.sub_state(self._typed_state.name.segment_display),
                     variant="flat",
                 )
 

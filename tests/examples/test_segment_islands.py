@@ -4,13 +4,13 @@ from examples.viewer_lib.logic import IslandsEffectLogic
 from examples.viewer_lib.ui import (
     IslandsEffectUI,
     IslandsSegmentationMode,
-    MedicalViewerLayout,
+    ViewerLayout,
 )
 
 
 @pytest.fixture
 def effect_ui(a_server):
-    with MedicalViewerLayout(a_server, is_drawer_visible=True) as ui, ui.drawer:
+    with ViewerLayout(a_server, is_drawer_visible=True) as ui, ui.drawer:
         return IslandsEffectUI()
 
 

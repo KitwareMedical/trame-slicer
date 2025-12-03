@@ -11,7 +11,7 @@ from ..flex_container import FlexContainer
 class IslandsSegmentationMode(Enum):
     KEEP_LARGEST_ISLAND = auto()
     REMOVE_SMALL_ISLANDS = auto()
-    SPLIT_TO_SEGMENT = auto()
+    SPLIT_TO_SEGMENTS = auto()
 
 
 @dataclass
@@ -30,7 +30,7 @@ class IslandsEffectUI(FlexContainer):
         self.labels = {
             IslandsSegmentationMode.KEEP_LARGEST_ISLAND: "Keep largest",
             IslandsSegmentationMode.REMOVE_SMALL_ISLANDS: "Remove small",
-            IslandsSegmentationMode.SPLIT_TO_SEGMENT: "Split",
+            IslandsSegmentationMode.SPLIT_TO_SEGMENTS: "Split",
         }
 
         with self:

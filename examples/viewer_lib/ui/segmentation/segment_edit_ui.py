@@ -24,9 +24,9 @@ class SegmentEditState:
 
 
 class SegmentEditUI(AbstractElement):
-    validate_color_clicked = Signal()
+    color_changed = Signal()
     cancel_clicked = Signal()
-    name_edited = Signal()
+    name_changed = Signal()
 
     def __init__(self, **kwargs):
         super().__init__("segment-edit", **kwargs)
@@ -56,13 +56,13 @@ class SegmentEditUI(AbstractElement):
                 VBtn(
                     text="Apply",
                     prepend_icon="mdi-check",
-                    click=self.validate_color_clicked,
+                    click=self.color_changed,
                     variant="tonal",
                 )
 
     def _build_name_textfield(self, **kwargs):
         TextField(
             v_model=(self._typed_state.name.segment_state.name,),
-            change=self.name_edited,
+            change=self.name_changed,
             **kwargs,
         )

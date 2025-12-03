@@ -1,10 +1,9 @@
 from .control_button import ControlButton
 from .flex_container import FlexContainer
 from .layout_button import LayoutButton, LayoutButtonState
-from .load_client_volume_files_button import (
-    LoadClientVolumeButtonsDiv,
-    LoadClientVolumeFilesButton,
-    LoadClientVolumeFilesButtonState,
+from .load_volume_ui import (
+    LoadVolumeDiv,
+    LoadVolumeState,
 )
 from .markups_button import MarkupsButton
 from .medical_viewer_ui import MedicalViewerUI
@@ -27,7 +26,7 @@ from .segmentation import (
     ThresholdEffectUI,
     ThresholdState,
 )
-from .segmentation_ui import SegmentationUI
+from .segmentation_app_ui import SegmentationAppUI
 from .slab_button import SlabState, SlabType
 from .slider import RangeSlider, RangeSliderState, Slider, SliderState
 from .state import IdName, StateId, get_current_volume_node
@@ -47,9 +46,8 @@ __all__ = [
     "IslandsState",
     "LayoutButton",
     "LayoutButtonState",
-    "LoadClientVolumeButtonsDiv",
-    "LoadClientVolumeFilesButton",
-    "LoadClientVolumeFilesButtonState",
+    "LoadVolumeDiv",
+    "LoadVolumeState",
     "MarkupsButton",
     "MedicalViewerUI",
     "MprInteractionButton",
@@ -67,8 +65,8 @@ __all__ = [
     "SegmentList",
     "SegmentListState",
     "SegmentState",
+    "SegmentationAppUI",
     "SegmentationLayout",
-    "SegmentationUI",
     "SlabState",
     "SlabType",
     "Slider",

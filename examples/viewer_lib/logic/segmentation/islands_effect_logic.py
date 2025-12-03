@@ -29,5 +29,5 @@ class IslandsEffectLogic(BaseEffectLogic[IslandsState, SegmentationEffectIslands
             self.effect.keep_largest_island()
         elif self._typed_state.data.mode == IslandsSegmentationMode.REMOVE_SMALL_ISLANDS:
             self.effect.remove_small_islands(self._typed_state.data.minimum_size)
-        elif self._typed_state.data.mode == IslandsSegmentationMode.SPLIT_TO_SEGMENT:
+        elif self._typed_state.data.mode == IslandsSegmentationMode.SPLIT_TO_SEGMENTS:
             self.effect.split_islands_to_segments()

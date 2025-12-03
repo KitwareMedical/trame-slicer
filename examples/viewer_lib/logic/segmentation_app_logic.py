@@ -1,25 +1,18 @@
-from dataclasses import dataclass
-
 from trame_server import Server
 
 from trame_slicer.core import LayoutManager, SlicerApp
 from trame_slicer.rca_view import register_rca_factories
 
-from ..ui import SegmentationUI, StateId
+from ..ui import SegmentationAppUI, StateId
 from .base_logic import BaseLogic
 from .layout_button_logic import LayoutButtonLogic
-from .load_files_logic import LoadFilesLogic
+from .load_volume_logic import LoadVolumeLogic
 from .segmentation import SegmentEditorLogic
 
 
-@dataclass
-class SegmentationViewerState:
-    pass
-
-
-class SegmentationLogic(BaseLogic[SegmentationViewerState]):
+class SegmentationAppLogic(BaseLogic):
     def __init__(self, server: Server, slicer_app: SlicerApp):
-        super().__init__(server, slicer_app, SegmentationViewerState)
+        super().__init__(server, slicer_app, None)
 
         # Register the RCA view creation
         register_rca_factories(self._slicer_app.view_manager, self._server)
@@ -27,7 +20,7 @@ class SegmentationLogic(BaseLogic[SegmentationViewerState]):
         # Create the application logic
         self._segment_editor_logic = SegmentEditorLogic(server, slicer_app)
         self._layout_button_logic = LayoutButtonLogic(server, slicer_app)
-        self._load_files_logic = LoadFilesLogic(server, slicer_app)
+        self._load_files_logic = LoadVolumeLogic(server, slicer_app)
 
         # Initialize the state defaults
         self.server.state.setdefault(StateId.vr_preset_value, "CT-Coronary-Arteries-3")
@@ -40,7 +33,7 @@ class SegmentationLogic(BaseLogic[SegmentationViewerState]):
     def layout_manager(self) -> LayoutManager:
         return self._layout_button_logic.layout_manager
 
-    def set_ui(self, ui: SegmentationUI):
+    def set_ui(self, ui: SegmentationAppUI):
         self._segment_editor_logic.set_ui(ui.segment_editor_ui)
         self._layout_button_logic.set_ui(ui.layout_button)
-        self._load_files_logic.set_ui(ui.load_client_volume_items_buttons)
+        self._load_files_logic.set_ui(ui.load_volume_items_buttons)

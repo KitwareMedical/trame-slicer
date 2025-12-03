@@ -4,7 +4,7 @@ from trame_slicer.core import LayoutManager, SlicerApp
 
 from .flex_container import FlexContainer
 from .layout_button import LayoutButton
-from .load_client_volume_files_button import LoadClientVolumeButtonsDiv
+from .load_volume_ui import LoadVolumeDiv
 from .markups_button import MarkupsButton
 from .mpr_interaction_button import MprInteractionButton
 from .segmentation import SegmentEditorUI
@@ -18,7 +18,7 @@ class MedicalViewerUI:
         with ViewerLayout(server) as self.layout:
             self.segment_editor_ui = SegmentEditorUI()
             with self.layout.toolbar, FlexContainer(fill_height=True):
-                self.load_client_volume_buttons = LoadClientVolumeButtonsDiv()
+                self.load_volume_buttons = LoadVolumeDiv()
                 self.volume_property_button = VolumePropertyButton(server=server, slicer_app=slicer_app)
                 self.layout_button = LayoutButton()
                 self.markups_button = MarkupsButton()

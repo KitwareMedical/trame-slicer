@@ -11,8 +11,8 @@ class SegmentEditLogic(BaseSegmentationLogic[SegmentEditState]):
         super().__init__(server, slicer_app, SegmentEditState)
 
     def set_ui(self, ui: SegmentEditUI):
-        ui.name_edited.connect(self._save_segment_values)
-        ui.validate_color_clicked.connect(self._on_color_validate)
+        ui.name_changed.connect(self._save_segment_values)
+        ui.color_changed.connect(self._on_color_changed)
         ui.cancel_clicked.connect(self._hide_color_dialog)
 
     def _save_segment_values(self):
@@ -24,13 +24,13 @@ class SegmentEditLogic(BaseSegmentationLogic[SegmentEditState]):
         segment_properties.color_hex = self.data.segment_state.color
         self.segmentation_editor.set_segment_properties(self.data.segment_state.segment_id, segment_properties)
 
-    def _on_color_validate(self):
+    def _on_color_changed(self):
         try:
             self._save_segment_values()
         finally:
             self._hide_color_dialog()
 
-    def set_segment_edit_values(self, segment_id: str):
+    def set_active_segment_id(self, segment_id: str):
         segment_properties = self.segmentation_editor.get_segment_properties(segment_id)
         if segment_properties is None:
             return

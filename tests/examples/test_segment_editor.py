@@ -4,10 +4,10 @@ from undo_stack import UndoStack
 
 from examples.viewer_lib.logic import SegmentEditorLogic
 from examples.viewer_lib.ui import (
-    MedicalViewerLayout,
     SegmentEditorState,
     SegmentEditorUI,
     SegmentState,
+    ViewerLayout,
 )
 from trame_slicer.segmentation import (
     SegmentationEffectNoTool,
@@ -23,8 +23,9 @@ def editor_state(a_server):
 
 @pytest.fixture
 def editor_ui(a_server):
-    with MedicalViewerLayout(a_server, is_drawer_visible=True) as ui, ui.drawer:
+    with ViewerLayout(a_server, is_drawer_visible=True) as ui, ui.drawer:
         editor = SegmentEditorUI()
+        editor.build_drawer_ui()
         editor.effect_button_clicked.connect(lambda *x: print("effect clicked:", *x))
     return editor
 

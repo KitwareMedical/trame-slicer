@@ -4,17 +4,17 @@ from trame_slicer.core import LayoutManager
 
 from .flex_container import FlexContainer
 from .layout_button import LayoutButton
-from .load_client_volume_files_button import LoadClientVolumeButtonsDiv
+from .load_volume_ui import LoadVolumeDiv
 from .segmentation import SegmentEditorUI
 from .viewer_layout import ViewerLayout
 
 
-class SegmentationUI:
+class SegmentationAppUI:
     def __init__(self, server: Server, layout_manager: LayoutManager):
         with ViewerLayout(server) as self.layout:
             self.segment_editor_ui = SegmentEditorUI()
             with self.layout.toolbar, FlexContainer(fill_height=True):
-                self.load_client_volume_items_buttons = LoadClientVolumeButtonsDiv()
+                self.load_volume_items_buttons = LoadVolumeDiv()
                 self.layout_button = LayoutButton()
                 self.segment_editor_ui.build_activator(click=self.activate_tool)
                 self.segment_editor_ui.build_toolbar_ui()

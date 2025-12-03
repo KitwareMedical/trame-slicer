@@ -1,5 +1,5 @@
 from .base_logic import BaseLogic
-from .load_files_logic import LoadFilesLogic
+from .load_volume_logic import LoadVolumeLogic
 from .markups_button_logic import MarkupsButtonLogic
 from .medical_viewer_logic import MedicalViewerLogic
 from .segmentation import (
@@ -11,21 +11,21 @@ from .segmentation import (
     SegmentEditorLogic,
     ThresholdEffectLogic,
 )
-from .segmentation_logic import SegmentationLogic
+from .segmentation_app_logic import SegmentationAppLogic
 from .slab_logic import SlabLogic
 
 __all__ = [
     "BaseLogic",
     "EraseEffectLogic",
     "IslandsEffectLogic",
-    "LoadFilesLogic",
+    "LoadVolumeLogic",
     "MarkupsButtonLogic",
     "MedicalViewerLogic",
     "PaintEffectLogic",
     "PaintEraseEffectLogic",
     "SegmentEditLogic",
     "SegmentEditorLogic",
-    "SegmentationLogic",
+    "SegmentationAppLogic",
     "SlabLogic",
     "ThresholdEffectLogic",
 ]

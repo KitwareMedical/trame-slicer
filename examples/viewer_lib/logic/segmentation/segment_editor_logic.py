@@ -43,7 +43,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         self._connect_undo_stack_to_state()
         self.bind_changes(
             {
-                self.name.segment_rendering: self._on_rendering_changed,
+                self.name.segment_display: self._on_segment_display_changed,
                 self.name.segment_list.active_segment_id: self._on_active_segment_changed,
             }
         )
@@ -82,7 +82,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         self._edit_segment_logic.show_color_dialog()
 
     def _on_active_segment_changed(self, segment_id: str):
-        self._edit_segment_logic.set_segment_edit_values(segment_id)
+        self._edit_segment_logic.set_active_segment_id(segment_id)
 
     def _on_delete_segment_clicked(self, segment_id: str):
         self.segmentation_editor.remove_segment(segment_id)
@@ -111,7 +111,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
 
     def _on_segment_editor_changed(self, *_):
         self.data.segment_list.active_segment_id = self.segmentation_editor.get_active_segment_id()
-        self.data.segment_rendering.show_3d = self.segmentation_editor.is_surface_representation_enabled()
+        self.data.segment_display.show_3d = self.segmentation_editor.is_surface_representation_enabled()
         self.data.active_effect_name = self.segmentation_editor.get_active_effect_name()
         self._update_segment_list()
 
@@ -136,14 +136,14 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
     def _segmentation_display(self) -> SegmentationDisplay | None:
         return self.segmentation_editor.active_segmentation_display
 
-    def _on_rendering_changed(self, rendering_state: SegmentDisplayState) -> None:
+    def _on_segment_display_changed(self, display_state: SegmentDisplayState) -> None:
         if not self._segmentation_display:
             return
 
-        self._segmentation_display.set_opacity_2d(rendering_state.opacity_2d)
-        self._segmentation_display.set_opacity_3d(rendering_state.opacity_3d)
-        self._segmentation_display.set_opacity_mode(rendering_state.display_mode)
-        self.segmentation_editor.set_surface_representation_enabled(rendering_state.show_3d)
+        self._segmentation_display.set_opacity_2d(display_state.opacity_2d)
+        self._segmentation_display.set_opacity_3d(display_state.opacity_3d)
+        self._segmentation_display.set_opacity_mode(display_state.display_mode)
+        self.segmentation_editor.set_surface_representation_enabled(display_state.show_3d)
 
     def _on_volume_changed(self, **_kwargs) -> None:
         segmentation_nodes = list(self.scene.GetNodesByClass("vtkMRMLSegmentationNode"))
@@ -157,4 +157,4 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
             segmentation_node,
             get_current_volume_node(self._server, self._slicer_app),
         )
-        self._on_rendering_changed(self.data.segment_rendering)
+        self._on_segment_display_changed(self.data.segment_display)
