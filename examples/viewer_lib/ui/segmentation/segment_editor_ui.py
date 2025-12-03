@@ -177,7 +177,9 @@ class SegmentEditorUI(AbstractToolUI):
         self._effect_ui[effect_cls] = effect_ui_type(v_if=self.is_active_effect(effect_cls))
 
     def _create_segment_list(self):
-        self._segment_list = SegmentList(typed_state=self.sub_state(self._typed_state.name.segment_list))
+        self._segment_list = SegmentList(
+            typed_state=self.sub_state(self._typed_state.name.segment_list), edit_ui=self.edit_ui
+        )
         self._segment_list.toggle_segment_visibility_clicked.connect(self.toggle_segment_visibility_clicked)
         self._segment_list.edit_segment_color_clicked.connect(self.edit_segment_color_clicked)
         self._segment_list.delete_segment_clicked.connect(self.delete_segment_clicked)

@@ -10,12 +10,10 @@ class SegmentEditLogic(BaseSegmentationLogic[SegmentEditState]):
     def __init__(self, server: Server, slicer_app: SlicerApp):
         super().__init__(server, slicer_app, SegmentEditState)
 
-        self.bind_changes({self.name.segment_state.name: self._save_segment_values})
-
     def set_ui(self, ui: SegmentEditUI):
+        ui.name_edited.connect(self._save_segment_values)
         ui.validate_color_clicked.connect(self._on_color_validate)
         ui.cancel_clicked.connect(self._hide_dialog)
-        # ui.validate_name_clicked.connect(self._save_segment_values)
 
     def _save_segment_values(self, *_args):
         segment_properties = self.segmentation_editor.get_segment_properties(self.data.segment_state.segment_id)

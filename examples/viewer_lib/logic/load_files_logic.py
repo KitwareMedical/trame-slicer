@@ -1,4 +1,3 @@
-import asyncio
 from tempfile import TemporaryDirectory
 
 from trame_server import Server
@@ -20,16 +19,12 @@ class LoadFilesLogic(BaseLogic[LoadClientVolumeFilesButtonState]):
 
     def set_ui(self, ui: LoadClientVolumeButtonsDiv):
         ui.on_load_client_files.connect(self._on_load_client_files)
-        ui.on_load_client_dir.connect(self._on_load_client_files)
 
-    async def _on_load_client_files(self, files: list[dict]) -> None:
-        self.data.file_loading_busy = True
-        await asyncio.sleep(1)
-
+    async def _on_load_client_files(self, files: list[dict], loader: str) -> None:
         try:
             self._load_client_files(files)
         finally:
-            self._typed_state.data.file_loading_busy = False
+            self.state[loader] = False
 
     def _load_client_files(self, files: list[dict]) -> None:
         if not files:

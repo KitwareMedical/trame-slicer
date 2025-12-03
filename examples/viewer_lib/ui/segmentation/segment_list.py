@@ -31,9 +31,8 @@ class SegmentList(VList):
     delete_segment_clicked = Signal(str)
     select_segment_clicked = Signal(str)
 
-    def __init__(self, typed_state: TypedState[SegmentListState], **kwargs):
+    def __init__(self, typed_state: TypedState[SegmentListState], edit_ui: SegmentEditUI, **kwargs):
         super().__init__(**kwargs)
-        self.edit_ui = SegmentEditUI()
 
         with self:
             client.Style(".v-list-item__prepend { display: grid }")
@@ -57,7 +56,7 @@ class SegmentList(VList):
                         disabled=True,
                         v_model=("item.name",),
                     )
-                    self.edit_ui._build_name_textfield(
+                    edit_ui._build_name_textfield(
                         v_else=True,
                     )
 

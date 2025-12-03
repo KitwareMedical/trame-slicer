@@ -54,7 +54,7 @@ class IslandsEffectUI(FlexContainer):
                     density="compact",
                 )
                 VSpacer()
-                VBtn(text="Apply", icon="mdi-check", variant="tonal", click=self.apply_clicked)
+                VBtn(text="Apply", prepend_icon="mdi-check", variant="tonal", click=self.apply_clicked)
 
     def _create_mode_button(self, mode: IslandsSegmentationMode):
         VBtn(text=self.labels[mode], value=(self._typed_state.encode(mode),), size="small")

@@ -26,7 +26,7 @@ class SegmentEditState:
 class SegmentEditUI(AbstractElement):
     validate_color_clicked = Signal()
     cancel_clicked = Signal()
-    # validate_name_clicked = Signal()
+    name_edited = Signal()
 
     def __init__(self, **kwargs):
         super().__init__("segment-edit", **kwargs)
@@ -63,6 +63,6 @@ class SegmentEditUI(AbstractElement):
     def _build_name_textfield(self, **kwargs):
         TextField(
             v_model=(self._typed_state.name.segment_state.name,),
-            # update_modelValue=self.validate_name_clicked,
+            change=self.validate_name_clicked,
             **kwargs,
         )
