@@ -25,7 +25,6 @@ def editor_state(a_server):
 def editor_ui(a_server):
     with ViewerLayout(a_server, is_drawer_visible=True) as ui, ui.drawer:
         editor = SegmentEditorUI()
-        editor.build_drawer_ui()
         editor.effect_button_clicked.connect(lambda *x: print("effect clicked:", *x))
     return editor
 

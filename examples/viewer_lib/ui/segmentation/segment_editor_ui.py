@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 from trame.widgets.vuetify3 import (
     VBtn,
@@ -11,7 +11,7 @@ from trame.widgets.vuetify3 import (
     VSpacer,
     VTooltip,
 )
-from trame_client.widgets.core import AbstractElement, Template
+from trame_client.widgets.core import Template
 from trame_server.utils.typed_state import TypedState
 from undo_stack import Signal
 
@@ -45,7 +45,7 @@ class SegmentEditorState:
     active_effect_name: str = ""
 
 
-class SegmentEditorUI(AbstractElement):
+class SegmentEditorUI(FlexContainer):
     toggle_segment_visibility_clicked = Signal(str)
     edit_segment_color_clicked = Signal(str)
     delete_segment_clicked = Signal(str)
@@ -57,37 +57,16 @@ class SegmentEditorUI(AbstractElement):
     redo_clicked = Signal()
 
     def __init__(self, **kwargs):
-        super().__init__(self.name, **kwargs)
+        super().__init__(fill_height=True, **kwargs)
         self._viewer_state = TypedState(self.state, ViewerLayoutState)
         self._typed_state = TypedState(self.state, SegmentEditorState)
         self._effect_ui: dict[type[SegmentationEffect], Any] = {}
         self.edit_ui = SegmentEditUI()
 
-    @property
-    def name(self):
-        return "segment_editor"
+        self._build_ui()
 
-    def _is_tool_active(self):
-        return f"{self._viewer_state.name.active_tool} === '{self.name}'"
-
-    def _is_tool_drawer_visible(self):
-        return f"{self._is_tool_active()} && {self._viewer_state.name.is_drawer_visible}"
-
-    def build_activator(self, click: Callable):
-        ControlButton(
-            icon="mdi-brush",
-            name="{{ "
-            + f"{self._is_tool_drawer_visible()} ? 'Close segmentation panel' : 'Open segmentation panel'"
-            + " }}",
-            click=lambda: click(self.name),
-            active=(self._is_tool_active(),),
-        )
-
-    def build_drawer_ui(self):
-        with FlexContainer(
-            v_if=(self._is_tool_drawer_visible(),),
-            fill_height=True,
-        ):
+    def _build_ui(self):
+        with self:
             self.edit_ui._build_color_dialog()
             VBtn(
                 v_if=(f"{self._typed_state.name.segment_list.segments}.length < 1",),
@@ -119,8 +98,8 @@ class SegmentEditorUI(AbstractElement):
                 with VCard(
                     v_if=(self._typed_state.name.segment_list.active_segment_id,), classes="flex-grow-1", variant="flat"
                 ):
-                    with VCardItem():
-                        self._build_effect_buttons(row=True, justify="space-between")
+                    with VCardItem(), FlexContainer(row=True, justify="space-between"):
+                        self.build_effect_buttons()
                     VDivider(classes="mx-3")
                     with VCardText(classes="align-center"):
                         self._register_effect_ui(SegmentationEffectPaint, PaintEffectUI)
@@ -134,69 +113,52 @@ class SegmentEditorUI(AbstractElement):
                     variant="flat",
                 )
 
-    def build_toolbar_ui(self):
-        with FlexContainer(
-            v_if=(self._is_tool_active(),),
-            classes="flex-grow-1",
-        ):
-            VDivider(classes="my-2")
-            VSpacer()
-            self._build_effect_buttons(
-                v_if=(f"!{self._viewer_state.name.is_drawer_visible}",),
-                all=False,
+    def build_effect_buttons(self, all: bool = True):
+        self._create_effect_button(
+            "No tool",
+            "mdi-cursor-default",
+            SegmentationEffectNoTool,
+        )
+        self._create_effect_button(
+            "Paint",
+            "mdi-brush",
+            SegmentationEffectPaint,
+        )
+        self._create_effect_button(
+            "Erase",
+            "mdi-eraser",
+            SegmentationEffectErase,
+        )
+        self._create_effect_button(
+            "Scissors",
+            "mdi-content-cut",
+            SegmentationEffectScissors,
+        )
+        if all:
+            self._create_effect_button(
+                "Threshold",
+                "mdi-auto-fix",
+                SegmentationEffectThreshold,
             )
-            VSpacer()
-            VDivider(classes="my-2")
-            self._build_undo_redo_buttons()
+            self._create_effect_button(
+                "Islands",
+                "mdi-scatter-plot",
+                SegmentationEffectIslands,
+            )
 
-    def _build_effect_buttons(self, all: bool = True, **kwargs):
-        with FlexContainer(**kwargs):
-            self._create_effect_button(
-                "No tool",
-                "mdi-cursor-default",
-                SegmentationEffectNoTool,
-            )
-            self._create_effect_button(
-                "Paint",
-                "mdi-brush",
-                SegmentationEffectPaint,
-            )
-            self._create_effect_button(
-                "Erase",
-                "mdi-eraser",
-                SegmentationEffectErase,
-            )
-            self._create_effect_button(
-                "Scissors",
-                "mdi-content-cut",
-                SegmentationEffectScissors,
-            )
-            if all:
-                self._create_effect_button(
-                    "Threshold",
-                    "mdi-auto-fix",
-                    SegmentationEffectThreshold,
-                )
-                self._create_effect_button(
-                    "Islands",
-                    "mdi-scatter-plot",
-                    SegmentationEffectIslands,
-                )
-
-    def _build_undo_redo_buttons(self, **kwargs):
-        with FlexContainer(**kwargs):
-            ControlButton(
-                name="Undo",
-                icon="mdi-undo",
-                click=self.undo_clicked,
-                disabled=(f"!{self._typed_state.name.can_undo}",),
-            )
-            ControlButton(
-                name="Redo",
-                icon="mdi-redo",
-                click=self.redo_clicked,
-                disabled=(f"!{self._typed_state.name.can_redo}",),
-            )
+    def build_undo_redo_buttons(self):
+        ControlButton(
+            name="Undo",
+            icon="mdi-undo",
+            click=self.undo_clicked,
+            disabled=(f"!{self._typed_state.name.can_undo}",),
+        )
+        ControlButton(
+            name="Redo",
+            icon="mdi-redo",
+            click=self.redo_clicked,
+            disabled=(f"!{self._typed_state.name.can_redo}",),
+        )
 
     def _register_effect_ui(self, effect_cls: type[SegmentationEffect], effect_ui_type: type):
         self._effect_ui[effect_cls] = effect_ui_type(v_if=self.is_active_effect(effect_cls))
@@ -233,3 +195,27 @@ class SegmentEditorUI(AbstractElement):
 
     def get_effect_ui(self, effect_type: type[SegmentationEffect]):
         return self._effect_ui[effect_type]
+
+
+class SegmentEditorToolbarUI(FlexContainer):
+    def __init__(self, editor_ui: SegmentEditorUI, **kwargs):
+        super().__init__(**kwargs)
+        self._editor_ui = editor_ui
+
+        self._build_ui()
+
+    def _build_ui(self):
+        with self:
+            self._editor_ui.build_effect_buttons(all=False)
+
+
+class SegmentEditorUndoRedoUI(FlexContainer):
+    def __init__(self, editor_ui: SegmentEditorUI, **kwargs):
+        super().__init__(**kwargs)
+        self._editor_ui = editor_ui
+
+        self._build_ui()
+
+    def _build_ui(self):
+        with self:
+            self._editor_ui.build_undo_redo_buttons()

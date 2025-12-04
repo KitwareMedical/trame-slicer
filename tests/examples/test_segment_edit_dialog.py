@@ -39,7 +39,7 @@ def test_can_be_displayed(a_server, a_server_port, segment_edit):
 
 def test_on_validate_color_dialog(a_segmentation_editor, segment_edit, segment_edit_state, logic):
     assert logic
-    segment_edit.validate_color_clicked()
+    segment_edit.color_changed()
 
     properties = a_segmentation_editor.get_segment_properties(segment_edit_state.data.segment_state.segment_id)
     assert properties.color_hex.upper() == "#FF00FF"
@@ -57,7 +57,7 @@ def test_on_cancel_hides_color_dialog(a_segmentation_editor, segment_edit, segme
 
 def test_on_segment_name_edit(a_segmentation_editor, segment_edit, segment_edit_state, logic):
     assert logic
-    segment_edit.name_edited()
+    segment_edit.name_changed()
 
     properties = a_segmentation_editor.get_segment_properties(segment_edit_state.data.segment_state.segment_id)
     assert properties.name == "Segment Name"

@@ -82,7 +82,10 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         self._edit_segment_logic.show_color_dialog()
 
     def _on_active_segment_changed(self, segment_id: str):
-        self._edit_segment_logic.set_active_segment_id(segment_id)
+        if segment_id:
+            self._edit_segment_logic.set_active_segment_id(segment_id)
+        elif len(self.data.segment_list.segments) > 0:
+            self.data.segment_list.active_segment_id = self.data.segment_list.segments[0].segment_id
 
     def _on_delete_segment_clicked(self, segment_id: str):
         self.segmentation_editor.remove_segment(segment_id)
@@ -140,9 +143,9 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         if not self._segmentation_display:
             return
 
-        self._segmentation_display.set_opacity_2d(display_state.opacity_2d)
-        self._segmentation_display.set_opacity_3d(display_state.opacity_3d)
-        self._segmentation_display.set_opacity_mode(display_state.display_mode)
+        self._segmentation_display.set_opacity_2d(display_state.opacity_2d.value)
+        self._segmentation_display.set_opacity_3d(display_state.opacity_3d.value)
+        self._segmentation_display.set_opacity_mode(display_state.opacity_mode)
         self.segmentation_editor.set_surface_representation_enabled(display_state.show_3d)
 
     def _on_volume_changed(self, **_kwargs) -> None:

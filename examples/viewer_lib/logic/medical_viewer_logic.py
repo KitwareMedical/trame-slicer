@@ -5,7 +5,7 @@ from trame_server import Server
 from trame_slicer.core import LayoutManager, SlicerApp
 from trame_slicer.rca_view import register_rca_factories
 
-from ..ui import MedicalViewerUI, StateId
+from ..ui import MedicalViewerUI, SegmentEditorUI, StateId
 from .base_logic import BaseLogic
 from .layout_button_logic import LayoutButtonLogic
 from .load_volume_logic import LoadVolumeLogic
@@ -47,7 +47,7 @@ class MedicalViewerLogic(BaseLogic[MedicalViewerState]):
         return self._layout_button_logic.layout_manager
 
     def set_ui(self, ui: MedicalViewerUI):
-        self._segment_editor_logic.set_ui(ui.segment_editor_ui)
+        self._segment_editor_logic.set_ui(ui.tool_registry[SegmentEditorUI])
         self._layout_button_logic.set_ui(ui.layout_button)
         self._markups_logic.set_ui(ui.markups_button)
         self._load_files_logic.set_ui(ui.load_volume_buttons)

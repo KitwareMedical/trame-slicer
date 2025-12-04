@@ -4,27 +4,25 @@ from trame_server.utils.typed_state import TypedState
 from trame_vuetify.widgets.vuetify3 import (
     Template,
     VBtn,
-    VBtnToggle,
     VCard,
     VCardItem,
     VCardText,
-    VSlider,
 )
 
 from trame_slicer.segmentation import SegmentationOpacityEnum
 
 from ..control_button import ControlButton
 from ..flex_container import FlexContainer
+from ..slider import Slider, SliderState
 from ..text_components import Text
 
 
 @dataclass
 class SegmentDisplayState:
-    display_mode: SegmentationOpacityEnum = SegmentationOpacityEnum.BOTH
-    opacity_2d: float = 0.5
-    opacity_3d: float = 1.0
+    opacity_mode: SegmentationOpacityEnum = SegmentationOpacityEnum.BOTH
+    opacity_2d: SliderState = field(default_factory=SliderState)
+    opacity_3d: SliderState = field(default_factory=SliderState)
     show_3d: bool = False
-    display_options: list[str] = field(default_factory=lambda: ["filled", "outlined"])
     is_extended: bool = False
 
 
@@ -33,7 +31,9 @@ class SegmentDisplayUI(VCard):
         super().__init__(**kwargs)
 
         self._typed_state = typed_state
-        self._typed_state.bind_changes({self._typed_state.name.display_options: self._on_display_options_changed})
+        self._typed_state.data.opacity_2d.step = 0.01
+        self._typed_state.data.opacity_3d.step = 0.01
+        self._typed_state.data.opacity_3d.value = 1
 
         with self:
             with VCardItem():
@@ -51,25 +51,32 @@ class SegmentDisplayUI(VCard):
                     justify="space-between",
                     row=True,
                 ):
-                    with VBtnToggle(
-                        v_model=(self._typed_state.name.display_options,),
-                        classes="align-center",
-                        mandatory=True,
-                        multiple=True,
+                    VBtn(
+                        active=(
+                            "["
+                            f"{self._typed_state.encode(SegmentationOpacityEnum.FILL)}, {self._typed_state.encode(SegmentationOpacityEnum.BOTH)}"
+                            f"].includes({self._typed_state.name.opacity_mode})",
+                        ),
+                        click=lambda: self._on_display_options_changed(SegmentationOpacityEnum.FILL),
+                        height=35,
+                        prepend_icon="mdi-circle",
                         rounded=0,
-                    ):
-                        VBtn(
-                            prepend_icon="mdi-circle",
-                            text="Filled",
-                            value="filled",
-                            height=35,
-                        )
-                        VBtn(
-                            prepend_icon="mdi-circle-outline",
-                            text="Outlined",
-                            value="outlined",
-                            height=35,
-                        )
+                        text="Filled",
+                        variant="text",
+                    )
+                    VBtn(
+                        active=(
+                            "["
+                            f"{self._typed_state.encode(SegmentationOpacityEnum.OUTLINE)}, {self._typed_state.encode(SegmentationOpacityEnum.BOTH)}"
+                            f"].includes({self._typed_state.name.opacity_mode})",
+                        ),
+                        click=lambda: self._on_display_options_changed(SegmentationOpacityEnum.OUTLINE),
+                        height=35,
+                        prepend_icon="mdi-circle-outline",
+                        rounded=0,
+                        text="Outlined",
+                        variant="text",
+                    )
 
                     ControlButton(
                         icon="mdi-video-3d",
@@ -79,29 +86,23 @@ class SegmentDisplayUI(VCard):
                     )
 
                 Text("Opacity", subtitle=True)
-                VSlider(
-                    v_model=(self._typed_state.name.opacity_2d,),
-                    hide_details=True,
+                Slider(
+                    typed_state=self._typed_state.get_sub_state(self._typed_state.name.opacity_2d),
                     prepend_icon="mdi-video-2d",
-                    min=0.0,
-                    max=1.0,
-                    step=0.01,
                 )
-                VSlider(
-                    v_model=(self._typed_state.name.opacity_3d,),
-                    disabled=(f"!{self._typed_state.name.show_3d}",),
-                    hide_details=True,
+                Slider(
+                    typed_state=self._typed_state.get_sub_state(self._typed_state.name.opacity_3d),
                     prepend_icon="mdi-video-3d",
-                    min=0.0,
-                    max=1.0,
-                    step=0.01,
                 )
 
-    def _on_display_options_changed(self, display_options):
-        if "outlined" in display_options:
-            if "filled" in display_options:
-                self._typed_state.data.display_mode = SegmentationOpacityEnum.BOTH
-            else:
-                self._typed_state.data.display_mode = SegmentationOpacityEnum.OUTLINE
+    def _on_display_options_changed(self, opacity_mode):
+        if self._typed_state.data.opacity_mode == opacity_mode:
+            return
+        if self._typed_state.data.opacity_mode == SegmentationOpacityEnum.BOTH:
+            self._typed_state.data.opacity_mode = (
+                SegmentationOpacityEnum.FILL
+                if opacity_mode == SegmentationOpacityEnum.OUTLINE
+                else SegmentationOpacityEnum.OUTLINE
+            )
         else:
-            self._typed_state.data.display_mode = SegmentationOpacityEnum.FILL
+            self._typed_state.data.opacity_mode = SegmentationOpacityEnum.BOTH
