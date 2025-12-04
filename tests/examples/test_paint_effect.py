@@ -1,13 +1,13 @@
 import pytest
 
 from examples.viewer_lib.logic import PaintEffectLogic
-from examples.viewer_lib.ui import MedicalViewerLayout, PaintEffectUI
+from examples.viewer_lib.ui import PaintEffectUI, ViewerLayout
 from trame_slicer.segmentation import BrushDiameterMode, SegmentationEffectPaint
 
 
 @pytest.fixture
 def effect_ui(a_server):
-    with MedicalViewerLayout(a_server, is_drawer_visible=True) as ui, ui.drawer:
+    with ViewerLayout(a_server, is_drawer_visible=True) as ui, ui.drawer:
         return PaintEffectUI()
 
 

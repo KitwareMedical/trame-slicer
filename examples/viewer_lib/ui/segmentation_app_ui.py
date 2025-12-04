@@ -1,43 +1,39 @@
 from trame.widgets.vuetify3 import VDivider, VSpacer
 from trame_server import Server
 
-from trame_slicer.core import LayoutManager, SlicerApp
+from trame_slicer.core import LayoutManager
 
 from .control_button import ControlButton
 from .flex_container import FlexContainer
 from .layout_button import LayoutButton
 from .load_volume_ui import LoadVolumeDiv
-from .markups_button import MarkupsButton
-from .mpr_interaction_button import MprInteractionButton
 from .segmentation import (
+    SegmentEditorToolbarUI,
     SegmentEditorUI,
     SegmentEditorUndoRedoUI,
 )
-from .slab_button import SlabButton
 from .viewer_layout import ViewerLayout
-from .volume_property_button import VolumePropertyButton
 
 
-class MedicalViewerUI:
-    def __init__(self, server: Server, slicer_app: SlicerApp, layout_manager: LayoutManager):
+class SegmentationAppUI:
+    def __init__(self, server: Server, layout_manager: LayoutManager):
         self.tool_registry = {}
+
         with ViewerLayout(server) as self.layout:
             with self.layout.drawer:
                 self._register_tool_ui(SegmentEditorUI)
 
             with self.layout.toolbar, FlexContainer(fill_height=True):
-                self.load_volume_buttons = LoadVolumeDiv()
-                self.volume_property_button = VolumePropertyButton(server=server, slicer_app=slicer_app)
+                self.load_volume_items_buttons = LoadVolumeDiv()
                 self.layout_button = LayoutButton()
-                self.markups_button = MarkupsButton()
                 self._create_tool_button(
                     icon="mdi-brush",
                     name="segmentation panel",
                     tool_ui_type=SegmentEditorUI,
                 )
-                self.slab_button = SlabButton()
-                self.mpr_interaction_button = MprInteractionButton()
                 VDivider(classes="my-2")
+                VSpacer()
+                self._register_toolbar_ui(SegmentEditorToolbarUI, SegmentEditorUI)
                 VSpacer()
                 VDivider(classes="my-2")
                 self._register_undo_redo_ui(SegmentEditorUndoRedoUI, SegmentEditorUI)
@@ -63,6 +59,12 @@ class MedicalViewerUI:
         tool_instance = tool_ui_type(v_if=(self._is_tool_active(tool_ui_type),))
         self.tool_registry[tool_ui_type] = tool_instance
 
+    def _register_toolbar_ui(self, toolbar_ui_type: type, tool_ui_type: type):
+        toolbar_ui_type(
+            editor_ui=self.tool_registry[tool_ui_type],
+            v_if=(f"{self._is_tool_active(tool_ui_type)} && !{self.name.is_drawer_visible}",),
+        )
+
     def _register_undo_redo_ui(self, undo_redo_ui_type: type, tool_ui_type: type):
         undo_redo_ui_type(
             editor_ui=self.tool_registry[tool_ui_type],
@@ -73,7 +75,8 @@ class MedicalViewerUI:
         async def change_drawer_ui():
             is_drawer_visible = not self.data.is_drawer_visible or self.data.active_tool != tool_ui_type.__name__
             self.data.is_drawer_visible = is_drawer_visible
-            self.data.active_tool = tool_ui_type.__name__ if is_drawer_visible else None
+            if is_drawer_visible:
+                self.data.active_tool = tool_ui_type.__name__
 
         ControlButton(
             icon=icon,

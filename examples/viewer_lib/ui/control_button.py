@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from math import floor
 
-from trame_client.widgets.html import Span
+from trame.widgets.html import Span
 from trame_vuetify.widgets.vuetify3 import VBtn, VIcon, VTooltip
 
 
@@ -12,12 +12,12 @@ class ControlButton(VBtn):
         name: str,
         icon: str | tuple,
         click: Callable | str | None = None,
-        size: int = 40,
+        size: int = 35,
         **kwargs,
     ) -> None:
         size = size or ""
         super().__init__(
-            variant="text",
+            variant=kwargs.pop("variant", "text"),
             rounded=0,
             height=size,
             width=size,
