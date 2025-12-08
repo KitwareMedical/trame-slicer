@@ -1,12 +1,12 @@
 import pytest
 
 from examples.viewer_lib.logic import ThresholdEffectLogic
-from examples.viewer_lib.ui import MedicalViewerLayout, ThresholdEffectUI
+from examples.viewer_lib.ui import ThresholdEffectUI, ViewerLayout
 
 
 @pytest.fixture
 def effect_ui(a_server):
-    with MedicalViewerLayout(a_server, is_drawer_visible=True) as ui, ui.drawer:
+    with ViewerLayout(a_server, is_drawer_visible=True) as ui, ui.drawer:
         return ThresholdEffectUI()
 
 

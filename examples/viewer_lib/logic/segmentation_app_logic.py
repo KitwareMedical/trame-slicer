@@ -3,18 +3,16 @@ from trame_server import Server
 from trame_slicer.core import LayoutManager, SlicerApp
 from trame_slicer.rca_view import register_rca_factories
 
-from ..ui import MedicalViewerUI, SegmentEditorUI, ViewerLayoutState, VolumePropertyUI
+from ..ui import SegmentationAppUI, SegmentEditorUI, ViewerLayoutState, VolumePropertyUI
 from .base_logic import BaseLogic
 from .layout_button_logic import LayoutButtonLogic
 from .load_volume_logic import LoadVolumeLogic
-from .markups_button_logic import MarkupsButtonLogic
 from .mpr_interaction_button_logic import MprInteractionButtonLogic
 from .segmentation import SegmentEditorLogic
-from .slab_logic import SlabLogic
 from .volume_property_logic import VolumePropertyLogic
 
 
-class MedicalViewerLogic(BaseLogic[ViewerLayoutState]):
+class SegmentationAppLogic(BaseLogic[ViewerLayoutState]):
     def __init__(self, server: Server, slicer_app: SlicerApp):
         super().__init__(server, slicer_app, ViewerLayoutState)
 
@@ -25,9 +23,7 @@ class MedicalViewerLogic(BaseLogic[ViewerLayoutState]):
         self._segment_editor_logic = SegmentEditorLogic(server, slicer_app)
         self._volume_properties_logic = VolumePropertyLogic(server, slicer_app)
         self._layout_button_logic = LayoutButtonLogic(server, slicer_app)
-        self._markups_logic = MarkupsButtonLogic(server, slicer_app)
         self._load_files_logic = LoadVolumeLogic(server, slicer_app)
-        self._slab_logic = SlabLogic(server, slicer_app)
         self._mpr_logic = MprInteractionButtonLogic(server, slicer_app)
 
         # Connect signals
@@ -45,14 +41,14 @@ class MedicalViewerLogic(BaseLogic[ViewerLayoutState]):
     def layout_manager(self) -> LayoutManager:
         return self._layout_button_logic.layout_manager
 
-    def set_ui(self, ui: MedicalViewerUI):
+    def set_ui(self, ui: SegmentationAppUI):
         self._segment_editor_logic.set_ui(ui.tool_registry[SegmentEditorUI])
         self._volume_properties_logic.set_ui(ui.tool_registry[VolumePropertyUI])
         self._layout_button_logic.set_ui(ui.layout_button)
-        self._markups_logic.set_ui(ui.markups_button)
         self._load_files_logic.set_ui(ui.load_volume_items_buttons)
-        self._slab_logic.set_ui(ui.slab_button)
         self._mpr_logic.set_ui(ui.mpr_interaction_button)
 
     def _on_volume_changed(self, *_args):
+        self.data.is_drawer_visible = True
+        self.data.active_tool = SegmentEditorUI.__name__
         self.data.is_volume_loaded = True

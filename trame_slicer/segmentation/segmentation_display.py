@@ -12,14 +12,6 @@ class SegmentationOpacityEnum(Flag):
     OUTLINE = auto()
     BOTH = FILL | OUTLINE
 
-    @classmethod
-    def toggle_order(cls):
-        return [cls.BOTH, cls.OUTLINE, cls.FILL]
-
-    def next(self):
-        values = self.toggle_order()
-        return values[(values.index(self) + 1) % len(values)]
-
 
 class SegmentationDisplay(SlicerWrapper[vtkMRMLSegmentationDisplayNode]):
     """
