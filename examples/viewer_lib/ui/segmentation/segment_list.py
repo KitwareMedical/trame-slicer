@@ -11,8 +11,7 @@ from trame.widgets.vuetify3 import (
 from trame_server.utils.typed_state import TypedState
 from undo_stack import Signal
 
-from examples.viewer_lib.ui.control_button import ControlButton
-
+from ..control_button import ControlButton
 from ..text_components import Text, TextField
 from .segment_edit_ui import SegmentEditState, SegmentEditUI
 from .segment_state import SegmentState

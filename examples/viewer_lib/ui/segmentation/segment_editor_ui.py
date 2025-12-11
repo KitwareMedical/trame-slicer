@@ -15,7 +15,6 @@ from trame_client.widgets.core import Template
 from trame_server.utils.typed_state import TypedState
 from undo_stack import Signal
 
-from examples.viewer_lib.ui.viewer_layout import ViewerLayoutState
 from trame_slicer.segmentation import (
     SegmentationEffect,
     SegmentationEffectErase,
@@ -28,6 +27,7 @@ from trame_slicer.segmentation import (
 
 from ..control_button import ControlButton
 from ..flex_container import FlexContainer
+from ..viewer_layout import ViewerLayoutState
 from .islands_effect_ui import IslandsEffectUI
 from .paint_effect_ui import PaintEffectUI
 from .segment_display_ui import SegmentDisplayState, SegmentDisplayUI
