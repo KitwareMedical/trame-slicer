@@ -7,10 +7,12 @@ from slicer import (
     vtkMRMLApplicationLogic,
     vtkMRMLCameraDisplayableManager,
     vtkMRMLCameraNode,
+    vtkMRMLColorLegendDisplayableManager,
     vtkMRMLCrosshairDisplayableManager,
     vtkMRMLCrosshairDisplayableManager3D,
     vtkMRMLCrosshairNode,
     vtkMRMLLayerDisplayableManager,
+    vtkMRMLLinearTransformsDisplayableManager,
     vtkMRMLMarkupsDisplayableManager,
     vtkMRMLModelDisplayableManager,
     vtkMRMLOrientationMarkerDisplayableManager,
@@ -96,6 +98,8 @@ class ThreeDView(RenderView):
             vtkMRMLMarkupsDisplayableManager,
             vtkMRMLTransformsDisplayableManager3D,
             vtkMRMLLayerDisplayableManager,
+            vtkMRMLLinearTransformsDisplayableManager,
+            vtkMRMLColorLegendDisplayableManager,
         ]
 
         self._initialize_displayable_manager_group(vtkMRMLThreeDViewDisplayableManagerFactory, app_logic, managers)

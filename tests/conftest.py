@@ -52,8 +52,8 @@ def a_segment_id(a_segmentation_editor, an_active_segmentation):
 
 
 @pytest.fixture
-def a_view_factory():
-    return DirectViewFactory()
+def a_view_factory(render_interactive):
+    return DirectViewFactory(do_render_offscreen=not bool(render_interactive))
 
 
 @pytest.fixture

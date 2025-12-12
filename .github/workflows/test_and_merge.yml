@@ -70,10 +70,10 @@ jobs:
           pip install .[dev]
           playwright install
           playwright install-deps
-          pytest -s ./tests --cov=trame_slicer --cov-report=xml --cov-report=term-missing
+          pytest -s ./tests --cov=trame_slicer --cov-report=json --cov-report=term-missing
 
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          files: ./coverage.xml
+          files: ./coverage.json
           token: ${{ secrets.CODECOV_TOKEN }}

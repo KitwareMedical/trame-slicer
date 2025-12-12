@@ -6,8 +6,10 @@ from typing import Literal
 import vtk
 from slicer import (
     vtkMRMLApplicationLogic,
+    vtkMRMLColorLegendDisplayableManager,
     vtkMRMLCrosshairDisplayableManager,
     vtkMRMLLayerDisplayableManager,
+    vtkMRMLLinearTransformsDisplayableManager,
     vtkMRMLMarkupsDisplayableManager,
     vtkMRMLModelSliceDisplayableManager,
     vtkMRMLOrientationMarkerDisplayableManager,
@@ -124,6 +126,8 @@ class SliceView(AbstractView):
             vtkMRMLMarkupsDisplayableManager,
             vtkMRMLTransformsDisplayableManager2D,
             vtkMRMLLayerDisplayableManager,
+            vtkMRMLLinearTransformsDisplayableManager,
+            vtkMRMLColorLegendDisplayableManager,
         ]
         self._initialize_displayable_manager_group(vtkMRMLSliceViewDisplayableManagerFactory, app_logic, managers)
         self.name = name
