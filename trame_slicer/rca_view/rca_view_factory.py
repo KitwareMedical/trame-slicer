@@ -5,14 +5,16 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Generic
 
-from slicer import vtkMRMLApplicationLogic, vtkMRMLScene
+from slicer import vtkMRMLApplicationLogic, vtkMRMLLayerDisplayableManager, vtkMRMLScene
 from trame_client.widgets.html import Div
 from trame_rca.utils import RcaEncoder, RcaRenderScheduler, RcaViewAdapter, VtkWindow
 from trame_rca.widgets.rca import RemoteControlledArea
 from trame_server import Server
 from trame_server.state import State
 from trame_server.utils.asynchronous import create_task
+from vtkmodules.util.numpy_support import vtk_to_numpy
 from vtkmodules.vtkCommonCore import vtkCommand
+from vtkmodules.vtkCommonDataModel import vtkImageData
 
 from trame_slicer.core import ViewManager
 from trame_slicer.views import (
@@ -85,12 +87,16 @@ class RcaRenderStrategy(ScheduledRenderStrategy):
 class RcaWindow(VtkWindow):
     """
     RCA Window wrapper fixing resize event for 2D views.
+    Uses the vtkMRMLLayerDisplayableManager::RenderWindowBufferToImage method for RenderWindow to image
+    to avoid unwanted side effects using vtkWindowToImageFilter.
     """
 
     def __init__(self, vtk_render_window, state: State, active_view_cursor: str):
         super().__init__(vtk_render_window=vtk_render_window)
         self.state = state
         self.active_view_cursor = active_view_cursor
+        self.has_layer_dm_rw_to_buffer = hasattr(vtkMRMLLayerDisplayableManager, "RenderWindowBufferToImage")
+        self.image_data = vtkImageData()
 
     def process_interaction_event(self, event):
         super().process_interaction_event(event)
@@ -102,6 +108,31 @@ class RcaWindow(VtkWindow):
     def process_resize_event(self, width, height):
         super().process_resize_event(width, height)
         self._iren.InvokeEvent(vtkCommand.WindowResizeEvent)
+
+    @property
+    def img_cols_rows(self):
+        """
+        Adaptation of VtkWindow.img_cols_rows replacing the RW to image with
+        vtkMRMLLayerDisplayableManager.RenderWindowBufferToImage
+
+        Compared to the VTK filter, the RenderWindowBufferToImage doesn't make any changes to the RW nor its renderers
+        or cameras. It will only copy the content of its buffer to the given image data in RGB.
+
+        If RenderWindowBufferToImage is not available, fallback on the VtkWindow default method.
+        """
+        if not self.has_layer_dm_rw_to_buffer:
+            return super().img_cols_rows
+
+        self._vtk_render_window.Render()
+        vtkMRMLLayerDisplayableManager.RenderWindowBufferToImage(self._vtk_render_window, self.image_data)
+
+        # Rest of this code is copy / pasted from VtkWindow.img_cols_rows impl with only the image data field variation
+        rows, cols, _ = self.image_data.GetDimensions()
+        scalars = self.image_data.GetPointData().GetScalars()
+        np_image = vtk_to_numpy(scalars)
+        np_image = np_image.reshape((cols, rows, -1))
+        np_image[:] = np_image[::-1, :, :]
+        return np_image, cols, rows
 
 
 class RemoteViewFactory(IViewFactory):
