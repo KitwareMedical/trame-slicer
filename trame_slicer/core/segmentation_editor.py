@@ -31,6 +31,7 @@ from trame_slicer.segmentation import (
     Segmentation,
     SegmentationDisplay,
     SegmentationEffect,
+    SegmentationEffectDraw,
     SegmentationEffectErase,
     SegmentationEffectIslands,
     SegmentationEffectNoTool,
@@ -54,6 +55,7 @@ class SegmentationEditor(SignalContainer):
     """
 
     builtin_effects: ClassVar[list[type[SegmentationEffect]]] = [
+        SegmentationEffectDraw,
         SegmentationEffectErase,
         SegmentationEffectIslands,
         SegmentationEffectNoTool,

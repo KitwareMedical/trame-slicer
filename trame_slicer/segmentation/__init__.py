@@ -7,6 +7,12 @@ from .segment_properties import SegmentProperties
 from .segmentation import Segmentation
 from .segmentation_display import SegmentationDisplay, SegmentationOpacityEnum
 from .segmentation_effect import SegmentationEffect
+from .segmentation_effect_draw import SegmentationEffectDraw
+from .segmentation_effect_draw_widget import (
+    DrawPolygonBrush,
+    SegmentationDrawPipeline,
+    SegmentationDrawWidget,
+)
 from .segmentation_effect_islands import SegmentationEffectIslands
 from .segmentation_effect_no_tool import SegmentationEffectNoTool
 from .segmentation_effect_paint_erase import (
@@ -44,13 +50,17 @@ __all__ = [
     "BrushDiameterMode",
     "BrushShape",
     "BrushSource",
+    "DrawPolygonBrush",
     "ModificationMode",
     "ScissorsPolygonBrush",
     "SegmentModifier",
     "SegmentProperties",
     "Segmentation",
     "SegmentationDisplay",
+    "SegmentationDrawPipeline",
+    "SegmentationDrawWidget",
     "SegmentationEffect",
+    "SegmentationEffectDraw",
     "SegmentationEffectErase",
     "SegmentationEffectIslands",
     "SegmentationEffectNoTool",
