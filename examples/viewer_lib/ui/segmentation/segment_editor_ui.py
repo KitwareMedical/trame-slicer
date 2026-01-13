@@ -30,6 +30,7 @@ from ..flex_container import FlexContainer
 from ..viewer_layout import ViewerLayoutState
 from .islands_effect_ui import IslandsEffectUI
 from .paint_effect_ui import PaintEffectUI
+from .scissors_effect_ui import ScissorsEffectUI
 from .segment_display_ui import SegmentDisplayState, SegmentDisplayUI
 from .segment_edit_ui import SegmentEditState, SegmentEditUI
 from .segment_list import SegmentList, SegmentListMenu, SegmentListState
@@ -106,6 +107,7 @@ class SegmentEditorUI(FlexContainer):
                         self._register_effect_ui(SegmentationEffectErase, PaintEffectUI)
                         self._register_effect_ui(SegmentationEffectThreshold, ThresholdEffectUI)
                         self._register_effect_ui(SegmentationEffectIslands, IslandsEffectUI)
+                        self._register_effect_ui(SegmentationEffectScissors, ScissorsEffectUI)
                 VSpacer(v_else=True)
                 VDivider()
                 SegmentDisplayUI(

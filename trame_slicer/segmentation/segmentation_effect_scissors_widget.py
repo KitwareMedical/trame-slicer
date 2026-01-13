@@ -20,6 +20,13 @@ from vtkmodules.vtkRenderingCore import (
     vtkRenderer,
 )
 
+from trame_slicer.utils import create_scripted_module_dataclass_proxy
+
+from .scissors_effect_parameters import (
+    ScissorsEffectParameters,
+    ScissorsSegmentationOperation,
+    ScissorsSegmentationSliceCut,
+)
 from .segment_modifier import SegmentModifier
 from .segmentation_effect_pipeline import SegmentationEffectPipeline
 
@@ -99,6 +106,7 @@ class SegmentationScissorsWidget:
         self._brush = ScissorsPolygonBrush()
         self._brush_enabled = False
         self._painting = False
+        self._params = ScissorsEffectParameters()
 
     def set_view_node(self, view_node):
         self._view_node = view_node
@@ -158,7 +166,35 @@ class SegmentationScissorsWidget:
     def commit(self):
         # need at least 3 points to create a closed polydata
         if self._brush.points.GetNumberOfPoints() >= 3:
-            self._modifier.apply_polydata_world(self._create_poly())
+            negative = False
+            modifier_extent = None
+            if self._operation_outside():
+                negative = True
+                if isinstance(self._view_node, vtkMRMLSliceNode):
+                    bounds = [0, 0, 0, 0, 0, 0]
+                    self._modifier.volume_node.GetBounds(bounds)
+                    max_dim = max([abs(d) for d in bounds])
+                    near = [-max_dim, -max_dim, -max_dim, 1.0]
+                    far = [max_dim, max_dim, max_dim, 1.0]
+                    slice_offset = self._view_node.GetSliceOffset()
+                    if self._params.cut_mode == ScissorsSegmentationSliceCut.POSITIVE:
+                        near[2] = slice_offset
+                    elif self._params.cut_mode == ScissorsSegmentationSliceCut.NEGATIVE:
+                        far[2] = slice_offset
+                    elif self._params.cut_mode == ScissorsSegmentationSliceCut.SYMMETRIC:
+                        near[2] = slice_offset - self._params.symmetric_distance / 2
+                        far[2] = slice_offset + self._params.symmetric_distance / 2
+                    modifier_extent = [near[0], far[0], near[1], far[1], near[2], far[2]]
+            self._modifier.apply_polydata_world(self._create_poly(), modifier_extent, negative)
+
+    def update_scissors_parameters(self, params: ScissorsEffectParameters):
+        self._params = params
+
+    def _operation_outside(self) -> bool:
+        return self._params.operation in [
+            ScissorsSegmentationOperation.ERASE_OUTSIDE,
+            ScissorsSegmentationOperation.FILL_OUTSIDE,
+        ]
 
     def _create_poly(self) -> vtkPolyData:
         # DisplayToWorldCoordinate
@@ -210,10 +246,20 @@ class SegmentationScissorsWidget:
 
         max_dim = max(self._modifier.volume_node.GetImageData().GetBounds())
 
+        # Default: ScissorsSegmentationSliceCut.UNLIMITED
         near = xy_to_slice.MultiplyPoint([display_coords[0], display_coords[1], -max_dim, 1.0])
         far = xy_to_slice.MultiplyPoint([display_coords[0], display_coords[1], max_dim, 1.0])
+        cut_mode = self._params.cut_mode
+        if cut_mode == ScissorsSegmentationSliceCut.POSITIVE:
+            near = xy_to_slice.MultiplyPoint([display_coords[0], display_coords[1], -0.5, 1.0])
+        elif cut_mode == ScissorsSegmentationSliceCut.NEGATIVE:
+            far = xy_to_slice.MultiplyPoint([display_coords[0], display_coords[1], 0.5, 1.0])
+        elif cut_mode == ScissorsSegmentationSliceCut.SYMMETRIC:
+            symmetric_distance = self._params.symmetric_distance / 2
+            near = xy_to_slice.MultiplyPoint([display_coords[0], display_coords[1], -symmetric_distance - 0.5, 1.0])
+            far = xy_to_slice.MultiplyPoint([display_coords[0], display_coords[1], symmetric_distance + 0.5, 1.0])
 
-        return list(near), list(far)
+        return near, far
 
     def _display_to_world_generic(
         self, display_coords: list[float], dc_to_wc: vtkCoordinate
@@ -241,6 +287,16 @@ class SegmentationScissorsPipeline(SegmentationEffectPipeline):
             int(vtkCommand.LeftButtonPressEvent): self._LeftButtonPressed,
             int(vtkCommand.LeftButtonReleaseEvent): self._LeftButtonReleased,
         }
+
+    def OnEffectParameterUpdate(self):
+        if not self.GetEffectParameterNode() or not self.GetScene():
+            return
+
+        proxy = create_scripted_module_dataclass_proxy(
+            ScissorsEffectParameters, self.GetEffectParameterNode(), self.GetScene()
+        )
+        if self.widget:
+            self.widget.update_scissors_parameters(proxy)
 
     def SetActive(self, isActive: bool):
         super().SetActive(isActive)

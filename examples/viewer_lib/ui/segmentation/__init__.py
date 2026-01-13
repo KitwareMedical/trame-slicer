@@ -1,5 +1,6 @@
 from .islands_effect_ui import IslandsEffectUI, IslandsSegmentationMode, IslandsState
 from .paint_effect_ui import PaintEffectState, PaintEffectUI
+from .scissors_effect_ui import ScissorsEffectState, ScissorsEffectUI
 from .segment_display_ui import SegmentDisplayState, SegmentDisplayUI
 from .segment_edit_ui import (
     SegmentEditState,
@@ -21,6 +22,8 @@ __all__ = [
     "IslandsState",
     "PaintEffectState",
     "PaintEffectUI",
+    "ScissorsEffectState",
+    "ScissorsEffectUI",
     "SegmentDisplayState",
     "SegmentDisplayUI",
     "SegmentEditState",

@@ -21,7 +21,7 @@ from vtkmodules.vtkCommonMath import vtkMatrix4x4
 from vtkmodules.vtkCommonTransforms import vtkTransform
 from vtkmodules.vtkFiltersGeneral import vtkTransformPolyDataFilter
 from vtkmodules.vtkFiltersModeling import vtkFillHolesFilter
-from vtkmodules.vtkImagingCore import vtkImageChangeInformation
+from vtkmodules.vtkImagingCore import vtkImageChangeInformation, vtkImageThreshold
 from vtkmodules.vtkImagingStencil import (
     vtkImageStencilToImage,
     vtkPolyDataToImageStencil,
@@ -198,17 +198,34 @@ class SegmentModifier:
         self.apply_labelmap(modifier_labelmap, modifier_extent=modifier_extent)
         self.trigger_active_segment_modified()
 
-    def apply_polydata_world(self, poly_world: vtkPolyData):
+    def apply_polydata_world(self, poly_world: vtkPolyData, modifier_extent: None, negative: bool = False):
         """
         :param poly_world: Poly in world coordinates
         """
         if self.active_segment_id == "":
             return
 
+        modifier_extent_ijk = None
+        if modifier_extent is not None:
+            modifier_extent_points = vtkPoints()
+            modifier_extent_points.InsertNextPoint([modifier_extent[0], modifier_extent[2], modifier_extent[4]])
+            modifier_extent_points.InsertNextPoint([modifier_extent[1], modifier_extent[3], modifier_extent[5]])
+            modifier_extent_points_ijk = self._world_points_to_ijk(modifier_extent_points)
+            point1 = modifier_extent_points_ijk.GetPoint(0)
+            point2 = modifier_extent_points_ijk.GetPoint(1)
+            modifier_extent_ijk = [
+                int(min(point1[0], point2[0])),
+                int(max(point1[0], point2[0])),
+                int(min(point1[1], point2[1])),
+                int(max(point1[1], point2[1])),
+                int(min(point1[2], point2[2])),
+                int(max(point1[2], point2[2])),
+            ]
+
         poly_ijk = self._world_poly_to_ijk(poly_world)
         poly_modifier = self._poly_to_image_data(poly_ijk)
         modifier_labelmap = self._poly_image_data_to_modifier_labelmap(poly_modifier)
-        self.apply_labelmap(modifier_labelmap)
+        self.apply_labelmap(modifier_labelmap, modifier_extent=modifier_extent_ijk, negative=negative)
 
     def _poly_image_data_to_modifier_labelmap(self, poly_modifier: vtkOrientedImageData) -> vtkOrientedImageData | None:
         modifier_labelmap = self.segmentation.create_modifier_labelmap()
@@ -233,6 +250,7 @@ class SegmentModifier:
         modifier_extent=None,
         is_per_segment: bool = True,
         do_bypass_masking: bool = False,
+        negative: bool = False,
     ):
         """
         Modify active segment using input modifier labelmap in source IJK coordinates.
@@ -244,6 +262,7 @@ class SegmentModifier:
                 modifier_extent=modifier_extent,
                 is_per_segment=is_per_segment,
                 do_bypass_masking=do_bypass_masking,
+                negative=negative,
             )
         self.trigger_active_segment_modified()
 
@@ -254,6 +273,7 @@ class SegmentModifier:
         modifier_extent=None,
         is_per_segment: bool = True,
         do_bypass_masking: bool = False,
+        negative: bool = False,
     ):
         if not self.logic or self.active_segment_id == "":
             return
@@ -267,6 +287,25 @@ class SegmentModifier:
             ModificationMode.Remove: vtkSlicerSegmentEditorLogic.ModificationModeRemove,
             ModificationMode.RemoveAll: vtkSlicerSegmentEditorLogic.ModificationModeRemoveAll,
         }[self.modification_mode]
+
+        if negative:
+            # Reverse 1 and 0 values
+            threshold = vtkImageThreshold()
+            threshold.SetInputData(modifier_labelmap)
+
+            threshold.ThresholdBetween(0, 0)
+            threshold.SetInValue(1)
+            threshold.SetOutValue(0)
+
+            threshold.SetOutputScalarType(modifier_labelmap.GetScalarType())
+            threshold.Update()
+            img = threshold.GetOutput()
+
+            new_modifier_labelmap = vtkOrientedImageData()
+            new_modifier_labelmap.DeepCopy(img)
+            new_modifier_labelmap.CopyDirections(modifier_labelmap)
+
+            modifier_labelmap = new_modifier_labelmap
 
         self.logic.ModifySegmentByLabelmap(
             self.segmentation.segmentation_node,
