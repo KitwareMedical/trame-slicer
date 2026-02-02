@@ -77,6 +77,12 @@ class SegmentationEditableAreaEnum(enum.Enum):
     OUTSIDE_ALL_VISIBLE_SEGMENTS = "EditAllowedOutsideVisibleSegments"
 
 
+class SegmentOverwriteMode(enum.Enum):
+    OverwriteAll = vtkMRMLSegmentEditorNode.OverwriteAllSegments
+    OverwriteVisible = vtkMRMLSegmentEditorNode.OverwriteVisibleSegments
+    AllowOverlap = vtkMRMLSegmentEditorNode.OverwriteNone
+
+
 class SegmentModifier:
     """
     Helper class to apply modifications to a given segment in the segmentation of a segmentation node.

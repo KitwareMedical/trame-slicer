@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from trame_server.utils.typed_state import TypedState
 from trame_vuetify.widgets.vuetify3 import (
@@ -12,7 +12,7 @@ from trame_vuetify.widgets.vuetify3 import (
     VSelect,
 )
 
-from trame_slicer.segmentation import SegmentationEditableAreaEnum
+from trame_slicer.segmentation import SegmentationEditableAreaEnum, SegmentOverwriteMode
 
 from ..text_components import Text
 from .segment_list import SegmentListState
@@ -21,6 +21,7 @@ from .segment_list import SegmentListState
 @dataclass
 class SegmentOptionsState:
     editable_area: str = "EditAllowedEverywhere"
+    overwrite_mode: SegmentOverwriteMode = field(default=SegmentOverwriteMode.OverwriteAll)
     is_extended: bool = False
 
 
@@ -42,6 +43,12 @@ class SegmentOptionsUI(VCard):
             SegmentationEditableAreaEnum.INSIDE_ALL_VISIBLE_SEGMENTS: "Inside all visible segments",
             SegmentationEditableAreaEnum.OUTSIDE_ALL_SEGMENTS: "Outside all segments",
             SegmentationEditableAreaEnum.OUTSIDE_ALL_VISIBLE_SEGMENTS: "Outside all visible segments",
+        }
+
+        self._overwrite_mode_labels = {
+            SegmentOverwriteMode.OverwriteAll: "Overwrite all",
+            SegmentOverwriteMode.OverwriteVisible: "Overwrite all visible segments",
+            SegmentOverwriteMode.AllowOverlap: "Allow overlap",
         }
 
         with self:
@@ -84,3 +91,15 @@ class SegmentOptionsUI(VCard):
                         thickness=4,
                     )
                     VListItem(v_else=True, v_bind="props")
+
+                VSelect(
+                    v_model=self._typed_state.name.overwrite_mode,
+                    items=(
+                        [{"text": label, "value": enum.value} for enum, label in self._overwrite_mode_labels.items()],
+                    ),
+                    item_value="value",
+                    item_title="text",
+                    label="Modify other segments",
+                    hide_details=True,
+                    density="compact",
+                )

@@ -14,6 +14,7 @@ from ...ui import (
     SegmentDisplayState,
     SegmentEditorState,
     SegmentEditorUI,
+    SegmentOptionsState,
     SegmentState,
 )
 from .base_segmentation_logic import BaseEffectLogic, BaseSegmentationLogic
@@ -45,7 +46,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
             {
                 self.name.segment_display: self._on_segment_display_changed,
                 self.name.segment_list.active_segment_id: self._on_active_segment_changed,
-                self.name.segment_options.editable_area: self._on_segment_editable_area_changed,
+                self.name.segment_options: self._on_segment_options_changed,
             }
         )
 
@@ -87,13 +88,18 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         else:
             self._edit_segment_logic.set_active_segment_id(segment_id)
 
-    def _on_segment_editable_area_changed(self, editable_area: str):
+    def _on_segment_options_changed(self, options_state: SegmentOptionsState):
         if self.segmentation_editor.active_segmentation is None:
             return
+
+        editable_area = options_state.editable_area
         if editable_area in self.segmentation_editor.get_segment_ids():
             self.segmentation_editor.set_editable_area_to_segment(editable_area)
         else:
             self.segmentation_editor.set_editable_area(SegmentationEditableAreaEnum(editable_area))
+
+        overwrite_mode = options_state.overwrite_mode.value
+        self.segmentation_editor.set_overwrite_mode(overwrite_mode)
 
     def _on_delete_segment_clicked(self, segment_id: str):
         self.segmentation_editor.remove_segment(segment_id)

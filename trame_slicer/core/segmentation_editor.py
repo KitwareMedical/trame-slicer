@@ -40,6 +40,7 @@ from trame_slicer.segmentation import (
     SegmentationEffectScissors,
     SegmentationEffectThreshold,
     SegmentModifier,
+    SegmentOverwriteMode,
     SegmentProperties,
 )
 from trame_slicer.utils import ensure_node_in_scene
@@ -466,6 +467,11 @@ class SegmentationEditor(SignalContainer):
             return
         self._active_modifier.segment_editor_node.SetMaskSegmentID(segment_id)
         self._active_modifier.segment_editor_node.SetMaskMode(vtkMRMLSegmentationNode.EditAllowedInsideSingleSegment)
+
+    def set_overwrite_mode(self, overwrite_mode: SegmentOverwriteMode) -> None:
+        if self._active_modifier is None:
+            return
+        self._active_modifier.segment_editor_node.SetOverwriteMode(overwrite_mode)
 
     def get_effect_parameter_node(
         self, effect: SegmentationEffect | type[SegmentationEffect]

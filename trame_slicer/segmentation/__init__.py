@@ -6,6 +6,7 @@ from .segment_modifier import (
     ModificationMode,
     SegmentationEditableAreaEnum,
     SegmentModifier,
+    SegmentOverwriteMode,
 )
 from .segment_properties import SegmentProperties
 from .segmentation import Segmentation
@@ -51,6 +52,7 @@ __all__ = [
     "ModificationMode",
     "ScissorsPolygonBrush",
     "SegmentModifier",
+    "SegmentOverwriteMode",
     "SegmentProperties",
     "Segmentation",
     "SegmentationDisplay",
