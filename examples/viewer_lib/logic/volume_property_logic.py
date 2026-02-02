@@ -1,8 +1,11 @@
-from slicer import vtkMRMLVolumeNode
+from slicer import vtkMRMLDisplayableNode, vtkMRMLVolumeNode
 from trame_server import Server
 
 from trame_slicer.core import SlicerApp, VolumeWindowLevel
-from trame_slicer.resources import get_volume_rendering_presets_icon_url
+from trame_slicer.resources import (
+    get_volume_display_presets_icon_url,
+    get_volume_rendering_presets_icon_url,
+)
 
 from ..ui import Preset, VolumePropertyState, VolumePropertyUI
 from .base_logic import BaseLogic
@@ -12,13 +15,15 @@ class VolumePropertyLogic(BaseLogic[VolumePropertyState]):
     def __init__(self, server: Server, slicer_app: SlicerApp):
         super().__init__(server, slicer_app, VolumePropertyState)
         self._volume_node = None
-        self._populate_presets()
+        self._populate_presets_2d()
+        self._populate_presets_3d()
 
         self._typed_state.bind_changes(
             {
                 self.name.vr_shift_slider.value: self._set_vr_shift_value,
                 self.name.window_level_slider.value: self._set_window_level_value,
-                self.name.preset_name: self._set_preset,
+                self.name.preset_2d_name: self._set_preset_2d,
+                self.name.preset_3d_name: self._set_preset_3d,
             }
         )
 
@@ -30,25 +35,37 @@ class VolumePropertyLogic(BaseLogic[VolumePropertyState]):
     def _volume_rendering(self):
         return self._slicer_app.volume_rendering
 
-    def _populate_presets(self):
-        presets = [
-            Preset(title=name, props={"data": data})
-            for name, data in get_volume_rendering_presets_icon_url(
-                icons_folder=(self._slicer_app.share_directory / "presets_icons"),
-                volume_rendering=self._volume_rendering,
-            )
-        ]
+    @property
+    def _volumes_logic(self):
+        return self._slicer_app.volumes_logic
 
-        self.data.presets = presets
+    def _get_presets_from_name_and_image(self, presets_icon_url: list[tuple[str, str]]) -> list[Preset]:
+        return [Preset(title=name, props={"data": data}) for name, data in presets_icon_url]
+
+    def _populate_presets_2d(self):
+        presets_icon_url = get_volume_display_presets_icon_url(
+            icons_folder=(self._slicer_app.share_directory / "presets_icons" / "2d"),
+            volumes_logic=self._volumes_logic,
+        )
+        self.data.presets_2d = self._get_presets_from_name_and_image(presets_icon_url)
+
+    def _populate_presets_3d(self):
+        presets_icon_url = get_volume_rendering_presets_icon_url(
+            icons_folder=(self._slicer_app.share_directory / "presets_icons" / "3d"),
+            volume_rendering=self._volume_rendering,
+        )
+        self.data.presets_3d = self._get_presets_from_name_and_image(presets_icon_url)
 
     def on_volume_changed(self, volume_node: vtkMRMLVolumeNode):
         self._volume_node = volume_node
+
+        self._volume_node.AddObserver(vtkMRMLDisplayableNode.DisplayModifiedEvent, self._update_window_level_slider)
 
         self._init_preset()
         self._init_window_level_slider()
 
     def _init_preset(self):
-        self._set_preset(self.data.preset_name)
+        self._set_preset_3d(self.data.preset_3d_name)
 
     def _auto_window_level(self):
         if not self._volume_node:
@@ -80,11 +97,17 @@ class VolumePropertyLogic(BaseLogic[VolumePropertyState]):
 
     def _init_vr_shift_slider(self):
         self.data.vr_shift_slider.min_value, self.data.vr_shift_slider.max_value = (
-            self._volume_rendering.get_preset_vr_shift_range(self.data.preset_name)
+            self._volume_rendering.get_preset_vr_shift_range(self.data.preset_3d_name)
         )
         self.data.vr_shift_slider.value = 0
 
-    def _set_preset(self, preset_name: str):
+    def _set_preset_2d(self, preset_name: str):
+        if self._volume_node is None or preset_name is None:
+            return
+        volume_display_node = VolumeWindowLevel.get_volume_display_node(self._volume_node)
+        self._slicer_app.volumes_logic.ApplyVolumeDisplayPreset(volume_display_node, preset_name)
+
+    def _set_preset_3d(self, preset_name: str):
         if not self._volume_node:
             return
 
@@ -99,12 +122,29 @@ class VolumePropertyLogic(BaseLogic[VolumePropertyState]):
         min_value, max_value = window_level
         VolumeWindowLevel.set_volume_node_display_min_max_range(self._volume_node, min_value, max_value)
 
+    def _update_window_level_slider(self, *_args, **_kwargs):
+        if not self._volume_node:
+            return
+
+        min_value, max_value = VolumeWindowLevel.get_volume_display_range(self._volume_node)
+        current_min_value = self._typed_state.data.window_level_slider.min_value
+        self._typed_state.data.window_level_slider.min_value = min(
+            current_min_value,
+            min_value,
+        )
+        current_max_value = self._typed_state.data.window_level_slider.max_value
+        self._typed_state.data.window_level_slider.max_value = max(
+            current_max_value,
+            max_value,
+        )
+        self._typed_state.data.window_level_slider.value = [min_value, max_value]
+
     def _set_vr_shift_value(self, vr_shift_value: float):
         if not self._volume_node:
             return
 
         self._volume_rendering.set_absolute_vr_shift_from_preset(
             self._volume_node,
-            self.data.preset_name,
+            self.data.preset_3d_name,
             vr_shift_value,
         )

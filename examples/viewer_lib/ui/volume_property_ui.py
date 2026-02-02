@@ -21,8 +21,10 @@ class Preset:
 class VolumePropertyState:
     window_level_slider: RangeSliderState = field(default_factory=RangeSliderState)
     vr_shift_slider: SliderState = field(default_factory=SliderState)
-    presets: list[Preset] = field(default_factory=list)
-    preset_name: str = "CT-Coronary-Arteries-3"
+    presets_3d: list[Preset] = field(default_factory=list)
+    preset_3d_name: str = "CT-Coronary-Arteries-3"
+    presets_2d: list[Preset] = field(default_factory=list)
+    preset_2d_name: str | None = None
     volume_crop_active: bool = False
 
 
@@ -35,10 +37,26 @@ class VolumePropertyUI(VCard):
         self._typed_state = TypedState(self.state, VolumePropertyState)
 
         with self, VCardText(), FlexContainer():
-            Text("Preset", subtitle=True)
+            Text("3D Preset", subtitle=True)
             with VSelect(
-                items=(self._typed_state.name.presets,),
-                v_model=(self._typed_state.name.preset_name,),
+                items=(self._typed_state.name.presets_3d,),
+                v_model=(self._typed_state.name.preset_3d_name,),
+            ):
+                with (
+                    Template(v_slot_item="{props}"),
+                    VListItem(v_bind="props"),
+                    Template(v_slot_prepend=""),
+                ):
+                    VImg(src=("props.data",), height=64, width=64)
+
+                with Template(v_slot_selection="{item}"):
+                    VImg(src=("item.props.data",), height=32, width=32)
+                    Span("{{item.title}}", classes="pl-2")
+
+            Text("2D Preset", subtitle=True)
+            with VSelect(
+                items=(self._typed_state.name.presets_2d,),
+                v_model=(self._typed_state.name.preset_2d_name,),
             ):
                 with (
                     Template(v_slot_item="{props}"),
