@@ -30,6 +30,7 @@ from vtkmodules.vtkCommonDataModel import vtkImageData
 from trame_slicer.segmentation import (
     Segmentation,
     SegmentationDisplay,
+    SegmentationEditableAreaEnum,
     SegmentationEffect,
     SegmentationEffectErase,
     SegmentationEffectIslands,
@@ -453,6 +454,18 @@ class SegmentationEditor(SignalContainer):
         if not self.active_segmentation_display:
             return None
         return self.active_segmentation_display.get_segment_visibility(segment_id)
+
+    def set_editable_area(self, editable_area: SegmentationEditableAreaEnum) -> None:
+        if self._active_modifier is None or editable_area not in SegmentationEditableAreaEnum:
+            return
+        mask_mode = self.active_segmentation.segmentation_node.ConvertMaskModeFromString(editable_area.value)
+        self._active_modifier.segment_editor_node.SetMaskMode(mask_mode)
+
+    def set_editable_area_to_segment(self, segment_id: str) -> None:
+        if self._active_modifier is None or segment_id not in self.get_segment_ids():
+            return
+        self._active_modifier.segment_editor_node.SetMaskSegmentID(segment_id)
+        self._active_modifier.segment_editor_node.SetMaskMode(vtkMRMLSegmentationNode.EditAllowedInsideSingleSegment)
 
     def get_effect_parameter_node(
         self, effect: SegmentationEffect | type[SegmentationEffect]

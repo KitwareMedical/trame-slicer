@@ -12,6 +12,11 @@ from .segment_editor_ui import (
     SegmentEditorUndoRedoUI,
 )
 from .segment_list import SegmentList, SegmentListState
+from .segment_options_ui import (
+    SegmentationEditableAreaEnum,
+    SegmentOptionsState,
+    SegmentOptionsUI,
+)
 from .segment_state import SegmentState
 from .threshold_effect_ui import ThresholdEffectUI, ThresholdState
 
@@ -31,7 +36,10 @@ __all__ = [
     "SegmentEditorUndoRedoUI",
     "SegmentList",
     "SegmentListState",
+    "SegmentOptionsState",
+    "SegmentOptionsUI",
     "SegmentState",
+    "SegmentationEditableAreaEnum",
     "ThresholdEffectUI",
     "ThresholdState",
 ]

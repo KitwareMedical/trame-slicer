@@ -5,6 +5,7 @@ from undo_stack import UndoStack
 from trame_slicer.core import SlicerApp
 from trame_slicer.segmentation import (
     SegmentationDisplay,
+    SegmentationEditableAreaEnum,
     SegmentationEffect,
     SegmentationEffectThreshold,
 )
@@ -44,6 +45,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
             {
                 self.name.segment_display: self._on_segment_display_changed,
                 self.name.segment_list.active_segment_id: self._on_active_segment_changed,
+                self.name.segment_options.editable_area: self._on_segment_editable_area_changed,
             }
         )
 
@@ -84,6 +86,14 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
             self.data.segment_list.active_segment_id = self.data.segment_list.segments[0].segment_id
         else:
             self._edit_segment_logic.set_active_segment_id(segment_id)
+
+    def _on_segment_editable_area_changed(self, editable_area: str):
+        if self.segmentation_editor.active_segmentation is None:
+            return
+        if editable_area in self.segmentation_editor.get_segment_ids():
+            self.segmentation_editor.set_editable_area_to_segment(editable_area)
+        else:
+            self.segmentation_editor.set_editable_area(SegmentationEditableAreaEnum(editable_area))
 
     def _on_delete_segment_clicked(self, segment_id: str):
         self.segmentation_editor.remove_segment(segment_id)

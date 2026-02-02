@@ -69,6 +69,14 @@ class ModificationMode(enum.IntEnum):
     RemoveAll = auto()
 
 
+class SegmentationEditableAreaEnum(enum.Enum):
+    EVERYWHERE = "EditAllowedEverywhere"
+    INSIDE_ALL_SEGMENTS = "EditAllowedInsideAllSegments"
+    INSIDE_ALL_VISIBLE_SEGMENTS = "EditAllowedInsideVisibleSegments"
+    OUTSIDE_ALL_SEGMENTS = "EditAllowedOutsideAllSegments"
+    OUTSIDE_ALL_VISIBLE_SEGMENTS = "EditAllowedOutsideVisibleSegments"
+
+
 class SegmentModifier:
     """
     Helper class to apply modifications to a given segment in the segmentation of a segmentation node.

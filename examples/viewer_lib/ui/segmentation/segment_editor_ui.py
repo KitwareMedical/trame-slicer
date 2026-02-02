@@ -33,6 +33,7 @@ from .paint_effect_ui import PaintEffectUI
 from .segment_display_ui import SegmentDisplayState, SegmentDisplayUI
 from .segment_edit_ui import SegmentEditState, SegmentEditUI
 from .segment_list import SegmentList, SegmentListMenu, SegmentListState
+from .segment_options_ui import SegmentOptionsState, SegmentOptionsUI
 from .threshold_effect_ui import ThresholdEffectUI
 
 
@@ -40,6 +41,7 @@ from .threshold_effect_ui import ThresholdEffectUI
 class SegmentEditorState:
     segment_list: SegmentListState = field(default_factory=SegmentListState)
     segment_display: SegmentDisplayState = field(default_factory=SegmentDisplayState)
+    segment_options: SegmentOptionsState = field(default_factory=SegmentOptionsState)
     can_undo: bool = False
     can_redo: bool = False
     active_effect_name: str = ""
@@ -110,6 +112,12 @@ class SegmentEditorUI(FlexContainer):
                 VDivider()
                 SegmentDisplayUI(
                     typed_state=self.sub_state(self._typed_state.name.segment_display),
+                    variant="flat",
+                )
+                VDivider()
+                SegmentOptionsUI(
+                    segment_options_typed_state=self.sub_state(self._typed_state.name.segment_options),
+                    segment_list_typed_state=self.sub_state(self._typed_state.name.segment_list),
                     variant="flat",
                 )
 

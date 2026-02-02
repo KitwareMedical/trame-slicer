@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from .brush_source import BrushSource
 from .paint_effect_parameters import BrushDiameterMode, BrushShape
-from .segment_modifier import ModificationMode, SegmentModifier
+from .segment_modifier import (
+    ModificationMode,
+    SegmentationEditableAreaEnum,
+    SegmentModifier,
+)
 from .segment_properties import SegmentProperties
 from .segmentation import Segmentation
 from .segmentation_display import SegmentationDisplay, SegmentationOpacityEnum
@@ -50,6 +54,7 @@ __all__ = [
     "SegmentProperties",
     "Segmentation",
     "SegmentationDisplay",
+    "SegmentationEditableAreaEnum",
     "SegmentationEffect",
     "SegmentationEffectErase",
     "SegmentationEffectIslands",
