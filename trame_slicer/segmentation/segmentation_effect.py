@@ -10,6 +10,7 @@ from slicer import (
     vtkMRMLScene,
     vtkMRMLScriptedModuleNode,
 )
+from undo_stack import Signal
 
 from .segment_modifier import ModificationMode, SegmentModifier
 from .segmentation_effect_pipeline import SegmentationEffectPipeline
@@ -17,6 +18,7 @@ from .segmentation_effect_pipeline import SegmentationEffectPipeline
 
 class SegmentationEffect(ABC):
     _effect_type_key = "__SegmentEditorEffectType"
+    parameters_changed = Signal()
 
     def __init__(self) -> None:
         self._modifier: SegmentModifier | None = None
@@ -85,6 +87,7 @@ class SegmentationEffect(ABC):
     def get_parameter_node(self):
         if self._param_node is None:
             self._param_node = self._create_parameter_node()
+            self._obs.UpdateObserver(None, self._param_node)
         return self._param_node
 
     def is_effect_parameter(self, parameter: vtkMRMLNode) -> bool:
@@ -136,6 +139,8 @@ class SegmentationEffect(ABC):
     def _on_object_event(self, vtk_object, event_id, _call_data):
         if vtk_object == self._scene and event_id == vtkMRMLScene.EndCloseEvent:
             self._clear()
+        elif vtk_object == self._param_node:
+            self.parameters_changed.emit()
 
     def _clear(self):
         self.set_active(False)

@@ -24,6 +24,7 @@ class SegmentationEffectPaintErase(SegmentationEffect):
     def __init__(self, mode: ModificationMode) -> None:
         super().__init__()
         self.set_mode(mode)
+        self._default_brush_multiplier_ratio = 1.1
 
     def _create_model_node(self, name):
         model_node = vtkMRMLModelNode()
@@ -72,10 +73,21 @@ class SegmentationEffectPaintErase(SegmentationEffect):
         proxy = self._get_proxy()
         proxy.use_sphere_brush = use_sphere_brush
 
-    def set_brush_diameter(self, diameter: float, diameter_mode: BrushDiameterMode):
+    def set_brush_diameter(self, diameter: float, diameter_mode: BrushDiameterMode | None = None):
         proxy = self._get_proxy()
         proxy.brush_diameter = diameter
-        proxy.brush_diameter_mode = diameter_mode
+        if diameter_mode is not None:
+            proxy.brush_diameter_mode = diameter_mode
+
+    def increase_brush_size(self, increase_ratio: float | None = None):
+        increase_ratio = increase_ratio or self._default_brush_multiplier_ratio
+        proxy = self._get_proxy()
+        proxy.brush_diameter *= increase_ratio
+
+    def decrease_brush_size(self, decrease_ratio: float | None = None):
+        decrease_ratio = decrease_ratio or self._default_brush_multiplier_ratio
+        proxy = self._get_proxy()
+        proxy.brush_diameter /= decrease_ratio
 
     def is_sphere_brush(self) -> bool:
         return self._get_proxy().use_sphere_brush
