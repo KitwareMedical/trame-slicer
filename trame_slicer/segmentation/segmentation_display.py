@@ -18,6 +18,16 @@ class SegmentationDisplay(SlicerWrapper[vtkMRMLSegmentationDisplayNode]):
     Wrapper around the segmentation display node.
     """
 
+    def get_border_thickness(self) -> int | None:
+        if not self._slicer_obj:
+            return None
+        return self.GetSliceIntersectionThickness()
+
+    def set_border_thickness(self, thickness: int) -> None:
+        if not self._slicer_obj:
+            return
+        self.SetSliceIntersectionThickness(int(thickness))
+
     def get_opacity_2d(self) -> float | None:
         if not self._slicer_obj:
             return None
