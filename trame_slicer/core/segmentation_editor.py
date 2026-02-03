@@ -30,7 +30,7 @@ from vtkmodules.vtkCommonDataModel import vtkImageData
 from trame_slicer.segmentation import (
     Segmentation,
     SegmentationDisplay,
-    SegmentationEditableAreaEnum,
+    SegmentationEditableArea,
     SegmentationEffect,
     SegmentationEffectErase,
     SegmentationEffectIslands,
@@ -65,6 +65,7 @@ class SegmentationEditor(SignalContainer):
     ]
 
     segmentation_modified = Signal()
+    segment_editor_node_modified = Signal()
     segmentation_display_modified = Signal()
     active_segment_id_changed = Signal(str)
     active_effect_name_changed = Signal(str)
@@ -191,12 +192,14 @@ class SegmentationEditor(SignalContainer):
 
         if self._modified_obs is not None:
             self._active_modifier.segmentation_modified.disconnect(self._modified_obs)
+            self._active_modifier.segment_editor_node_modified.disconnect(self._modified_obs)
 
         self._active_modifier = SegmentModifier(
             Segmentation(segmentation_node, volume_node, editor_logic=self._editor_logic, undo_stack=self.undo_stack)
         )
 
         self._active_modifier.segmentation_modified.connect(self.segmentation_modified)
+        self._active_modifier.segment_editor_node_modified.connect(self.segment_editor_node_modified)
 
         if self._active_effect:
             self._active_effect.set_modifier(self._active_modifier)
@@ -456,22 +459,35 @@ class SegmentationEditor(SignalContainer):
             return None
         return self.active_segmentation_display.get_segment_visibility(segment_id)
 
-    def set_editable_area(self, editable_area: SegmentationEditableAreaEnum) -> None:
-        if self._active_modifier is None or editable_area not in SegmentationEditableAreaEnum:
+    def set_editable_area(self, editable_area: SegmentationEditableArea) -> None:
+        if self._active_modifier is None:
             return
-        mask_mode = self.active_segmentation.segmentation_node.ConvertMaskModeFromString(editable_area.value)
-        self._active_modifier.segment_editor_node.SetMaskMode(mask_mode)
+        self._active_modifier.set_editable_area(editable_area)
+
+    def get_editable_area(self) -> SegmentationEditableArea | None:
+        if self._active_modifier is None:
+            return
+        self._active_modifier.get_editable_area()
 
     def set_editable_area_to_segment(self, segment_id: str) -> None:
-        if self._active_modifier is None or segment_id not in self.get_segment_ids():
+        if self._active_modifier is None:
             return
-        self._active_modifier.segment_editor_node.SetMaskSegmentID(segment_id)
-        self._active_modifier.segment_editor_node.SetMaskMode(vtkMRMLSegmentationNode.EditAllowedInsideSingleSegment)
+        self._active_modifier.set_editable_area_to_segment(segment_id)
+
+    def get_editable_segment_id(self) -> str | None:
+        if self._active_modifier is None:
+            return
+        self._active_modifier.get_editable_segment_id()
 
     def set_overwrite_mode(self, overwrite_mode: SegmentOverwriteMode) -> None:
         if self._active_modifier is None:
             return
-        self._active_modifier.segment_editor_node.SetOverwriteMode(overwrite_mode)
+        self._active_modifier.set_overwrite_mode(overwrite_mode)
+
+    def get_overwrite_mode(self) -> SegmentOverwriteMode | None:
+        if self._active_modifier is None:
+            return None
+        return self._active_modifier.get_overwrite_mode()
 
     def get_effect_parameter_node(
         self, effect: SegmentationEffect | type[SegmentationEffect]

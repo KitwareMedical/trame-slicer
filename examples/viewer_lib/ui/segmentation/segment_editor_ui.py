@@ -31,9 +31,9 @@ from ..viewer_layout import ViewerLayoutState
 from .islands_effect_ui import IslandsEffectUI
 from .paint_effect_ui import PaintEffectUI
 from .segment_display_ui import SegmentDisplayState, SegmentDisplayUI
+from .segment_edit_area_ui import SegmentEditAreaState, SegmentEditAreaUI
 from .segment_edit_ui import SegmentEditState, SegmentEditUI
 from .segment_list import SegmentList, SegmentListMenu, SegmentListState
-from .segment_options_ui import SegmentOptionsState, SegmentOptionsUI
 from .threshold_effect_ui import ThresholdEffectUI
 
 
@@ -41,7 +41,7 @@ from .threshold_effect_ui import ThresholdEffectUI
 class SegmentEditorState:
     segment_list: SegmentListState = field(default_factory=SegmentListState)
     segment_display: SegmentDisplayState = field(default_factory=SegmentDisplayState)
-    segment_options: SegmentOptionsState = field(default_factory=SegmentOptionsState)
+    segment_edit_area: SegmentEditAreaState = field(default_factory=SegmentEditAreaState)
     can_undo: bool = False
     can_redo: bool = False
     active_effect_name: str = ""
@@ -115,8 +115,8 @@ class SegmentEditorUI(FlexContainer):
                     variant="flat",
                 )
                 VDivider()
-                SegmentOptionsUI(
-                    segment_options_typed_state=self.sub_state(self._typed_state.name.segment_options),
+                SegmentEditAreaUI(
+                    segment_edit_area_typed_state=self.sub_state(self._typed_state.name.segment_edit_area),
                     segment_list_typed_state=self.sub_state(self._typed_state.name.segment_list),
                     variant="flat",
                 )

@@ -5,16 +5,16 @@ from undo_stack import UndoStack
 from trame_slicer.core import SlicerApp
 from trame_slicer.segmentation import (
     SegmentationDisplay,
-    SegmentationEditableAreaEnum,
+    SegmentationEditableArea,
     SegmentationEffect,
     SegmentationEffectThreshold,
 )
 
 from ...ui import (
     SegmentDisplayState,
+    SegmentEditAreaState,
     SegmentEditorState,
     SegmentEditorUI,
-    SegmentOptionsState,
     SegmentState,
 )
 from .base_segmentation_logic import BaseEffectLogic, BaseSegmentationLogic
@@ -46,7 +46,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
             {
                 self.name.segment_display: self._on_segment_display_changed,
                 self.name.segment_list.active_segment_id: self._on_active_segment_changed,
-                self.name.segment_options: self._on_segment_options_changed,
+                self.name.segment_edit_area: self._on_segment_edit_area_changed,
             }
         )
 
@@ -88,7 +88,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         else:
             self._edit_segment_logic.set_active_segment_id(segment_id)
 
-    def _on_segment_options_changed(self, options_state: SegmentOptionsState):
+    def _on_segment_edit_area_changed(self, options_state: SegmentEditAreaState):
         if self.segmentation_editor.active_segmentation is None:
             return
 
@@ -96,7 +96,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         if editable_area in self.segmentation_editor.get_segment_ids():
             self.segmentation_editor.set_editable_area_to_segment(editable_area)
         else:
-            self.segmentation_editor.set_editable_area(SegmentationEditableAreaEnum(editable_area))
+            self.segmentation_editor.set_editable_area(SegmentationEditableArea(editable_area))
 
         overwrite_mode = options_state.overwrite_mode.value
         self.segmentation_editor.set_overwrite_mode(overwrite_mode)
@@ -130,6 +130,12 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         self.data.segment_list.active_segment_id = self.segmentation_editor.get_active_segment_id()
         self.data.segment_display.show_3d = self.segmentation_editor.is_surface_representation_enabled()
         self.data.active_effect_name = self.segmentation_editor.get_active_effect_name()
+        editable_area = self.segmentation_editor.get_editable_area()
+        if editable_area is not None:
+            self.data.segment_edit_area.editable_area = self.segmentation_editor.get_editable_area()
+        overwrite_mode = self.segmentation_editor.get_overwrite_mode()
+        if overwrite_mode is not None:
+            self.data.segment_edit_area.overwrite_mode = self.segmentation_editor.get_overwrite_mode()
         self._update_segment_list()
 
     def _on_undo_changed(self, *_):

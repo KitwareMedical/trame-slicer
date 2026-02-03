@@ -4,7 +4,7 @@ from .brush_source import BrushSource
 from .paint_effect_parameters import BrushDiameterMode, BrushShape
 from .segment_modifier import (
     ModificationMode,
-    SegmentationEditableAreaEnum,
+    SegmentationEditableArea,
     SegmentModifier,
     SegmentOverwriteMode,
 )
@@ -56,7 +56,7 @@ __all__ = [
     "SegmentProperties",
     "Segmentation",
     "SegmentationDisplay",
-    "SegmentationEditableAreaEnum",
+    "SegmentationEditableArea",
     "SegmentationEffect",
     "SegmentationEffectErase",
     "SegmentationEffectIslands",

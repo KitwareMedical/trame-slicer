@@ -12,44 +12,36 @@ from trame_vuetify.widgets.vuetify3 import (
     VSelect,
 )
 
-from trame_slicer.segmentation import SegmentationEditableAreaEnum, SegmentOverwriteMode
+from trame_slicer.segmentation import SegmentationEditableArea, SegmentOverwriteMode
 
 from ..text_components import Text
 from .segment_list import SegmentListState
 
 
 @dataclass
-class SegmentOptionsState:
+class SegmentEditAreaState:
     editable_area: str = "EditAllowedEverywhere"
-    overwrite_mode: SegmentOverwriteMode = field(default=SegmentOverwriteMode.OverwriteAll)
+    overwrite_mode: SegmentOverwriteMode = field(default=SegmentOverwriteMode.OVERWRITE_ALL)
     is_extended: bool = False
 
 
-class SegmentOptionsUI(VCard):
+class SegmentEditAreaUI(VCard):
     def __init__(
         self,
-        segment_options_typed_state: TypedState[SegmentOptionsState],
+        segment_edit_area_typed_state: TypedState[SegmentEditAreaState],
         segment_list_typed_state: TypedState[SegmentListState],
         **kwargs,
     ):
         super().__init__(**kwargs)
 
-        self._typed_state = segment_options_typed_state
+        self._typed_state = segment_edit_area_typed_state
         self._segment_list_typed_state = segment_list_typed_state
 
-        self._default_editable_areas_labels = {
-            SegmentationEditableAreaEnum.EVERYWHERE: "Everywhere",
-            SegmentationEditableAreaEnum.INSIDE_ALL_SEGMENTS: "Inside all segments",
-            SegmentationEditableAreaEnum.INSIDE_ALL_VISIBLE_SEGMENTS: "Inside all visible segments",
-            SegmentationEditableAreaEnum.OUTSIDE_ALL_SEGMENTS: "Outside all segments",
-            SegmentationEditableAreaEnum.OUTSIDE_ALL_VISIBLE_SEGMENTS: "Outside all visible segments",
-        }
+        def caps_enum_to_title(enum):
+            return {e: e.name.replace("_", " ").title() for e in enum}
 
-        self._overwrite_mode_labels = {
-            SegmentOverwriteMode.OverwriteAll: "Overwrite all",
-            SegmentOverwriteMode.OverwriteVisible: "Overwrite all visible segments",
-            SegmentOverwriteMode.AllowOverlap: "Allow overlap",
-        }
+        self._default_editable_areas_labels = caps_enum_to_title(SegmentationEditableArea)
+        self._overwrite_mode_labels = caps_enum_to_title(SegmentOverwriteMode)
 
         with self:
             with VCardItem():

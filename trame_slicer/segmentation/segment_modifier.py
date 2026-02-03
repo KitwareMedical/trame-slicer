@@ -8,6 +8,7 @@ from enum import auto
 
 from numpy.typing import NDArray
 from slicer import (
+    vtkMRMLSegmentationNode,
     vtkMRMLSegmentEditorNode,
     vtkMRMLTransformNode,
     vtkOrientedImageData,
@@ -69,7 +70,7 @@ class ModificationMode(enum.IntEnum):
     RemoveAll = auto()
 
 
-class SegmentationEditableAreaEnum(enum.Enum):
+class SegmentationEditableArea(enum.Enum):
     EVERYWHERE = "EditAllowedEverywhere"
     INSIDE_ALL_SEGMENTS = "EditAllowedInsideAllSegments"
     INSIDE_ALL_VISIBLE_SEGMENTS = "EditAllowedInsideVisibleSegments"
@@ -78,9 +79,9 @@ class SegmentationEditableAreaEnum(enum.Enum):
 
 
 class SegmentOverwriteMode(enum.Enum):
-    OverwriteAll = vtkMRMLSegmentEditorNode.OverwriteAllSegments
-    OverwriteVisible = vtkMRMLSegmentEditorNode.OverwriteVisibleSegments
-    AllowOverlap = vtkMRMLSegmentEditorNode.OverwriteNone
+    OVERWRITE_ALL = vtkMRMLSegmentEditorNode.OverwriteAllSegments
+    OVERWRITE_ALL_VISIBLE_SEGMENTS = vtkMRMLSegmentEditorNode.OverwriteVisibleSegments
+    ALLOW_OVERLAP = vtkMRMLSegmentEditorNode.OverwriteNone
 
 
 class SegmentModifier:
@@ -90,9 +91,11 @@ class SegmentModifier:
     """
 
     segmentation_modified = Signal()
+    segment_editor_node_modified = Signal()
 
     def __init__(self, segmentation: Segmentation) -> None:
         self._segmentation: Segmentation = segmentation
+        self.logic.AddObserver(vtkMRMLSegmentEditorNode.EffectParameterModified, self.segment_editor_node_modified)
         self._active_segment_id = self._segmentation.get_nth_segment_id(0)
 
         self._modification_mode = ModificationMode.Add
@@ -395,6 +398,45 @@ class SegmentModifier:
         if not self.segment_editor_node:
             return False
         return self.segment_editor_node.GetSourceVolumeIntensityMask()
+
+    def set_editable_area(self, editable_area: SegmentationEditableArea) -> None:
+        if self.segment_editor_node is None or editable_area not in SegmentationEditableArea:
+            return
+        mask_mode = self.segmentation.segmentation_node.ConvertMaskModeFromString(editable_area.value)
+        self.segment_editor_node.SetMaskMode(mask_mode)
+
+    def get_editable_area(self) -> SegmentationEditableArea | None:
+        if self.segment_editor_node is None:
+            return None
+        mask_mode = self.segment_editor_node.GetMaskMode()
+        mask_mode_string = self.segmentation.segmentation_node.ConvertMaskModeToString(mask_mode)
+        if mask_mode_string == "EditAllowedInsideSingleSegment":
+            # String associated with vtkMRMLSegmentationNode::EditAllowedInsideSingleSegment
+            # i.e. Inside Segment X, which is not exposed through SegmentationEditableArea
+            return None
+        return SegmentationEditableArea(mask_mode_string)
+
+    def set_editable_area_to_segment(self, segment_id: str) -> None:
+        if self.segment_editor_node is None or segment_id not in self.segmentation.get_segment_ids():
+            return
+        self.segment_editor_node.SetMaskSegmentID(segment_id)
+        self.segment_editor_node.SetMaskMode(vtkMRMLSegmentationNode.EditAllowedInsideSingleSegment)
+
+    def get_editable_segment_id(self) -> str | None:
+        if self.segment_editor_node is None:
+            return None
+        return self.segment_editor_node.GetMaskSegmentID()
+
+    def set_overwrite_mode(self, overwrite_mode: SegmentOverwriteMode) -> None:
+        if self.segment_editor_node is None:
+            return
+        self.segment_editor_node.SetOverwriteMode(overwrite_mode)
+
+    def get_overwrite_mode(self) -> SegmentOverwriteMode | None:
+        if self.segment_editor_node is None:
+            return None
+        overwrite_mode = self.segment_editor_node.GetOverwriteMode()
+        return SegmentOverwriteMode(overwrite_mode)
 
     def group_undo_commands(self, text: str = "") -> Generator:
         return self.segmentation.group_undo_commands(text)
