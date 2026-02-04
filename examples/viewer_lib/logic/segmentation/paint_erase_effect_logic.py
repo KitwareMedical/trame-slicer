@@ -31,6 +31,17 @@ class PaintEraseEffectLogic(BaseEffectLogic[PaintEffectState, U], Generic[U]):
     def set_ui(self, ui: SegmentEditorUI):
         pass
 
+    def _set_brush_diameter(self, brush_diameter: float):
+        min_diameter = self.data.brush_diameter_slider.min_value
+        max_diameter = self.data.brush_diameter_slider.max_value
+        if min_diameter > brush_diameter or max_diameter < brush_diameter:
+            brush_diameter = min(
+                max(self.data.brush_diameter_slider.min_value, brush_diameter),
+                self.data.brush_diameter_slider.max_value,
+            )
+            self.effect.set_brush_diameter(brush_diameter, self.data.brush_diameter_mode)
+        self.data.brush_diameter_slider.value = brush_diameter
+
     def _on_brush_type_changed(self, _use_sphere_brush):
         self._refresh_brush()
 
@@ -48,6 +59,8 @@ class PaintEraseEffectLogic(BaseEffectLogic[PaintEffectState, U], Generic[U]):
 
     def _on_effect_changed(self, _effect_name: str) -> None:
         self._refresh_brush()
+        if self.is_active():
+            self.effect.on_brush_diameter_changed.connect(self._set_brush_diameter)
 
 
 class PaintEffectLogic(PaintEraseEffectLogic[SegmentationEffectPaint]):

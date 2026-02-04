@@ -145,11 +145,33 @@ class SegmentationPaintPipeline2D(SegmentationPaintPipeline):
     def __init__(self) -> None:
         super().__init__()
 
+        self._supported_events: dict[int, Callable] = {
+            **self._supported_events,
+            int(vtkCommand.MouseWheelBackwardEvent): self._MouseWheelBackward,
+            int(vtkCommand.MouseWheelForwardEvent): self._MouseWheelForward,
+        }
+
     def CreateWidget(self):
         if self.widget is not None or not isinstance(self._view, SliceView):
             return
 
         self.widget = SegmentationPaintWidget2D(self._view)
+
+    def _MouseWheelForward(self, event_data):
+        if self._view.interactor().GetShiftKey():
+            self._effect.increase_brush_size()
+            self._PaintAtEventLocation(event_data)
+            self.RequestRender()
+            return False
+        return True
+
+    def _MouseWheelBackward(self, event_data):
+        if self._view.interactor().GetShiftKey():
+            self._effect.decrease_brush_size()
+            self._PaintAtEventLocation(event_data)
+            self.RequestRender()
+            return False
+        return True
 
     def _PaintAtEventLocation(self, event_data: vtkMRMLInteractionEventData) -> bool:
         self.widget.update_widget_position(event_data.GetWorldPosition())
