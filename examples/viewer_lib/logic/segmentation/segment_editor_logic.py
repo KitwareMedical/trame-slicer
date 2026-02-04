@@ -94,7 +94,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
             return
 
         editable_area = options_state.editable_area
-        overwrite_mode = options_state.overwrite_mode.value
+        overwrite_mode = options_state.overwrite_mode
         if editable_area in self.segmentation_editor.get_segment_ids():
             parameters = SegmentModificationParameters(
                 editable_area=None,

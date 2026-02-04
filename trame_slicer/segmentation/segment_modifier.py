@@ -458,7 +458,7 @@ class SegmentModifier:
     def _set_overwrite_mode(self, overwrite_mode: SegmentOverwriteMode) -> None:
         if self.segment_editor_node is None:
             return
-        self.segment_editor_node.SetOverwriteMode(overwrite_mode)
+        self.segment_editor_node.SetOverwriteMode(overwrite_mode.value)
 
     def _get_overwrite_mode(self) -> SegmentOverwriteMode | None:
         if self.segment_editor_node is None:
