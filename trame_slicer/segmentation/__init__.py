@@ -5,6 +5,7 @@ from .paint_effect_parameters import BrushDiameterMode, BrushShape
 from .segment_modifier import (
     ModificationMode,
     SegmentationEditableArea,
+    SegmentModificationParameters,
     SegmentModifier,
     SegmentOverwriteMode,
 )
@@ -51,6 +52,7 @@ __all__ = [
     "BrushSource",
     "ModificationMode",
     "ScissorsPolygonBrush",
+    "SegmentModificationParameters",
     "SegmentModifier",
     "SegmentOverwriteMode",
     "SegmentProperties",

@@ -30,7 +30,6 @@ from vtkmodules.vtkCommonDataModel import vtkImageData
 from trame_slicer.segmentation import (
     Segmentation,
     SegmentationDisplay,
-    SegmentationEditableArea,
     SegmentationEffect,
     SegmentationEffectErase,
     SegmentationEffectIslands,
@@ -39,8 +38,8 @@ from trame_slicer.segmentation import (
     SegmentationEffectPipeline,
     SegmentationEffectScissors,
     SegmentationEffectThreshold,
+    SegmentModificationParameters,
     SegmentModifier,
-    SegmentOverwriteMode,
     SegmentProperties,
 )
 from trame_slicer.utils import ensure_node_in_scene
@@ -459,35 +458,17 @@ class SegmentationEditor(SignalContainer):
             return None
         return self.active_segmentation_display.get_segment_visibility(segment_id)
 
-    def set_editable_area(self, editable_area: SegmentationEditableArea) -> None:
+    def set_segment_modification_parameters(self, parameters: SegmentModificationParameters) -> None:
         if self._active_modifier is None:
             return
-        self._active_modifier.set_editable_area(editable_area)
+        self._active_modifier.set_segment_modification_parameters(parameters)
 
-    def get_editable_area(self) -> SegmentationEditableArea | None:
-        if self._active_modifier is None:
-            return
-        self._active_modifier.get_editable_area()
-
-    def set_editable_area_to_segment(self, segment_id: str) -> None:
-        if self._active_modifier is None:
-            return
-        self._active_modifier.set_editable_area_to_segment(segment_id)
-
-    def get_editable_segment_id(self) -> str | None:
-        if self._active_modifier is None:
-            return
-        self._active_modifier.get_editable_segment_id()
-
-    def set_overwrite_mode(self, overwrite_mode: SegmentOverwriteMode) -> None:
-        if self._active_modifier is None:
-            return
-        self._active_modifier.set_overwrite_mode(overwrite_mode)
-
-    def get_overwrite_mode(self) -> SegmentOverwriteMode | None:
+    def get_segment_modification_parameters(
+        self,
+    ) -> SegmentModificationParameters | None:
         if self._active_modifier is None:
             return None
-        return self._active_modifier.get_overwrite_mode()
+        self._active_modifier.get_segment_modification_parameters()
 
     def get_effect_parameter_node(
         self, effect: SegmentationEffect | type[SegmentationEffect]

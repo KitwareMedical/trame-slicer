@@ -2,7 +2,6 @@ from .islands_effect_ui import IslandsEffectUI, IslandsSegmentationMode, Islands
 from .paint_effect_ui import PaintEffectState, PaintEffectUI
 from .segment_display_ui import SegmentDisplayState, SegmentDisplayUI
 from .segment_edit_area_ui import (
-    SegmentationEditableArea,
     SegmentEditAreaState,
     SegmentEditAreaUI,
 )
@@ -39,7 +38,6 @@ __all__ = [
     "SegmentList",
     "SegmentListState",
     "SegmentState",
-    "SegmentationEditableArea",
     "ThresholdEffectUI",
     "ThresholdState",
 ]

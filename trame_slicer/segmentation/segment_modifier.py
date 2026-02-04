@@ -4,6 +4,7 @@ import enum
 import logging
 import math
 from collections.abc import Generator
+from dataclasses import dataclass
 from enum import auto
 
 from numpy.typing import NDArray
@@ -82,6 +83,13 @@ class SegmentOverwriteMode(enum.Enum):
     OVERWRITE_ALL = vtkMRMLSegmentEditorNode.OverwriteAllSegments
     OVERWRITE_ALL_VISIBLE_SEGMENTS = vtkMRMLSegmentEditorNode.OverwriteVisibleSegments
     ALLOW_OVERLAP = vtkMRMLSegmentEditorNode.OverwriteNone
+
+
+@dataclass
+class SegmentModificationParameters:
+    editable_area: SegmentationEditableArea | None = SegmentationEditableArea.EVERYWHERE
+    segment_id: str | None = None
+    overwrite_mode: SegmentOverwriteMode = SegmentOverwriteMode.OVERWRITE_ALL
 
 
 class SegmentModifier:
@@ -399,13 +407,33 @@ class SegmentModifier:
             return False
         return self.segment_editor_node.GetSourceVolumeIntensityMask()
 
-    def set_editable_area(self, editable_area: SegmentationEditableArea) -> None:
+    def set_segment_modification_parameters(self, parameters: SegmentModificationParameters) -> None:
+        if parameters.segment_id is None:
+            self._set_editable_area(parameters.editable_area)
+        else:
+            self._set_editable_area_to_segment(parameters.segment_id)
+        self._set_overwrite_mode(parameters.overwrite_mode)
+
+    def get_segment_modification_parameters(
+        self,
+    ) -> SegmentModificationParameters | None:
+        if self.segment_editor_node is None:
+            return None
+        editable_area = self._get_editable_area()
+        editable_segment_id = self._get_editable_segment_id()
+        return SegmentModificationParameters(
+            editable_area=editable_area,
+            segment_id=editable_segment_id if editable_area is None else None,
+            overwrite_mode=self._get_overwrite_mode(),
+        )
+
+    def _set_editable_area(self, editable_area: SegmentationEditableArea) -> None:
         if self.segment_editor_node is None or editable_area not in SegmentationEditableArea:
             return
         mask_mode = self.segmentation.segmentation_node.ConvertMaskModeFromString(editable_area.value)
         self.segment_editor_node.SetMaskMode(mask_mode)
 
-    def get_editable_area(self) -> SegmentationEditableArea | None:
+    def _get_editable_area(self) -> SegmentationEditableArea | None:
         if self.segment_editor_node is None:
             return None
         mask_mode = self.segment_editor_node.GetMaskMode()
@@ -416,23 +444,23 @@ class SegmentModifier:
             return None
         return SegmentationEditableArea(mask_mode_string)
 
-    def set_editable_area_to_segment(self, segment_id: str) -> None:
+    def _set_editable_area_to_segment(self, segment_id: str) -> None:
         if self.segment_editor_node is None or segment_id not in self.segmentation.get_segment_ids():
             return
         self.segment_editor_node.SetMaskSegmentID(segment_id)
         self.segment_editor_node.SetMaskMode(vtkMRMLSegmentationNode.EditAllowedInsideSingleSegment)
 
-    def get_editable_segment_id(self) -> str | None:
+    def _get_editable_segment_id(self) -> str | None:
         if self.segment_editor_node is None:
             return None
         return self.segment_editor_node.GetMaskSegmentID()
 
-    def set_overwrite_mode(self, overwrite_mode: SegmentOverwriteMode) -> None:
+    def _set_overwrite_mode(self, overwrite_mode: SegmentOverwriteMode) -> None:
         if self.segment_editor_node is None:
             return
         self.segment_editor_node.SetOverwriteMode(overwrite_mode)
 
-    def get_overwrite_mode(self) -> SegmentOverwriteMode | None:
+    def _get_overwrite_mode(self) -> SegmentOverwriteMode | None:
         if self.segment_editor_node is None:
             return None
         overwrite_mode = self.segment_editor_node.GetOverwriteMode()
