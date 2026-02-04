@@ -19,6 +19,7 @@ from ..text_components import Text
 
 @dataclass
 class SegmentDisplayState:
+    border_thickness: SliderState = field(default_factory=SliderState)
     opacity_mode: SegmentationOpacityEnum = SegmentationOpacityEnum.BOTH
     opacity_2d: SliderState = field(default_factory=SliderState)
     opacity_3d: SliderState = field(default_factory=SliderState)
@@ -31,7 +32,13 @@ class SegmentDisplayUI(VCard):
         super().__init__(**kwargs)
 
         self._typed_state = typed_state
+        self._typed_state.data.border_thickness.min_value = 0
+        self._typed_state.data.border_thickness.max_value = 20
+        self._typed_state.data.border_thickness.value = 1
+        self._typed_state.data.border_thickness.step = 1
+
         self._typed_state.data.opacity_2d.step = 0.01
+
         self._typed_state.data.opacity_3d.step = 0.01
         self._typed_state.data.opacity_3d.value = 1
 
@@ -84,6 +91,10 @@ class SegmentDisplayUI(VCard):
                         click=f"{self._typed_state.name.show_3d} = ! {self._typed_state.name.show_3d}",
                         active=(self._typed_state.name.show_3d,),
                     )
+                Text("Border thickness", subtitle=True)
+                Slider(
+                    typed_state=self._typed_state.get_sub_state(self._typed_state.name.border_thickness),
+                )
 
                 Text("Opacity", subtitle=True)
                 Slider(

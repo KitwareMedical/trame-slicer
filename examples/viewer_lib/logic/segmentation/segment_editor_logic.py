@@ -141,6 +141,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         if not self._segmentation_display:
             return
 
+        self._segmentation_display.set_border_thickness(display_state.border_thickness.value)
         self._segmentation_display.set_opacity_2d(display_state.opacity_2d.value)
         self._segmentation_display.set_opacity_3d(display_state.opacity_3d.value)
         self._segmentation_display.set_opacity_mode(display_state.opacity_mode)
