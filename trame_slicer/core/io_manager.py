@@ -13,6 +13,7 @@ from slicer import (
     vtkMRMLScene,
     vtkMRMLSegmentationNode,
     vtkMRMLStorageNode,
+    vtkMRMLVolumeArchetypeStorageNode,
     vtkMRMLVolumeNode,
 )
 
@@ -55,6 +56,15 @@ class IOManager:
         volume_files: str | list[str],
     ) -> list[vtkMRMLVolumeNode]:
         return VolumesReader.load_volumes(self.scene, self.app_logic, volume_files)
+
+    @classmethod
+    def write_volume(cls, volume_node, volume_file: str | Path) -> None:
+        cls.write_node(
+            volume_node,
+            volume_file,
+            vtkMRMLVolumeArchetypeStorageNode,
+            False,
+        )
 
     def load_model(
         self,
@@ -141,6 +151,9 @@ class IOManager:
         if scene_path.name.endswith("mrb"):
             return self._load_mrb_scene(scene_path)
         return self._load_mrml_scene(scene_path)
+
+    def write_scene(self, scene_path: str | Path) -> bool:
+        return self.save_scene(scene_path)
 
     def save_scene(self, scene_path: str | Path) -> bool:
         scene_path = Path(scene_path)

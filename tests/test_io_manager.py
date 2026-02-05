@@ -234,3 +234,9 @@ def test_is_compatible_with_transform_h5_export(a_slicer_app, tmp_path):
     storage_node.WriteData(node)
 
     assert out_path.is_file()
+
+
+def test_can_write_volume_files(a_slicer_app, a_volume_node, tmpdir):
+    out_path = Path(tmpdir) / "out_file.nrrd"
+    a_slicer_app.io_manager.write_volume(a_volume_node, out_path)
+    assert out_path.is_file()
