@@ -67,7 +67,6 @@ def test_displayable_group_can_be_initialized_by_factories(a_slicer_app):
         vtkMRMLCameraDisplayableManager,
     ]
 
-    # Don't use singleton for test
     factory = vtkMRMLThreeDViewDisplayableManagerFactory()
     factory.SetMRMLApplicationLogic(a_slicer_app.app_logic)
     for manager in managers:
@@ -79,4 +78,6 @@ def test_displayable_group_can_be_initialized_by_factories(a_slicer_app):
     render_window.AddRenderer(renderer)
     displayable_manager_group = vtkMRMLDisplayableManagerGroup()
     displayable_manager_group.Initialize(factory, renderer)
-    assert displayable_manager_group.GetDisplayableManagerCount() == 2
+
+    for manager in managers:
+        assert displayable_manager_group.GetDisplayableManagerByClassName(manager.__name__)

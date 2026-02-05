@@ -18,8 +18,8 @@ def get_terminologies_path() -> Path:
 
 def _get_presets_icon_url(
     icons_folder: str | Path,
-    presets: list[str],
-) -> list[str, str]:
+    presets: list[tuple[str, str]],
+) -> list[tuple[str, str]]:
     icons_folder = Path(icons_folder)
     local_asset = LocalFileManager(icons_folder.resolve().as_posix())
     return [
