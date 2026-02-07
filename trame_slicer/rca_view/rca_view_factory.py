@@ -30,6 +30,7 @@ from trame_slicer.views import (
     ViewType,
     create_vertical_slice_view_gutter_ui,
     create_vertical_view_gutter_ui,
+    get_view_trame_id,
 )
 
 
@@ -188,7 +189,6 @@ class RemoteViewFactory(IViewFactory):
         app_logic: vtkMRMLApplicationLogic,
     ) -> RcaView:
         view_id = view.singleton_tag
-        translated_view_id = self._server.translator.translate_key(view_id)
         slicer_view: AbstractView = self._view_ctor(
             scene=scene,
             app_logic=app_logic,
@@ -209,14 +209,13 @@ class RemoteViewFactory(IViewFactory):
             target_fps=self._target_fps,
         )
 
-        with ViewLayout(self._server, template_name=translated_view_id) as vuetify_view:
-            self._create_vuetify_ui(
-                translated_view_id, slicer_view, rca_scheduler, active_view_cursor=active_view_cursor
-            )
+        trame_view_id = get_view_trame_id(self._server, slicer_view)
+        with ViewLayout(self._server, template_name=trame_view_id) as vuetify_view:
+            self._create_vuetify_ui(trame_view_id, slicer_view, rca_scheduler, active_view_cursor=active_view_cursor)
 
         rca_view_adapter = RcaViewAdapter(
             window=rca_window,
-            name=translated_view_id,
+            name=trame_view_id,
             scheduler=rca_scheduler,
             do_schedule_render_on_interaction=False,
         )

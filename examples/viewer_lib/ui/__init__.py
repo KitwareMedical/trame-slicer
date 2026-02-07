@@ -1,10 +1,7 @@
 from .control_button import ControlButton
 from .flex_container import FlexContainer
 from .layout_button import LayoutButton, LayoutButtonState
-from .load_volume_ui import (
-    LoadVolumeState,
-    LoadVolumeUI,
-)
+from .load_volume_ui import LoadVolumeState, LoadVolumeUI
 from .markups_button import MarkupsButton
 from .medical_viewer_ui import MedicalViewerUI
 from .mpr_interaction_button import MprInteractionButton, MprInteractionButtonState
@@ -30,7 +27,6 @@ from .segmentation import (
 )
 from .segmentation_app_ui import SegmentationAppUI
 from .slab_button import SlabState, SlabType
-from .slider import RangeSlider, RangeSliderState, Slider, SliderState
 from .text_components import Text, TextField
 from .viewer_layout import ViewerLayout, ViewerLayoutState
 from .volume_property_ui import Preset, VolumePropertyState, VolumePropertyUI
@@ -52,8 +48,6 @@ __all__ = [
     "PaintEffectState",
     "PaintEffectUI",
     "Preset",
-    "RangeSlider",
-    "RangeSliderState",
     "SegmentDisplayState",
     "SegmentDisplayUI",
     "SegmentEditState",
@@ -66,11 +60,8 @@ __all__ = [
     "SegmentListState",
     "SegmentState",
     "SegmentationAppUI",
-    "SegmentationLayout",
     "SlabState",
     "SlabType",
-    "Slider",
-    "SliderState",
     "Text",
     "TextField",
     "ThresholdEffectUI",

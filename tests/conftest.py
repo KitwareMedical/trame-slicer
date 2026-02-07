@@ -260,4 +260,5 @@ async def async_server():
     try:
         yield server
     finally:
+        await asyncio.sleep(1.0)
         await server.stop()

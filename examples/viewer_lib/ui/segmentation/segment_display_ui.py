@@ -10,10 +10,10 @@ from trame_vuetify.widgets.vuetify3 import (
 )
 
 from trame_slicer.segmentation import SegmentationOpacityEnum
+from trame_slicer.ui import Slider, SliderState
 
 from ..control_button import ControlButton
 from ..flex_container import FlexContainer
-from ..slider import Slider, SliderState
 from ..text_components import Text
 
 

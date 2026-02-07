@@ -2,67 +2,66 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Callable
-from dataclasses import dataclass
 
 from trame_client.widgets.html import Div
 from trame_server.core import Server
-from trame_vuetify.widgets.vuetify3 import VBtn, VIcon, VSlider, VTooltip
+from trame_server.utils.typed_state import TypedState
+from trame_vuetify.widgets.vuetify3 import VBtn, VIcon, VTooltip
 
+from ..ui import Slider, SliderState
 from .abstract_view import AbstractViewChild
 from .slice_view import SliceView
 
 
-@dataclass
-class SliderStateId:
-    value_id: str
-    min_id: str
-    max_id: str
-    step_id: str
+def get_view_trame_id(server: Server, view: AbstractViewChild):
+    """
+    :return: Trame server translated singleton id for the input view.
+    """
+    return server.translator.translate_key(view.get_singleton_tag())
+
+
+def get_view_slider_typed_state(server: Server, view: SliceView) -> TypedState[SliderState]:
+    """
+    :return: Typed Slider state associated with input view
+    """
+    return TypedState(server.state, SliderState, namespace=get_view_trame_id(server, view))
 
 
 def connect_slice_view_slider_to_state(
     server: Server,
     view: SliceView,
-    view_id: str,
-) -> SliderStateId:
-    slider_id = SliderStateId(
-        value_id=f"slider_value_{view_id}",
-        min_id=f"slider_min_{view_id}",
-        max_id=f"slider_max_{view_id}",
-        step_id=f"slider_step_{view_id}",
-    )
+    *_,
+) -> TypedState[SliderState]:
+    slider_state = get_view_slider_typed_state(server, view)
 
     _is_updating_from_trame = defaultdict(bool)
     _is_updating_from_slicer = defaultdict(bool)
 
-    @server.state.change(slider_id.value_id)
-    def _on_view_slider_value_changed(*_, **kwargs):
-        if _is_updating_from_slicer[slider_id.value_id]:
+    def _on_view_slider_value_changed(slider_value: float):
+        if _is_updating_from_slicer[slider_state.name.value]:
             return
 
-        _is_updating_from_trame[slider_id.value_id] = True
-        view.set_slice_value(kwargs[slider_id.value_id])
-        _is_updating_from_trame[slider_id.value_id] = False
+        _is_updating_from_trame[slider_state.name.value] = True
+        view.set_slice_value(slider_value)
+        _is_updating_from_trame[slider_state.name.value] = False
 
     def _on_slice_view_modified(_view: SliceView):
-        if _is_updating_from_trame[slider_id.value_id]:
+        if _is_updating_from_trame[slider_state.name.value]:
             return
 
-        _is_updating_from_slicer[slider_id.value_id] = True
-        with server.state as state:
-            (
-                state[slider_id.min_id],
-                state[slider_id.max_id],
-            ) = _view.get_slice_range()
-            state[slider_id.step_id] = _view.get_slice_step()
-            state[slider_id.value_id] = _view.get_slice_value()
-            state.flush()
-        _is_updating_from_slicer[slider_id.value_id] = False
+        _is_updating_from_slicer[slider_state.name.value] = True
+        with server.state:
+            slider_state.data.min_value, slider_state.data.max_value = _view.get_slice_range()
+            slider_state.data.step = _view.get_slice_step()
+            slider_state.data.value = _view.get_slice_value()
+        server.state.flush()
+        _is_updating_from_slicer[slider_state.name.value] = False
+
+    slider_state.bind_changes({slider_state.name.value: _on_view_slider_value_changed})
 
     view.modified.connect(_on_slice_view_modified)
     _on_slice_view_modified(view)
-
-    return slider_id
+    return slider_state
 
 
 def create_vertical_view_gutter_ui(
@@ -129,15 +128,11 @@ def create_vertical_slice_view_gutter_ui(
         classes="slice-slider-gutter",
         style="position: absolute;bottom: 0;left: 0;background-color: transparent;width: 100%;",
     ):
-        slider_id = connect_slice_view_slider_to_state(server, view, view_id)
+        slider_state = connect_slice_view_slider_to_state(server, view)
 
-        VSlider(
+        Slider(
             classes="slice-slider",
-            hide_details=True,
+            typed_state=slider_state,
             theme="dark",
-            v_model=(slider_id.value_id,),
-            min=(slider_id.min_id,),
-            max=(slider_id.max_id,),
-            step=(slider_id.step_id,),
             dense=True,
         )

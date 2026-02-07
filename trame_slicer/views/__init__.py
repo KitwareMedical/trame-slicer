@@ -17,11 +17,13 @@ from .render_scheduler import (
     ScheduledRenderStrategy,
 )
 from .slice_view import SliceLayer, SliceView
-from .threed_view import ThreeDView
+from .threed_view import ThreeDView, ViewDirection
 from .trame_helper import (
     connect_slice_view_slider_to_state,
     create_vertical_slice_view_gutter_ui,
     create_vertical_view_gutter_ui,
+    get_view_slider_typed_state,
+    get_view_trame_id,
 )
 from .view_factory import IViewFactory
 from .view_layout import ViewLayout
@@ -42,6 +44,7 @@ __all__ = [
     "SliceLayer",
     "SliceView",
     "ThreeDView",
+    "ViewDirection",
     "ViewLayout",
     "ViewLayoutDefinition",
     "ViewOrientation",
@@ -50,6 +53,8 @@ __all__ = [
     "connect_slice_view_slider_to_state",
     "create_vertical_slice_view_gutter_ui",
     "create_vertical_view_gutter_ui",
+    "get_view_slider_typed_state",
+    "get_view_trame_id",
     "pretty_xml",
     "slicer_layout_to_vue",
     "vue_layout_to_slicer",

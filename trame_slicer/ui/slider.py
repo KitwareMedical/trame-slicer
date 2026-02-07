@@ -11,6 +11,7 @@ class SliderState:
     value: float = 0.5
     step: float = 1e-6
     is_reversed: bool = False
+    is_disabled: bool = False
 
 
 @dataclass
@@ -20,17 +21,19 @@ class RangeSliderState:
     value: list[float] = field(default_factory=lambda: [0.0, 0.5])
     step: float = 1e-6
     is_reversed: bool = False
+    is_disabled: bool = False
 
 
 class Slider(VSlider):
     def __init__(self, typed_state: TypedState[SliderState], **kwargs):
         super().__init__(
-            min=(typed_state.name.min_value,),
-            max=(typed_state.name.max_value,),
-            v_model=(typed_state.name.value,),
-            step=(typed_state.name.step,),
-            is_reversed=(typed_state.name.is_reversed,),
+            disabled=(typed_state.name.is_disabled,),
             hide_details=True,
+            is_reversed=(typed_state.name.is_reversed,),
+            max=(typed_state.name.max_value,),
+            min=(typed_state.name.min_value,),
+            step=(typed_state.name.step,),
+            v_model=(typed_state.name.value,),
             **kwargs,
         )
 
@@ -38,11 +41,12 @@ class Slider(VSlider):
 class RangeSlider(VRangeSlider):
     def __init__(self, typed_state: TypedState[RangeSliderState], **kwargs):
         super().__init__(
-            min=(typed_state.name.min_value,),
-            max=(typed_state.name.max_value,),
-            v_model=(typed_state.name.value,),
-            step=(typed_state.name.step,),
-            is_reversed=(typed_state.name.is_reversed,),
+            disabled=(typed_state.name.is_disabled,),
             hide_details=True,
+            is_reversed=(typed_state.name.is_reversed,),
+            max=(typed_state.name.max_value,),
+            min=(typed_state.name.min_value,),
+            step=(typed_state.name.step,),
+            v_model=(typed_state.name.value,),
             **kwargs,
         )

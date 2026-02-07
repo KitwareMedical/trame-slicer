@@ -5,9 +5,10 @@ from trame.widgets.vuetify3 import Template, VCard, VCardText, VImg, VListItem, 
 from trame_server.utils.typed_state import TypedState
 from undo_stack import Signal
 
+from trame_slicer.ui import RangeSlider, RangeSliderState, Slider, SliderState
+
 from .control_button import ControlButton
 from .flex_container import FlexContainer
-from .slider import RangeSlider, RangeSliderState, Slider, SliderState
 from .text_components import Text
 
 

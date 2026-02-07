@@ -3,11 +3,11 @@ from dataclasses import dataclass, field
 from trame.widgets.vuetify3 import Template
 from trame_server.utils.typed_state import TypedState
 
-from trame_slicer.segmentation.paint_effect_parameters import BrushDiameterMode
+from trame_slicer.segmentation import BrushDiameterMode
+from trame_slicer.ui import Slider, SliderState
 
 from ..control_button import ControlButton
 from ..flex_container import FlexContainer
-from ..slider import Slider, SliderState
 from ..text_components import Text
 
 

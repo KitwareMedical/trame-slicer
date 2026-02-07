@@ -4,9 +4,10 @@ from trame_server.utils.typed_state import TypedState
 from trame_vuetify.widgets.vuetify3 import Template, VBtn
 from undo_stack import Signal
 
+from trame_slicer.ui import RangeSlider, RangeSliderState
+
 from ..control_button import ControlButton
 from ..flex_container import FlexContainer
-from ..slider import RangeSlider, RangeSliderState
 from ..text_components import Text
 
 

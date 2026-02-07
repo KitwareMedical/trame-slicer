@@ -24,6 +24,7 @@ from trame_slicer.views import (
     ViewType,
     create_vertical_slice_view_gutter_ui,
     create_vertical_view_gutter_ui,
+    get_view_slider_typed_state,
 )
 
 
@@ -171,20 +172,21 @@ def test_2d_factory_views_have_sliders_and_reset_camera_connected_to_slicer(
     with VAppLayout(a_server):
         client.ServerTemplate(name=a_2d_view.singleton_tag)
 
-    assert "slider_value_2d_view" in vuetify_view_str
-    assert "slider_max_2d_view" in vuetify_view_str
-    assert "slider_min_2d_view" in vuetify_view_str
-    assert "slider_step_2d_view" in vuetify_view_str
+    slider_state = get_view_slider_typed_state(a_server, view)
+    assert slider_state.name.value in vuetify_view_str
+    assert slider_state.name.max_value in vuetify_view_str
+    assert slider_state.name.min_value in vuetify_view_str
+    assert slider_state.name.step in vuetify_view_str
 
-    assert a_server.state["slider_value_2d_view"] == view.get_slice_value()
+    assert slider_state.data.value == view.get_slice_value()
 
     min_range, max_range = view.get_slice_range()
-    assert a_server.state["slider_min_2d_view"] == min_range
-    assert a_server.state["slider_max_2d_view"] == max_range
-    assert a_server.state["slider_step_2d_view"] == view.get_slice_step()
+    assert slider_state.data.min_value == min_range
+    assert slider_state.data.max_value == max_range
+    assert slider_state.data.step == view.get_slice_step()
 
     view.set_slice_value(42)
-    assert a_server.state["slider_value_2d_view"] == 42.0
+    assert slider_state.data.value == 42.0
 
     a_server.start()
 
