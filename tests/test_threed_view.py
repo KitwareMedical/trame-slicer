@@ -1,7 +1,7 @@
 from itertools import product
 
 import pytest
-from slicer import vtkMRMLAbstractViewNode
+from slicer import vtkMRMLAbstractViewNode, vtkMRMLModelDisplayableManager
 
 
 def test_threed_view_can_render_mrml_models(a_threed_view, render_interactive):
@@ -122,3 +122,9 @@ def test_threed_view_can_set_layout_color(a_threed_view):
     a_threed_view.set_layout_color([60, 60, 60])
     a_threed_view.set_layout_color_from_string("red")
     assert a_threed_view._view_node.GetLayoutColor() == (1.0, 0.0, 0.0)
+
+
+@pytest.mark.parametrize("dm_class", ["vtkMRMLModelDisplayableManager", vtkMRMLModelDisplayableManager])
+def test_view_provide_access_to_their_displayable_manager(a_threed_view, dm_class):
+    displayable_manager = a_threed_view.get_displayable_manager_by_class(dm_class)
+    assert isinstance(displayable_manager, vtkMRMLModelDisplayableManager)

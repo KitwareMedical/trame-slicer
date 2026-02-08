@@ -365,3 +365,10 @@ class AbstractView:
 
     def get_view_node(self) -> vtkMRMLViewNode | None:
         return self._view_node
+
+    def get_displayable_manager_by_class(
+        self, dm_class: str | type[vtkMRMLAbstractDisplayableManager]
+    ) -> vtkMRMLAbstractDisplayableManager | None:
+        if isinstance(dm_class, type):
+            dm_class = dm_class.__name__
+        return self._displayable_manager_group.GetDisplayableManagerByClassName(dm_class)
