@@ -139,3 +139,11 @@ def test_scripted_proxy_is_compatible_with_complex_types(a_scene):
     assert node.GetParameter(name.my_time) == json.dumps(dt.time().isoformat())
     assert node.GetParameter(name.my_path) == json.dumps(Path(__file__).as_posix())
     assert node.GetParameter(name.my_model_node) == json.dumps(model_node.GetID())
+
+
+def test_proxy_over_non_scripted_module_returns_none_value(a_scene):
+    node = vtkMRMLModelNode()
+    proxy = create_scripted_module_dataclass_proxy(Simple, node, a_scene)
+    assert proxy.a is None
+    assert proxy.b is None
+    assert proxy.c_default is None

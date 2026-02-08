@@ -111,6 +111,9 @@ class _ScriptedProxyField:
         self.set_value(value)
 
     def get_value(self):
+        if not isinstance(self._node, vtkMRMLScriptedModuleNode):
+            return None
+
         if self._state_id not in self._node.GetParameterNames():
             return self._default if self._default != MISSING else None
 
