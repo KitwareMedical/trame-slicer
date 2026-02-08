@@ -13,4 +13,4 @@ def test_can_be_displayed(a_server, a_server_port):
             VLabel("Drawer content")
             VSlider()
 
-    a_server.start(a_server_port)
+    a_server.start(port=a_server_port)

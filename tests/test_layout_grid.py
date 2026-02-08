@@ -23,7 +23,7 @@ class EmptyView:
     singleton_tag: str
 
 
-def test_layout_component_can_display_server_configured_templates(a_server):
+def test_layout_component_can_display_server_configured_templates(a_server, a_server_port):
     with ViewLayout(a_server, "red_view"):
         Div(style="background-color: red;", classes="fill-height")
 
@@ -50,10 +50,10 @@ def test_layout_component_can_display_server_configured_templates(a_server):
             )
         )
 
-    a_server.start()
+    a_server.start(port=a_server_port)
 
 
-def test_layout_component_is_compatible_with_size(a_server):
+def test_layout_component_is_compatible_with_size(a_server, a_server_port):
     with ViewLayout(a_server, "red_view"):
         Div(style="background-color: red;", classes="fill-height")
 
@@ -86,7 +86,7 @@ def test_layout_component_is_compatible_with_size(a_server):
             )
         )
 
-    a_server.start()
+    a_server.start(port=a_server_port)
 
 
 @pytest.fixture

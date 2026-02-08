@@ -23,7 +23,7 @@ environment :
 1. Install playwright browsers using the `playwright install` command
 1. [Linux] Install playwright dependencies using the `playwright install-deps`
    command
-1. Run the tests using the pytest module `python -m pytest tests`
+1. Run the tests using the pytest module `python -m pytest tests -n auto`
 
 Test coverage is automatically generated and available in the CI / codecov when
 creating pull requests.

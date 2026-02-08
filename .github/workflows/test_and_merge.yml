@@ -70,7 +70,7 @@ jobs:
           pip install .[dev]
           playwright install
           playwright install-deps
-          pytest -s ./tests --cov=trame_slicer --cov-report=json --cov-report=term-missing
+          pytest -s ./tests -n auto --cov=trame_slicer --cov-report=json --cov-report=term-missing
 
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v4
