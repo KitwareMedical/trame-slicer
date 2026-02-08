@@ -135,7 +135,10 @@ build_command = """
 """
 
 version_source = "tag"
+
+[tool.semantic_release.changelog.default_templates]
 changelog_file = "CHANGELOG.md"
+output_format = "md"
 
 [tool.semantic_release.publish]
 dist_glob_patterns = ["dist/*"]
