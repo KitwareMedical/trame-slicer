@@ -2,6 +2,54 @@
 
 <!-- version list -->
 
+## v1.8.0 (2026-02-09)
+
+### Bug Fixes
+
+- **dataclass_proxy**: Return None for other node types
+  ([`0b4a88f`](https://github.com/KitwareMedical/trame-slicer/commit/0b4a88f305ec388cd4322806fe470b68b6aa9fc0))
+
+### Chores
+
+- Add parallel test execution
+  ([`e1ff161`](https://github.com/KitwareMedical/trame-slicer/commit/e1ff161aa2886abf02afd514d304c0b880f1d363))
+
+- Force changelog update
+  ([`cdf8f80`](https://github.com/KitwareMedical/trame-slicer/commit/cdf8f80ad207b9bcd3c0a0db0cd79bf585fa04e7))
+
+- Update semantic release config
+  ([`b3eb4c7`](https://github.com/KitwareMedical/trame-slicer/commit/b3eb4c7ba1cd1841c249f83dda94349fe3edc8e7))
+
+### Documentation
+
+- **examples**: Add minimal trame slicer app
+  ([`c54fad0`](https://github.com/KitwareMedical/trame-slicer/commit/c54fad0476d145510bdf06dcaf425290a61624a7))
+
+### Features
+
+- **abstract_view**: Add access to displayable manager
+  ([`737a721`](https://github.com/KitwareMedical/trame-slicer/commit/737a721693a53aca15b901b9b684e79b9cb45f7c))
+
+- **io_manager**: Add write volume
+  ([`c1ebafe`](https://github.com/KitwareMedical/trame-slicer/commit/c1ebafefb47ff61eea49eb3d4356f07a9d42e732))
+
+- **segmentation**: Add segment border thickness control
+  ([`411001d`](https://github.com/KitwareMedical/trame-slicer/commit/411001d8f2c46f2f1d77175a097bac0155739b6b))
+
+- **volumes**: Add volume display presets
+  ([`284c445`](https://github.com/KitwareMedical/trame-slicer/commit/284c445d944b7a56c8bfb15072e278f00af3127f))
+
+### Refactoring
+
+- **ui**: Move example SliderState to trame_slicer.ui
+  ([`138ec6f`](https://github.com/KitwareMedical/trame-slicer/commit/138ec6fa7d87e6343903bd030218c615d8c73e28))
+
+### Testing
+
+- Fix test_abstract_view
+  ([`fe66c59`](https://github.com/KitwareMedical/trame-slicer/commit/fe66c5962ff87fff620eac8a5bc47a585cc59b1a))
+
+
 ## Unreleased
 
 ### Bug Fixes
