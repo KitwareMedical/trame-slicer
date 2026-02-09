@@ -4,7 +4,7 @@ import pytest
 from trame_slicer.segmentation import (
     ModificationMode,
     SegmentationEditableArea,
-    SegmentModificationParameters,
+    SegmentMaskingParameters,
     SegmentOverwriteMode,
 )
 from trame_slicer.utils import vtk_image_to_np
@@ -124,11 +124,11 @@ def test_segment_modifier_erases_all_segments_in_erase_all(
     np.testing.assert_array_equal(a_segment_modifier.get_segment_labelmap(s3, as_numpy_array=True), empty)
 
 
-def test_set_segment_modification_parameters(a_segment_modifier, a_segmentation_editor):
+def test_set_masking_parameters(a_segment_modifier, a_segmentation_editor):
     editable_area = SegmentationEditableArea.INSIDE_ALL_SEGMENTS
     overwrite_mode = SegmentOverwriteMode.ALLOW_OVERLAP
-    a_segment_modifier.set_segment_modification_parameters(
-        SegmentModificationParameters(editable_area=editable_area, segment_id=None, overwrite_mode=overwrite_mode)
+    a_segment_modifier.set_masking_parameters(
+        SegmentMaskingParameters(editable_area=editable_area, segment_id=None, overwrite_mode=overwrite_mode)
     )
 
     assert a_segment_modifier._get_editable_area() == editable_area
@@ -136,8 +136,8 @@ def test_set_segment_modification_parameters(a_segment_modifier, a_segmentation_
 
     segment_id = a_segmentation_editor.add_empty_segment()
     overwrite_mode = SegmentOverwriteMode.OVERWRITE_ALL_VISIBLE_SEGMENTS
-    a_segment_modifier.set_segment_modification_parameters(
-        SegmentModificationParameters(editable_area=None, segment_id=segment_id, overwrite_mode=overwrite_mode)
+    a_segment_modifier.set_masking_parameters(
+        SegmentMaskingParameters(editable_area=None, segment_id=segment_id, overwrite_mode=overwrite_mode)
     )
     assert a_segment_modifier._get_editable_area() is None
     assert a_segment_modifier._get_editable_segment_id() == segment_id

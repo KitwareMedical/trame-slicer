@@ -30,6 +30,7 @@ from vtkmodules.vtkCommonDataModel import vtkImageData
 from trame_slicer.segmentation import (
     Segmentation,
     SegmentationDisplay,
+    SegmentationEditableArea,
     SegmentationEffect,
     SegmentationEffectErase,
     SegmentationEffectIslands,
@@ -38,8 +39,9 @@ from trame_slicer.segmentation import (
     SegmentationEffectPipeline,
     SegmentationEffectScissors,
     SegmentationEffectThreshold,
-    SegmentModificationParameters,
+    SegmentMaskingParameters,
     SegmentModifier,
+    SegmentOverwriteMode,
     SegmentProperties,
 )
 from trame_slicer.utils import ensure_node_in_scene
@@ -64,7 +66,6 @@ class SegmentationEditor(SignalContainer):
     ]
 
     segmentation_modified = Signal()
-    segment_editor_node_modified = Signal()
     segmentation_display_modified = Signal()
     active_segment_id_changed = Signal(str)
     active_effect_name_changed = Signal(str)
@@ -191,14 +192,12 @@ class SegmentationEditor(SignalContainer):
 
         if self._modified_obs is not None:
             self._active_modifier.segmentation_modified.disconnect(self._modified_obs)
-            self._active_modifier.segment_editor_node_modified.disconnect(self._modified_obs)
 
         self._active_modifier = SegmentModifier(
             Segmentation(segmentation_node, volume_node, editor_logic=self._editor_logic, undo_stack=self.undo_stack)
         )
 
         self._active_modifier.segmentation_modified.connect(self.segmentation_modified)
-        self._active_modifier.segment_editor_node_modified.connect(self.segment_editor_node_modified)
 
         if self._active_effect:
             self._active_effect.set_modifier(self._active_modifier)
@@ -458,17 +457,36 @@ class SegmentationEditor(SignalContainer):
             return None
         return self.active_segmentation_display.get_segment_visibility(segment_id)
 
-    def set_segment_modification_parameters(self, parameters: SegmentModificationParameters) -> None:
-        if self._active_modifier is None:
-            return
-        self._active_modifier.set_segment_modification_parameters(parameters)
+    def set_masking_parameters(self, parameters: SegmentMaskingParameters) -> None:
+        if not parameters.segment_id:
+            mask_mode = self.active_segmentation.segmentation_node.ConvertMaskModeFromString(
+                parameters.editable_area.value
+            )
+            self.editor_node.SetMaskMode(mask_mode)
+        else:
+            self.editor_node.SetMaskSegmentID(parameters.segment_id)
+            self.editor_node.SetMaskMode(vtkMRMLSegmentationNode.EditAllowedInsideSingleSegment)
+        self.editor_node.SetOverwriteMode(parameters.overwrite_mode.value)
 
-    def get_segment_modification_parameters(
+    def get_masking_parameters(
         self,
-    ) -> SegmentModificationParameters | None:
-        if self._active_modifier is None:
+    ) -> SegmentMaskingParameters | None:
+        if self.active_segmentation is None:
             return None
-        self._active_modifier.get_segment_modification_parameters()
+        mask_mode = self.editor_node.GetMaskMode()
+        mask_mode_string = self.active_segmentation.segmentation_node.ConvertMaskModeToString(mask_mode)
+        editable_area = SegmentMaskingParameters.editable_area  # Default value
+        if mask_mode_string != "EditAllowedInsideSingleSegment":
+            # String associated with vtkMRMLSegmentationNode::EditAllowedInsideSingleSegment
+            # i.e. Inside Segment X, which is not exposed through SegmentationEditableArea
+            editable_area = SegmentationEditableArea(mask_mode_string)
+        editable_segment_id = self.editor_node.GetMaskSegmentID()
+        overwrite_mode = SegmentOverwriteMode(self.editor_node.GetOverwriteMode())
+        return SegmentMaskingParameters(
+            editable_area=editable_area,
+            segment_id=editable_segment_id if editable_area is None else "",
+            overwrite_mode=overwrite_mode,
+        )
 
     def get_effect_parameter_node(
         self, effect: SegmentationEffect | type[SegmentationEffect]

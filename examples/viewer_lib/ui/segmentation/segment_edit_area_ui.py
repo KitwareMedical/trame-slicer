@@ -45,7 +45,7 @@ class SegmentEditAreaUI(VCard):
 
         with self:
             with VCardItem():
-                Text("Options", title=True)
+                Text("Masking options", title=True)
                 with Template(v_slot_append=True):
                     VBtn(
                         icon=(f"{self._typed_state.name.is_extended} ? 'mdi-chevron-up' : 'mdi-chevron-down'",),

@@ -8,7 +8,7 @@ from trame_slicer.segmentation import (
     SegmentationEditableArea,
     SegmentationEffect,
     SegmentationEffectThreshold,
-    SegmentModificationParameters,
+    SegmentMaskingParameters,
 )
 
 from ...ui import (
@@ -96,18 +96,18 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         editable_area = options_state.editable_area
         overwrite_mode = options_state.overwrite_mode
         if editable_area in self.segmentation_editor.get_segment_ids():
-            parameters = SegmentModificationParameters(
+            parameters = SegmentMaskingParameters(
                 editable_area=None,
                 overwrite_mode=overwrite_mode,
                 segment_id=editable_area,
             )
         else:
-            parameters = SegmentModificationParameters(
+            parameters = SegmentMaskingParameters(
                 editable_area=SegmentationEditableArea(editable_area),
                 overwrite_mode=overwrite_mode,
                 segment_id=None,
             )
-        self.segmentation_editor.set_segment_modification_parameters(parameters)
+        self.segmentation_editor.set_masking_parameters(parameters)
 
     def _on_delete_segment_clicked(self, segment_id: str):
         self.segmentation_editor.remove_segment(segment_id)
@@ -139,7 +139,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         self.data.segment_display.show_3d = self.segmentation_editor.is_surface_representation_enabled()
         self.data.active_effect_name = self.segmentation_editor.get_active_effect_name()
 
-        segment_modification_parameters = self.segmentation_editor.get_segment_modification_parameters()
+        segment_modification_parameters = self.segmentation_editor.get_masking_parameters()
         if segment_modification_parameters is not None:
             editable_area = segment_modification_parameters.editable_area
             if editable_area is not None:
