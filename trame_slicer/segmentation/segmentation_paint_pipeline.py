@@ -7,6 +7,7 @@ from slicer import (
     vtkMRMLInteractionEventData,
     vtkMRMLModelNode,
 )
+from vtk import vtkEvent
 from vtkmodules.vtkCommonCore import vtkCommand
 
 from trame_slicer.utils import (
@@ -150,6 +151,14 @@ class SegmentationPaintPipeline2D(SegmentationPaintPipeline):
             int(vtkCommand.MouseWheelBackwardEvent): self._MouseWheelBackward,
             int(vtkCommand.MouseWheelForwardEvent): self._MouseWheelForward,
         }
+
+    def IsSupportedEvent(self, event_data: vtkMRMLInteractionEventData):
+        if event_data.GetType() in [
+            int(vtkCommand.MouseWheelBackwardEvent),
+            int(vtkCommand.MouseWheelForwardEvent),
+        ]:
+            return event_data.GetModifiers() & vtkEvent.ShiftModifier
+        return super().IsSupportedEvent(event_data)
 
     def CreateWidget(self):
         if self.widget is not None or not isinstance(self._view, SliceView):

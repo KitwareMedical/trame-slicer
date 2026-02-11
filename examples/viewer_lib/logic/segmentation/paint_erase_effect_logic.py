@@ -1,6 +1,7 @@
 from typing import Generic
 
 from trame_server import Server
+from vtkmodules.vtkCommonCore import vtkCommand
 
 from trame_slicer.core import SlicerApp
 from trame_slicer.segmentation import (
@@ -59,8 +60,14 @@ class PaintEraseEffectLogic(BaseEffectLogic[PaintEffectState, U], Generic[U]):
 
     def _on_effect_changed(self, _effect_name: str) -> None:
         self._refresh_brush()
-        if self.is_active():
-            self.effect.on_brush_diameter_changed.connect(self._set_brush_diameter)
+        self.effect._param_node.AddObserver(vtkCommand.ModifiedEvent, self._on_modified_event)
+
+    def _on_modified_event(self, _caller, _event):
+        # React to brush size change
+        slicer_brush_size = self.effect._param_node.GetParameter("PaintEffectParameters__brush_diameter")
+        trame_brush_size = self.data.brush_diameter_slider.value
+        if trame_brush_size != slicer_brush_size:
+            self.data.brush_diameter_slider.value = slicer_brush_size
 
 
 class PaintEffectLogic(PaintEraseEffectLogic[SegmentationEffectPaint]):
