@@ -28,7 +28,7 @@ class MinimalTrameSlicerApp(TrameApp):
         self._layout_manager = LayoutManager(
             self._slicer_app.scene,
             self._slicer_app.view_manager,
-            self._server.ui.layout_grid,
+            self._server,
         )
 
         # Register a layout and set the default view layout
