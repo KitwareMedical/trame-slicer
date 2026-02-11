@@ -274,7 +274,6 @@ def test_set_masking_parameters(a_segmentation_editor, active_segmentation_node,
     segment_id = a_segmentation_editor.add_empty_segment()
     parameters = SegmentMaskingParameters(
         editable_area=SegmentationEditableArea.INSIDE_ALL_SEGMENTS,
-        segment_id="",
         overwrite_mode=SegmentOverwriteMode.ALLOW_OVERLAP,
     )
     a_segmentation_editor.set_masking_parameters(parameters)
@@ -283,7 +282,6 @@ def test_set_masking_parameters(a_segmentation_editor, active_segmentation_node,
     assert a_segmentation_editor.editor_node.GetOverwriteMode() == vtkMRMLSegmentEditorNode.OverwriteNone
 
     parameters = SegmentMaskingParameters(
-        editable_area=SegmentationEditableArea.EVERYWHERE,
         segment_id=segment_id,
         overwrite_mode=SegmentOverwriteMode.OVERWRITE_ALL_VISIBLE_SEGMENTS,
     )

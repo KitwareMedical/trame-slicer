@@ -95,17 +95,21 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
 
         editable_area = options_state.editable_area
         overwrite_mode = options_state.overwrite_mode
+        # SegmentEditAreaState holds a string that can represent a mask mode or segment ID
+        # whereas SegmentationEditableArea needs a proper mask mode or segment ID
         if editable_area in self.segmentation_editor.get_segment_ids():
             parameters = SegmentMaskingParameters(
-                editable_area=None,
                 overwrite_mode=overwrite_mode,
                 segment_id=editable_area,
             )
         else:
             parameters = SegmentMaskingParameters(
-                editable_area=SegmentationEditableArea(editable_area),
+                editable_area=SegmentationEditableArea(
+                    self.segmentation_editor.active_segmentation.segmentation_node.ConvertMaskModeFromString(
+                        editable_area
+                    )
+                ),
                 overwrite_mode=overwrite_mode,
-                segment_id=None,
             )
         self.segmentation_editor.set_masking_parameters(parameters)
 
@@ -142,8 +146,15 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         segment_modification_parameters = self.segmentation_editor.get_masking_parameters()
         if segment_modification_parameters is not None:
             editable_area = segment_modification_parameters.editable_area
-            if editable_area is not None:
-                self.data.segment_edit_area.editable_area = editable_area
+            if editable_area == SegmentationEditableArea.INSIDE_SINGLE_SEGMENT:
+                editable_area_string = segment_modification_parameters.segment_id
+            else:
+                editable_area_string = (
+                    self.segmentation_editor.active_segmentation.segmentation_node.ConvertMaskModeToString(
+                        editable_area.value
+                    )
+                )
+            self.data.segment_edit_area.editable_area = editable_area_string
 
             self.data.segment_edit_area.overwrite_mode = segment_modification_parameters.overwrite_mode
 

@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 
+from slicer import vtkMRMLSegmentationNode
 from trame_server.utils.typed_state import TypedState
 from trame_vuetify.widgets.vuetify3 import (
     Template,
@@ -41,6 +42,9 @@ class SegmentEditAreaUI(VCard):
             return {e: e.name.replace("_", " ").title() for e in enum}
 
         self._default_editable_areas_labels = caps_enum_to_title(SegmentationEditableArea)
+        del self._default_editable_areas_labels[
+            SegmentationEditableArea.INSIDE_SINGLE_SEGMENT
+        ]  # This option is not displayed, it is set through segment IDs
         self._overwrite_mode_labels = caps_enum_to_title(SegmentOverwriteMode)
 
         with self:
@@ -55,7 +59,8 @@ class SegmentEditAreaUI(VCard):
                     )
             with VCardText(v_if=(self._typed_state.name.is_extended,), classes="align-center"):
                 default_editable_area_options = [
-                    {"text": label, "value": enum.value} for enum, label in self._default_editable_areas_labels.items()
+                    {"text": label, "value": vtkMRMLSegmentationNode.ConvertMaskModeToString(enum.value)}
+                    for enum, label in self._default_editable_areas_labels.items()
                 ]
 
                 with (

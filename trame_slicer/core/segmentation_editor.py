@@ -458,14 +458,8 @@ class SegmentationEditor(SignalContainer):
         return self.active_segmentation_display.get_segment_visibility(segment_id)
 
     def set_masking_parameters(self, parameters: SegmentMaskingParameters) -> None:
-        if not parameters.segment_id:
-            mask_mode = self.active_segmentation.segmentation_node.ConvertMaskModeFromString(
-                parameters.editable_area.value
-            )
-            self.editor_node.SetMaskMode(mask_mode)
-        else:
-            self.editor_node.SetMaskSegmentID(parameters.segment_id)
-            self.editor_node.SetMaskMode(vtkMRMLSegmentationNode.EditAllowedInsideSingleSegment)
+        self.editor_node.SetMaskSegmentID(parameters.segment_id)
+        self.editor_node.SetMaskMode(parameters.editable_area.value)
         self.editor_node.SetOverwriteMode(parameters.overwrite_mode.value)
 
     def get_masking_parameters(
@@ -473,18 +467,12 @@ class SegmentationEditor(SignalContainer):
     ) -> SegmentMaskingParameters | None:
         if self.active_segmentation is None:
             return None
-        mask_mode = self.editor_node.GetMaskMode()
-        mask_mode_string = self.active_segmentation.segmentation_node.ConvertMaskModeToString(mask_mode)
-        editable_area = SegmentMaskingParameters.editable_area  # Default value
-        if mask_mode_string != "EditAllowedInsideSingleSegment":
-            # String associated with vtkMRMLSegmentationNode::EditAllowedInsideSingleSegment
-            # i.e. Inside Segment X, which is not exposed through SegmentationEditableArea
-            editable_area = SegmentationEditableArea(mask_mode_string)
+        editable_area = SegmentationEditableArea(self.editor_node.GetMaskMode())
         editable_segment_id = self.editor_node.GetMaskSegmentID()
         overwrite_mode = SegmentOverwriteMode(self.editor_node.GetOverwriteMode())
         return SegmentMaskingParameters(
             editable_area=editable_area,
-            segment_id=editable_segment_id if editable_area is None else "",
+            segment_id=editable_segment_id if editable_area == SegmentationEditableArea.INSIDE_SINGLE_SEGMENT else "",
             overwrite_mode=overwrite_mode,
         )
 

@@ -1,9 +1,7 @@
 import numpy as np
 import pytest
 
-from trame_slicer.segmentation import (
-    ModificationMode,
-)
+from trame_slicer.segmentation import ModificationMode
 from trame_slicer.utils import vtk_image_to_np
 
 
