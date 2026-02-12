@@ -5,12 +5,15 @@ from undo_stack import UndoStack
 from trame_slicer.core import SlicerApp
 from trame_slicer.segmentation import (
     SegmentationDisplay,
+    SegmentationEditableArea,
     SegmentationEffect,
     SegmentationEffectThreshold,
+    SegmentMaskingParameters,
 )
 
 from ...ui import (
     SegmentDisplayState,
+    SegmentEditAreaState,
     SegmentEditorState,
     SegmentEditorUI,
     SegmentState,
@@ -44,6 +47,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
             {
                 self.name.segment_display: self._on_segment_display_changed,
                 self.name.segment_list.active_segment_id: self._on_active_segment_changed,
+                self.name.segment_edit_area: self._on_segment_edit_area_changed,
             }
         )
 
@@ -85,6 +89,30 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         else:
             self._edit_segment_logic.set_active_segment_id(segment_id)
 
+    def _on_segment_edit_area_changed(self, options_state: SegmentEditAreaState):
+        if self.segmentation_editor.active_segmentation is None:
+            return
+
+        editable_area = options_state.editable_area
+        overwrite_mode = options_state.overwrite_mode
+        # SegmentEditAreaState holds a string that can represent a mask mode or segment ID
+        # whereas SegmentationEditableArea needs a proper mask mode or segment ID
+        if editable_area in self.segmentation_editor.get_segment_ids():
+            parameters = SegmentMaskingParameters(
+                overwrite_mode=overwrite_mode,
+                segment_id=editable_area,
+            )
+        else:
+            parameters = SegmentMaskingParameters(
+                editable_area=SegmentationEditableArea(
+                    self.segmentation_editor.active_segmentation.segmentation_node.ConvertMaskModeFromString(
+                        editable_area
+                    )
+                ),
+                overwrite_mode=overwrite_mode,
+            )
+        self.segmentation_editor.set_masking_parameters(parameters)
+
     def _on_delete_segment_clicked(self, segment_id: str):
         self.segmentation_editor.remove_segment(segment_id)
 
@@ -114,6 +142,22 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         self.data.segment_list.active_segment_id = self.segmentation_editor.get_active_segment_id()
         self.data.segment_display.show_3d = self.segmentation_editor.is_surface_representation_enabled()
         self.data.active_effect_name = self.segmentation_editor.get_active_effect_name()
+
+        segment_modification_parameters = self.segmentation_editor.get_masking_parameters()
+        if segment_modification_parameters is not None:
+            editable_area = segment_modification_parameters.editable_area
+            if editable_area == SegmentationEditableArea.INSIDE_SINGLE_SEGMENT:
+                editable_area_string = segment_modification_parameters.segment_id
+            else:
+                editable_area_string = (
+                    self.segmentation_editor.active_segmentation.segmentation_node.ConvertMaskModeToString(
+                        editable_area.value
+                    )
+                )
+            self.data.segment_edit_area.editable_area = editable_area_string
+
+            self.data.segment_edit_area.overwrite_mode = segment_modification_parameters.overwrite_mode
+
         self._update_segment_list()
 
     def _on_undo_changed(self, *_):

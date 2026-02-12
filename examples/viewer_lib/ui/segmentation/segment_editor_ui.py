@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any
 
+from trame.widgets import html
 from trame.widgets.vuetify3 import (
     VBtn,
     VCard,
@@ -8,7 +9,6 @@ from trame.widgets.vuetify3 import (
     VCardItem,
     VCardText,
     VDivider,
-    VSpacer,
     VTooltip,
 )
 from trame_client.widgets.core import Template
@@ -31,6 +31,7 @@ from ..viewer_layout import ViewerLayoutState
 from .islands_effect_ui import IslandsEffectUI
 from .paint_effect_ui import PaintEffectUI
 from .segment_display_ui import SegmentDisplayState, SegmentDisplayUI
+from .segment_edit_area_ui import SegmentEditAreaState, SegmentEditAreaUI
 from .segment_edit_ui import SegmentEditState, SegmentEditUI
 from .segment_list import SegmentList, SegmentListMenu, SegmentListState
 from .threshold_effect_ui import ThresholdEffectUI
@@ -40,6 +41,7 @@ from .threshold_effect_ui import ThresholdEffectUI
 class SegmentEditorState:
     segment_list: SegmentListState = field(default_factory=SegmentListState)
     segment_display: SegmentDisplayState = field(default_factory=SegmentDisplayState)
+    segment_edit_area: SegmentEditAreaState = field(default_factory=SegmentEditAreaState)
     can_undo: bool = False
     can_redo: bool = False
     active_effect_name: str = ""
@@ -78,40 +80,55 @@ class SegmentEditorUI(FlexContainer):
                 style="align-self: center;",
             )
 
-            with FlexContainer(v_if=(self._typed_state.name.segment_list.active_segment_id,), fill_height=True):
-                with VCard(variant="flat", height="50%"):
-                    with VCardText(style="height: calc(100% - 64px); overflow-y: auto;"):
-                        self._create_segment_list()
+            with html.Template(v_if=(self._typed_state.name.segment_list.active_segment_id,)):
+                with FlexContainer(fill_height=True):
+                    with VCard(variant="flat", height="50%"):
+                        with VCardText(style="height: calc(100% - 64px); overflow-y: auto;"):
+                            self._create_segment_list()
 
+                        with (
+                            VCardActions(classes="justify-center", style="height: 64px;"),
+                            VTooltip(text="Add Segment"),
+                            Template(v_slot_activator="{ props }"),
+                        ):
+                            VBtn(
+                                v_bind="props",
+                                variant="tonal",
+                                icon="mdi-plus",
+                                click=self.add_segment_clicked,
+                            )
+                    VDivider()
                     with (
-                        VCardActions(classes="justify-center", style="height: 64px;"),
-                        VTooltip(text="Add Segment"),
-                        Template(v_slot_activator="{ props }"),
+                        VCard(
+                            v_if=(self._typed_state.name.segment_list.active_segment_id,),
+                            classes="d-flex flex-column flex-grow-1",
+                            variant="flat",
+                        ),
+                        html.Div(classes="flex-grow-1", style="overflow-y: auto;"),
                     ):
-                        VBtn(
-                            v_bind="props",
-                            variant="tonal",
-                            icon="mdi-plus",
-                            click=self.add_segment_clicked,
-                        )
+                        with VCardItem(), FlexContainer(row=True, justify="space-between"):
+                            self.build_effect_buttons()
+                        VDivider(classes="mx-3")
+                        with VCardText(classes="align-center"):
+                            self._register_effect_ui(SegmentationEffectPaint, PaintEffectUI)
+                            self._register_effect_ui(SegmentationEffectErase, PaintEffectUI)
+                            self._register_effect_ui(SegmentationEffectThreshold, ThresholdEffectUI)
+                            self._register_effect_ui(SegmentationEffectIslands, IslandsEffectUI)
                 VDivider()
-                with VCard(
-                    v_if=(self._typed_state.name.segment_list.active_segment_id,), classes="flex-grow-1", variant="flat"
+                with (
+                    html.Div(style="flex: 0 0 auto; max-height: 33%; display: flex;"),
+                    html.Div(style="overflow-y: auto; width: 100%;"),
                 ):
-                    with VCardItem(), FlexContainer(row=True, justify="space-between"):
-                        self.build_effect_buttons()
-                    VDivider(classes="mx-3")
-                    with VCardText(classes="align-center"):
-                        self._register_effect_ui(SegmentationEffectPaint, PaintEffectUI)
-                        self._register_effect_ui(SegmentationEffectErase, PaintEffectUI)
-                        self._register_effect_ui(SegmentationEffectThreshold, ThresholdEffectUI)
-                        self._register_effect_ui(SegmentationEffectIslands, IslandsEffectUI)
-                VSpacer(v_else=True)
-                VDivider()
-                SegmentDisplayUI(
-                    typed_state=self.sub_state(self._typed_state.name.segment_display),
-                    variant="flat",
-                )
+                    SegmentDisplayUI(
+                        typed_state=self.sub_state(self._typed_state.name.segment_display),
+                        variant="flat",
+                    )
+                    VDivider()
+                    SegmentEditAreaUI(
+                        segment_edit_area_typed_state=self.sub_state(self._typed_state.name.segment_edit_area),
+                        segment_list_typed_state=self.sub_state(self._typed_state.name.segment_list),
+                        variant="flat",
+                    )
 
     def build_effect_buttons(self, all: bool = True, **kwargs):
         self._create_effect_button(

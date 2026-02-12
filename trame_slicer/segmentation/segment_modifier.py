@@ -4,10 +4,12 @@ import enum
 import logging
 import math
 from collections.abc import Generator
+from dataclasses import dataclass
 from enum import auto
 
 from numpy.typing import NDArray
 from slicer import (
+    vtkMRMLSegmentationNode,
     vtkMRMLSegmentEditorNode,
     vtkMRMLTransformNode,
     vtkOrientedImageData,
@@ -67,6 +69,32 @@ class ModificationMode(enum.IntEnum):
     Add = auto()
     Remove = auto()
     RemoveAll = auto()
+
+
+class SegmentationEditableArea(enum.Enum):
+    EVERYWHERE = vtkMRMLSegmentationNode.EditAllowedEverywhere
+    INSIDE_SINGLE_SEGMENT = vtkMRMLSegmentationNode.EditAllowedInsideSingleSegment
+    INSIDE_ALL_SEGMENTS = vtkMRMLSegmentationNode.EditAllowedInsideAllSegments
+    INSIDE_ALL_VISIBLE_SEGMENTS = vtkMRMLSegmentationNode.EditAllowedInsideVisibleSegments
+    OUTSIDE_ALL_SEGMENTS = vtkMRMLSegmentationNode.EditAllowedOutsideAllSegments
+    OUTSIDE_ALL_VISIBLE_SEGMENTS = vtkMRMLSegmentationNode.EditAllowedOutsideVisibleSegments
+
+
+class SegmentOverwriteMode(enum.Enum):
+    OVERWRITE_ALL = vtkMRMLSegmentEditorNode.OverwriteAllSegments
+    OVERWRITE_ALL_VISIBLE_SEGMENTS = vtkMRMLSegmentEditorNode.OverwriteVisibleSegments
+    ALLOW_OVERLAP = vtkMRMLSegmentEditorNode.OverwriteNone
+
+
+@dataclass
+class SegmentMaskingParameters:
+    editable_area: SegmentationEditableArea = SegmentationEditableArea.EVERYWHERE
+    segment_id: str = ""
+    overwrite_mode: SegmentOverwriteMode = SegmentOverwriteMode.OVERWRITE_ALL
+
+    def __post_init__(self):
+        if self.segment_id:
+            self.editable_area = SegmentationEditableArea.INSIDE_SINGLE_SEGMENT
 
 
 class SegmentModifier:
