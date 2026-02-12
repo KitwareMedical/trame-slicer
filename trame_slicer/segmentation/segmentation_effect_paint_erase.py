@@ -7,6 +7,7 @@ from slicer import (
     vtkMRMLSliceNode,
     vtkMRMLViewNode,
 )
+from undo_stack import Signal
 
 from trame_slicer.utils import create_scripted_module_dataclass_proxy
 
@@ -21,6 +22,8 @@ from .segmentation_paint_pipeline import (
 
 
 class SegmentationEffectPaintErase(SegmentationEffect):
+    on_brush_diameter_changed = Signal(int)
+
     def __init__(self, mode: ModificationMode) -> None:
         super().__init__()
         self.set_mode(mode)
@@ -76,6 +79,17 @@ class SegmentationEffectPaintErase(SegmentationEffect):
         proxy = self._get_proxy()
         proxy.brush_diameter = diameter
         proxy.brush_diameter_mode = diameter_mode
+        self.on_brush_diameter_changed(diameter)
+
+    def increase_brush_size(self, *_args, **_kwargs):
+        proxy = self._get_proxy()
+        proxy.brush_diameter *= 1.1
+        self.on_brush_diameter_changed(proxy.brush_diameter)
+
+    def decrease_brush_size(self, *_args, **_kwargs):
+        proxy = self._get_proxy()
+        proxy.brush_diameter /= 1.1
+        self.on_brush_diameter_changed(proxy.brush_diameter)
 
     def is_sphere_brush(self) -> bool:
         return self._get_proxy().use_sphere_brush
