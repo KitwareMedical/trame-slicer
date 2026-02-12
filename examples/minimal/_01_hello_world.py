@@ -1,7 +1,6 @@
 """
-Minimal example of starting a trame-slicer server for testing and demonstration purpose.
-
-Doesn't provide any real features and only creates the minimum required components to create a trame-slicer application.
+Minimal hello world with no features.
+Creates the minimal trame-slicer classes and starts the server.
 """
 
 from trame.app import TrameApp
@@ -19,22 +18,13 @@ class MinimalTrameSlicerApp(TrameApp):
         self._slicer_app = SlicerApp()
 
         # Remote controlled view factory registration
-        register_rca_factories(
-            self._slicer_app.view_manager,
-            self._server,
-        )
+        register_rca_factories(self._slicer_app.view_manager, self._server)
 
         # Layout creation and view layout registration
-        self._layout_manager = LayoutManager(
-            self._slicer_app.scene,
-            self._slicer_app.view_manager,
-            self._server,
-        )
+        self._layout_manager = LayoutManager(self._slicer_app.scene, self._slicer_app.view_manager, self._server)
 
         # Register a layout and set the default view layout
-        self._layout_manager.register_layout_dict(
-            LayoutManager.default_grid_configuration(),
-        )
+        self._layout_manager.register_layout_dict(LayoutManager.default_grid_configuration())
         self._layout_manager.set_layout("Axial Primary")
 
         # Build the trame UI and populate the layout place-holder
