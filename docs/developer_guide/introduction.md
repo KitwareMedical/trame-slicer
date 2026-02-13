@@ -31,8 +31,8 @@ The project is organized with the following packages :
   functionalities and are meant to be assembled at the application level.
   Components include the base application handling the core initialization as
   well as the Segmentation Editor and more.
-- rca_views: Contains the glue between the views and trame's Remove Control Area
-  component.
+- rca_views: Contains the glue between the views and trame's Remote Control Area
+  component. See [trame-rca repository](https://github.com/Kitware/trame-rca/)
 - resources: Contains static resources such as images and Volume rendering
   presets. Resource path can be overridden at the Slicer Application level if
   needed. This package can then be used as an example of content.
