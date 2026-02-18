@@ -4,18 +4,13 @@ import asyncio
 from dataclasses import dataclass
 from enum import Enum, IntFlag, auto
 
-from slicer import vtkMRMLAbstractViewNode, vtkMRMLNode, vtkMRMLSliceNode
+from slicer import vtkMRMLAbstractViewNode, vtkMRMLNode, vtkMRMLSliceNode, vtkITKImageThresholdCalculator
 from vtkmodules.vtkCommonCore import VTK_UNSIGNED_INT, vtkLookupTable
 from vtkmodules.vtkCommonDataModel import vtkImageData
 from vtkmodules.vtkCommonMath import vtkMatrix4x4
 from vtkmodules.vtkImagingColor import vtkImageMapToRGBA
 from vtkmodules.vtkImagingCore import vtkImageThreshold
 from vtkmodules.vtkRenderingCore import vtkActor2D, vtkImageMapper, vtkRenderer
-
-try:
-    from vtkITK import vtkITKImageThresholdCalculator
-except ImportError:
-    from vtkmodules.vtkITK import vtkITKImageThresholdCalculator
 
 from ..utils import create_scripted_module_dataclass_proxy
 from ..views import SliceView
