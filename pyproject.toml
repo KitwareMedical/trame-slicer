@@ -3,6 +3,7 @@ name = "trame-slicer"
 version = "1.8.0"
 description = "trame-slicer library"
 authors = [
+    { name = "Kitware Europe", email = "kitware@kitware.fr" },
     { name = "Alexy Pellegrini", email = "alexy.pellegrini@kitware.com" },
     { name = "Jonathan Bouyer", email = "jonathan.bouyer@kitware.com" },
     { name = "Thibault Pelletier", email = "thibault.pelletier@kitware.com" },
