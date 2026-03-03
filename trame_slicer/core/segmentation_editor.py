@@ -30,6 +30,7 @@ from vtkmodules.vtkCommonDataModel import vtkImageData
 from trame_slicer.segmentation import (
     Segmentation,
     SegmentationDisplay,
+    SegmentationEditableArea,
     SegmentationEffect,
     SegmentationEffectErase,
     SegmentationEffectIslands,
@@ -38,7 +39,9 @@ from trame_slicer.segmentation import (
     SegmentationEffectPipeline,
     SegmentationEffectScissors,
     SegmentationEffectThreshold,
+    SegmentMaskingParameters,
     SegmentModifier,
+    SegmentOverwriteMode,
     SegmentProperties,
 )
 from trame_slicer.utils import ensure_node_in_scene
@@ -453,6 +456,25 @@ class SegmentationEditor(SignalContainer):
         if not self.active_segmentation_display:
             return None
         return self.active_segmentation_display.get_segment_visibility(segment_id)
+
+    def set_masking_parameters(self, parameters: SegmentMaskingParameters) -> None:
+        self.editor_node.SetMaskSegmentID(parameters.segment_id)
+        self.editor_node.SetMaskMode(parameters.editable_area.value)
+        self.editor_node.SetOverwriteMode(parameters.overwrite_mode.value)
+
+    def get_masking_parameters(
+        self,
+    ) -> SegmentMaskingParameters | None:
+        if self.active_segmentation is None:
+            return None
+        editable_area = SegmentationEditableArea(self.editor_node.GetMaskMode())
+        editable_segment_id = self.editor_node.GetMaskSegmentID()
+        overwrite_mode = SegmentOverwriteMode(self.editor_node.GetOverwriteMode())
+        return SegmentMaskingParameters(
+            editable_area=editable_area,
+            segment_id=editable_segment_id if editable_area == SegmentationEditableArea.INSIDE_SINGLE_SEGMENT else "",
+            overwrite_mode=overwrite_mode,
+        )
 
     def get_effect_parameter_node(
         self, effect: SegmentationEffect | type[SegmentationEffect]
