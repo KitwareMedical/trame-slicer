@@ -3,15 +3,11 @@ from slicer import (
     vtkMRMLNode,
     vtkOrientedImageData,
     vtkSlicerSegmentationsModuleLogic,
+    vtkITKIslandMath
 )
 from vtkmodules.vtkCommonCore import vtkIntArray
 from vtkmodules.vtkCommonMath import vtkMatrix4x4
 from vtkmodules.vtkImagingCore import vtkImageCast, vtkImageThreshold
-
-try:
-    from vtkmodules.vtkITK import vtkITKIslandMath
-except ImportError:
-    from vtkITK import vtkITKIslandMath
 
 from .segment_modifier import ModificationMode
 from .segmentation_effect import SegmentationEffect
