@@ -1,6 +1,7 @@
 from typing import Generic
 
 from trame_server import Server
+from vtkmodules.vtkCommonCore import vtkCommand
 
 from trame_slicer.core import SlicerApp
 from trame_slicer.segmentation import (
@@ -31,6 +32,17 @@ class PaintEraseEffectLogic(BaseEffectLogic[PaintEffectState, U], Generic[U]):
     def set_ui(self, ui: SegmentEditorUI):
         pass
 
+    def _set_brush_diameter(self, brush_diameter: float):
+        min_diameter = self.data.brush_diameter_slider.min_value
+        max_diameter = self.data.brush_diameter_slider.max_value
+        if min_diameter > brush_diameter or max_diameter < brush_diameter:
+            brush_diameter = min(
+                max(self.data.brush_diameter_slider.min_value, brush_diameter),
+                self.data.brush_diameter_slider.max_value,
+            )
+            self.effect.set_brush_diameter(brush_diameter, self.data.brush_diameter_mode)
+        self.data.brush_diameter_slider.value = brush_diameter
+
     def _on_brush_type_changed(self, _use_sphere_brush):
         self._refresh_brush()
 
@@ -48,6 +60,14 @@ class PaintEraseEffectLogic(BaseEffectLogic[PaintEffectState, U], Generic[U]):
 
     def _on_effect_changed(self, _effect_name: str) -> None:
         self._refresh_brush()
+        self.effect._param_node.AddObserver(vtkCommand.ModifiedEvent, self._on_modified_event)
+
+    def _on_modified_event(self, _caller, _event):
+        # React to brush size change
+        slicer_brush_size = self.effect._param_node.GetParameter("PaintEffectParameters__brush_diameter")
+        trame_brush_size = self.data.brush_diameter_slider.value
+        if trame_brush_size != slicer_brush_size:
+            self.data.brush_diameter_slider.value = slicer_brush_size
 
 
 class PaintEffectLogic(PaintEraseEffectLogic[SegmentationEffectPaint]):
