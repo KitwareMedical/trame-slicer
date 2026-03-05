@@ -45,13 +45,15 @@ class SegmentDisplayUI(VCard):
 
 
         with self:
-            with VCardItem():
+            with VCardItem(
+                click=f"{self._typed_state.name.is_extended} = !{self._typed_state.name.is_extended};",
+            ):
                 Text("Rendering", title=True)
                 with Template(v_slot_append=True):
                     VBtn(
                         icon=(f"{self._typed_state.name.is_extended} ? 'mdi-chevron-up' : 'mdi-chevron-down'",),
                         variant="flat",
-                        click=f"{self._typed_state.name.is_extended} = !{self._typed_state.name.is_extended};",
+                        click_stop=f"{self._typed_state.name.is_extended} = !{self._typed_state.name.is_extended};",
                         size="small",
                     )
             with VCardText(v_if=(self._typed_state.name.is_extended,), classes="align-center"):
