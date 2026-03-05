@@ -41,15 +41,19 @@ class SegmentDisplayUI(VCard):
 
         self._typed_state.data.opacity_3d.step = 0.01
         self._typed_state.data.opacity_3d.value = 1
+        self._typed_state.data.opacity_3d.is_disabled = not self._typed_state.data.show_3d
+
 
         with self:
-            with VCardItem():
+            with VCardItem(
+                click=f"{self._typed_state.name.is_extended} = !{self._typed_state.name.is_extended};",
+            ):
                 Text("Rendering", title=True)
                 with Template(v_slot_append=True):
                     VBtn(
                         icon=(f"{self._typed_state.name.is_extended} ? 'mdi-chevron-up' : 'mdi-chevron-down'",),
                         variant="flat",
-                        click=f"{self._typed_state.name.is_extended} = !{self._typed_state.name.is_extended};",
+                        click_stop=f"{self._typed_state.name.is_extended} = !{self._typed_state.name.is_extended};",
                         size="small",
                     )
             with VCardText(v_if=(self._typed_state.name.is_extended,), classes="align-center"):
@@ -88,7 +92,7 @@ class SegmentDisplayUI(VCard):
                     ControlButton(
                         icon="mdi-video-3d",
                         name="Toggle 3D",
-                        click=f"{self._typed_state.name.show_3d} = ! {self._typed_state.name.show_3d}",
+                        click=self._toggle_show_3d,
                         active=(self._typed_state.name.show_3d,),
                     )
                 Text("Border thickness", subtitle=True)
@@ -117,3 +121,7 @@ class SegmentDisplayUI(VCard):
             )
         else:
             self._typed_state.data.opacity_mode = SegmentationOpacityEnum.BOTH
+
+    def _toggle_show_3d(self):
+        self._typed_state.data.show_3d = not self._typed_state.data.show_3d
+        self._typed_state.data.opacity_3d.is_disabled = not self._typed_state.data.show_3d
