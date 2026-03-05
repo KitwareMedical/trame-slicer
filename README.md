@@ -58,7 +58,7 @@ The library can be installed as follows :
   [Downloading the latest wheels](#Downloading-the-latest-wheels))
   - Windows: `pip install vtk_mrml-9.4.0-cp310-cp310-win_amd64.whl`
   - Linux: `pip install vtk_mrml-9.4.0-cp310-cp310-manylinux_2_35_x86_64.whl`
-- For better FPS, you can optionally install
+- ⚠️For better FPS, you can optionally install
   [turbo-jpeg](<[url](https://github.com/Kitware/trame-rca?tab=readme-ov-file#optional-dependencies)>)
 
 ## Getting started
@@ -67,7 +67,11 @@ To get started using trame, please have a look at the
 [introductory trame course](https://kitware.github.io/trame/guide/intro/course.html).
 
 To start using the trame-slicer library, have a look and run the
-[medical viewer app](examples/medical_viewer_app.py)
+[medical viewer app](examples/medical_viewer_app.py):
+
+```bash
+python examples/medical_viewer_app.py
+```
 
 ## Features
 
@@ -114,7 +118,7 @@ The library is distributed with a permissive license. Please look at the
 [LICENSE](https://github.com/KitwareMedical/trame-slicer/blob/main/LICENSE) file
 for more information.
 
-## Acknowledgment
+## Acknowledgments  
 
 This library was funded by the following projects :
 
