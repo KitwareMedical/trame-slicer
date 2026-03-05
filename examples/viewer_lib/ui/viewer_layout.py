@@ -42,7 +42,7 @@ class ViewerLayout(VAppLayout):
 
         with self:
             with VAppBar() as self.appbar:
-                self.title = VToolbarTitle(title)
+                self.title = VToolbarTitle(title, style="user-select: none;")
 
             with VFooter(app=True, classes="my-0 py-0", border=True) as self.footer:
                 VProgressCircular(
