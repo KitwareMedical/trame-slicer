@@ -19,7 +19,6 @@ from trame_vuetify.ui.vuetify3 import SinglePageLayout
 from trame_slicer.core import LayoutManager, SlicerApp
 from trame_slicer.rca_view import register_rca_factories
 from trame_slicer.views import (
-    AbstractView,
     AbstractViewChild,
     IViewFactory,
     Layout,
@@ -86,10 +85,9 @@ class PlotlyViewFactory(IViewFactory):
     def __init__(self, server, **_):
         super().__init__()
         self._server = server
-        self._empty_view = AbstractView()
 
-    def _get_slicer_view(self, _view: V) -> AbstractViewChild:
-        return self._empty_view
+    def _get_slicer_view(self, _view: V) -> AbstractViewChild | None:
+        return None
 
     def can_create_view(self, view: ViewLayoutDefinition) -> bool:
         return view.view_type == CustomViews.PLOTLY_VIEW
