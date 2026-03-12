@@ -73,6 +73,13 @@ docs = [
     "vtk==9.4.0",
 ]
 
+[project.urls]
+documentation = "https://trame-slicer.readthedocs.io"
+source = "https://github.com/KitwareMedical/trame-slicer"
+download = "https://pypi.org/project/trame-slicer/#files"
+tracker = "https://github.com/KitwareMedical/trame-slicer/issues"
+"release notes" = "https://trame-slicer.readthedocs.io/en/latest/changelog.html"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
