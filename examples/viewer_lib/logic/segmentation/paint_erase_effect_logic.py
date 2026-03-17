@@ -48,6 +48,20 @@ class PaintEraseEffectLogic(BaseEffectLogic[PaintEffectState, U], Generic[U]):
 
     def _on_effect_changed(self, _effect_name: str) -> None:
         self._refresh_brush()
+        self.effect.parameters_changed.connect(self._on_modified_event)
+
+    def _on_modified_event(self):
+        slicer_brush_size = self.effect.get_brush_diameter()
+        trame_brush_size = self.data.brush_diameter_slider.value
+        if trame_brush_size == slicer_brush_size:
+            return
+        # React to brush size change
+        limited_value = min(
+            max(slicer_brush_size, self.data.brush_diameter_slider.min_value),
+            self.data.brush_diameter_slider.max_value,
+        )
+        self.data.brush_diameter_slider.value = limited_value
+        self.effect.set_brush_diameter(limited_value)
 
 
 class PaintEffectLogic(PaintEraseEffectLogic[SegmentationEffectPaint]):
