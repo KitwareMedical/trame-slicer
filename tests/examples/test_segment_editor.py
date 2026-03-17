@@ -1,4 +1,5 @@
 import pytest
+from slicer import vtkMRMLSegmentationNode, vtkMRMLSegmentEditorNode
 from trame_server.utils.typed_state import TypedState
 from undo_stack import UndoStack
 
@@ -10,9 +11,11 @@ from examples.viewer_lib.ui import (
     ViewerLayout,
 )
 from trame_slicer.segmentation import (
+    SegmentationEditableArea,
     SegmentationEffectNoTool,
     SegmentationEffectPaint,
     SegmentationEffectThreshold,
+    SegmentOverwriteMode,
 )
 
 
@@ -91,3 +94,24 @@ def test_can_add_remove_segments(a_state, editor_logic, editor_state, editor_ui)
     a_state.flush()
 
     assert len(editor_state.data.segment_list.segments) == 1
+
+
+def test_set_segment_edit_options(a_state, editor_logic):
+    a_state.ready()
+    assert editor_logic.segmentation_editor.editor_node.GetMaskMode() == vtkMRMLSegmentationNode.EditAllowedEverywhere
+    assert (
+        editor_logic.segmentation_editor.editor_node.GetOverwriteMode() == vtkMRMLSegmentEditorNode.OverwriteAllSegments
+    )
+
+    editor_logic.data.segment_edit_area.editable_area = SegmentationEditableArea.INSIDE_ALL_SEGMENTS
+    editor_logic.data.segment_edit_area.overwrite_mode = SegmentOverwriteMode.OVERWRITE_ALL_VISIBLE_SEGMENTS
+    a_state.flush()
+
+    assert (
+        editor_logic.segmentation_editor.editor_node.GetMaskMode()
+        == vtkMRMLSegmentationNode.EditAllowedInsideAllSegments
+    )
+    assert (
+        editor_logic.segmentation_editor.editor_node.GetOverwriteMode()
+        == vtkMRMLSegmentEditorNode.OverwriteVisibleSegments
+    )
