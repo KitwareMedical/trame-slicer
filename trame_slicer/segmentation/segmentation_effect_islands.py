@@ -8,14 +8,14 @@ from vtkmodules.vtkCommonCore import vtkIntArray
 from vtkmodules.vtkCommonMath import vtkMatrix4x4
 from vtkmodules.vtkImagingCore import vtkImageCast, vtkImageThreshold
 
-try:
-    from vtkmodules.vtkITK import vtkITKIslandMath
-except ImportError:
-    from vtkITK import vtkITKIslandMath
-
 from .segment_modifier import ModificationMode
 from .segmentation_effect import SegmentationEffect
 from .segmentation_undo_command import SegmentationLabelMapUndoCommand
+
+try:
+    from slicer import vtkITKIslandMath
+except ImportError:
+    from vtkITK import vtkITKIslandMath
 
 
 class SegmentationEffectIslands(SegmentationEffect):

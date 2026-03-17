@@ -21,13 +21,13 @@ from vtkmodules.vtkCommonMisc import vtkErrorCode
 from vtkmodules.vtkImagingCore import vtkImageChangeInformation
 
 try:
-    from vtkITK import (
+    from slicer import (
         vtkITKArchetypeImageSeriesScalarReader,
         vtkITKArchetypeImageSeriesVectorReaderFile,
         vtkITKArchetypeImageSeriesVectorReaderSeries,
     )
 except ImportError:
-    from vtkmodules.vtkITK import (
+    from vtkITK import (
         vtkITKArchetypeImageSeriesScalarReader,
         vtkITKArchetypeImageSeriesVectorReaderFile,
         vtkITKArchetypeImageSeriesVectorReaderSeries,
