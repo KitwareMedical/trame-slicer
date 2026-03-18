@@ -12,15 +12,15 @@ from vtkmodules.vtkImagingColor import vtkImageMapToRGBA
 from vtkmodules.vtkImagingCore import vtkImageThreshold
 from vtkmodules.vtkRenderingCore import vtkActor2D, vtkImageMapper, vtkRenderer
 
-try:
-    from vtkITK import vtkITKImageThresholdCalculator
-except ImportError:
-    from vtkmodules.vtkITK import vtkITKImageThresholdCalculator
-
 from ..utils import create_scripted_module_dataclass_proxy
 from ..views import SliceView
 from .segmentation_effect import SegmentationEffect
 from .segmentation_effect_pipeline import SegmentationEffectPipeline
+
+try:
+    from slicer import vtkITKImageThresholdCalculator
+except ImportError:
+    from vtkITK import vtkITKImageThresholdCalculator
 
 
 class AutoThresholdMethod(Enum):

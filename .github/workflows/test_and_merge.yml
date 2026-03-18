@@ -53,11 +53,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install vtk_mrml wheel (Linux)
-        if: matrix.config.os == 'ubuntu-latest'
-        run: |
-          pip install https://github.com/KitwareMedical/trame-slicer/releases/download/v1.4.0/vtk_mrml-9.4.0-cp310-cp310-manylinux_2_35_x86_64.whl
-
       - name: Install Mesa (Linux)
         if: matrix.config.os == 'ubuntu-latest'
         run: |
@@ -67,7 +62,7 @@ jobs:
 
       - name: Install and Run Tests
         run: |
-          pip install .[dev]
+          pip install .[dev,standalone]
           playwright install
           playwright install-deps
           pytest -s ./tests -n auto --cov=trame_slicer --cov-report=json --cov-report=term-missing

@@ -24,7 +24,7 @@ dependencies = [
     "py-undo-stack",
 ]
 
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 readme = "README.md"
 license = { text = "Apache 2.0 License" }
 keywords = [
@@ -63,14 +63,17 @@ dev = [
     "pytest-xprocess",
     "trame-plotly",
 ]
-
 docs = [
     "sphinx>=8,<9",
     "sphinx_rtd_theme",
     "sphinxcontrib-mermaid",
     "sphinx-autodoc-typehints",
     "myst-parser>=4",
-    "vtk==9.4.0",
+    "vtk==9.6.0",
+]
+standalone = [
+    "slicer-core>=5.11.0",
+    "slicer-layer-dm>=1.2.0"
 ]
 
 [project.urls]
