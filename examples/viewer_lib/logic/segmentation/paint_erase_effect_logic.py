@@ -51,6 +51,8 @@ class PaintEraseEffectLogic(BaseEffectLogic[PaintEffectState, U], Generic[U]):
         self.effect.parameters_changed.connect(self._on_modified_event)
 
     def _on_modified_event(self):
+        if not self.is_active():
+            return
         slicer_brush_size = self.effect.get_brush_diameter()
         trame_brush_size = self.data.brush_diameter_slider.value
         if trame_brush_size == slicer_brush_size:
