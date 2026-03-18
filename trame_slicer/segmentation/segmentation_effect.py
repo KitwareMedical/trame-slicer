@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 from weakref import ref
 
 from slicer import (
@@ -13,7 +14,9 @@ from slicer import (
 from undo_stack import Signal
 
 from .segment_modifier import ModificationMode, SegmentModifier
-from .segmentation_effect_pipeline import SegmentationEffectPipeline
+
+if TYPE_CHECKING:
+    from .segmentation_effect_pipeline import SegmentationEffectPipeline
 
 
 class SegmentationEffect(ABC):

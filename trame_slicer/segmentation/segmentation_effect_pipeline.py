@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from LayerDMLib import vtkMRMLLayerDMScriptedPipeline
 from slicer import vtkMRMLNode, vtkMRMLScriptedModuleNode
@@ -8,17 +8,19 @@ from vtkmodules.vtkCommonCore import vtkObject
 
 from .segment_modifier import SegmentModifier
 from .segmentation import Segmentation
+from .segmentation_effect import SegmentationEffect
 
 if TYPE_CHECKING:
     from trame_slicer.views import AbstractViewChild
 
-    from .segmentation_effect import SegmentationEffect
+
+T = TypeVar("T", bound=SegmentationEffect)
 
 
-class SegmentationEffectPipeline(vtkMRMLLayerDMScriptedPipeline):
+class SegmentationEffectPipeline(vtkMRMLLayerDMScriptedPipeline, Generic[T]):
     def __init__(self):
         super().__init__()
-        self._effect: SegmentationEffect | None = None
+        self._effect: T | None = None
         self._view: AbstractViewChild | None = None
         self._isActive = False
 
@@ -31,7 +33,7 @@ class SegmentationEffectPipeline(vtkMRMLLayerDMScriptedPipeline):
     def IsActive(self) -> bool:
         return self._isActive and self.GetModifier()
 
-    def SetSegmentationEffect(self, effect: SegmentationEffect):
+    def SetSegmentationEffect(self, effect: T):
         self._effect = effect
 
     def SetDisplayNode(self, displayNode: vtkMRMLNode) -> None:

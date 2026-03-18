@@ -3,7 +3,7 @@ from __future__ import annotations
 import enum
 import logging
 import math
-from collections.abc import Generator
+from contextlib import AbstractContextManager
 from enum import auto
 
 from numpy.typing import NDArray
@@ -382,5 +382,5 @@ class SegmentModifier:
             return False
         return self.segment_editor_node.GetSourceVolumeIntensityMask()
 
-    def group_undo_commands(self, text: str = "") -> Generator:
+    def group_undo_commands(self, text: str = "") -> AbstractContextManager[None]:
         return self.segmentation.group_undo_commands(text)

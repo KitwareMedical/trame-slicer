@@ -3,9 +3,9 @@ import pytest
 from examples.viewer_lib.logic import IslandsEffectLogic
 from examples.viewer_lib.ui import (
     IslandsEffectUI,
-    IslandsSegmentationMode,
     ViewerLayout,
 )
+from trame_slicer.segmentation import SegmentationIslandsMode
 
 
 @pytest.fixture
@@ -21,7 +21,7 @@ def effect_logic(a_server, a_slicer_app, effect_ui):
     return logic
 
 
-@pytest.mark.parametrize("island_mode", list(IslandsSegmentationMode))
+@pytest.mark.parametrize("island_mode", list(SegmentationIslandsMode))
 def test_can_apply_island_effect(
     effect_logic,
     effect_ui,
@@ -34,5 +34,5 @@ def test_can_apply_island_effect(
     segmentation_node = a_slicer_app.io_manager.load_segmentation(a_segmentation_nifti_file_path)
     a_segmentation_editor.set_active_segmentation(segmentation_node, a_volume_node)
     effect_logic.set_active()
-    effect_ui._typed_state.data.mode = island_mode
+    effect_logic.effect.set_island_mode(island_mode)
     effect_ui.apply_clicked()
