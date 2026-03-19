@@ -10,6 +10,12 @@ class Text(Div):
                 "text-subtitle-1" if title else ("text-subtitle-2" if subtitle else ""),
             ]
         )
+        kwargs["style"] = " ".join(
+            [
+                "user-select: none;",  # text is not selectable by default
+                kwargs.pop("style", ""),
+            ]
+        )
         super().__init__(**kwargs)
 
         with self:
