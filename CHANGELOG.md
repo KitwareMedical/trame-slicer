@@ -2,6 +2,60 @@
 
 <!-- version list -->
 
+## v1.9.0 (2026-03-19)
+
+### Bug Fixes
+
+- **segmentation**: Fix error with segmentation effect after paint erase
+  ([`5176379`](https://github.com/KitwareMedical/trame-slicer/commit/51763799da13bf7a964d4bd389e32c8c79eff855))
+
+### Chores
+
+- Update validate-pyproject precommit hook
+  ([`cc15d68`](https://github.com/KitwareMedical/trame-slicer/commit/cc15d686955c9b1650d3420dd4f62a2c1dd82456))
+
+### Code Style
+
+- Change imports due to minimum python version bump
+  ([`3860a60`](https://github.com/KitwareMedical/trame-slicer/commit/3860a607acc8ee3a1983aa4f189149facdf61449))
+
+### Continuous Integration
+
+- Update test and merge script to use standalone deps preset
+  ([`bba9ab0`](https://github.com/KitwareMedical/trame-slicer/commit/bba9ab0a54eea765d1a96e3cae117a0fb626c873))
+
+### Documentation
+
+- Add Kitware Europe as an author
+  ([`89fe097`](https://github.com/KitwareMedical/trame-slicer/commit/89fe097b2378a90e9e7143869ec8e693a07f1d97))
+
+- Add project urls
+  ([`d72fbb8`](https://github.com/KitwareMedical/trame-slicer/commit/d72fbb87decff16458c0913be931a59211df6942))
+
+- Create minimal example folder
+  ([`b2a3a2b`](https://github.com/KitwareMedical/trame-slicer/commit/b2a3a2ba56b51698ab2d90fd43861351200a1b37))
+
+- Fix minimal trame example layout manager creation
+  ([`9ced46c`](https://github.com/KitwareMedical/trame-slicer/commit/9ced46c9ec7c36758e88c63c690d510027c76cb8))
+
+- **example**: Improve example
+  ([`ce92b4c`](https://github.com/KitwareMedical/trame-slicer/commit/ce92b4cb13adedd1203974069359edd8bc0aceb7))
+
+- **minimal**: Remove unnecessary empty view in plotly example
+  ([`13b244c`](https://github.com/KitwareMedical/trame-slicer/commit/13b244c70feee63bb511ee2a7951dde43f0a494a))
+
+### Features
+
+- Change import locations to support running against slicer-core
+  ([`718921c`](https://github.com/KitwareMedical/trame-slicer/commit/718921cdf701f30e3244c1bc304191fa31223f4e))
+
+- Switch to slicer-core
+  ([`7bd2a08`](https://github.com/KitwareMedical/trame-slicer/commit/7bd2a0869b36b55d8b659008edcb47fff5418376))
+
+- **example**: Add option to change paint-erase brush size with mouse wheel
+  ([`d3bbc80`](https://github.com/KitwareMedical/trame-slicer/commit/d3bbc802137892aacb84150fca18e957ece9d38a))
+
+
 ## v1.8.0 (2026-02-09)
 
 ### Bug Fixes
