@@ -4,6 +4,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from typing import Any
 
+import numpy as np
 from numpy.typing import NDArray
 from slicer import (
     vtkMRMLSegmentationNode,
@@ -195,9 +196,13 @@ class Segmentation:
     def get_segment_values(self):
         return {segment_id: self.get_segment_value(segment_id) for segment_id in self.get_segment_ids()}
 
-    def get_segment_labelmap(self, segment_id, *, as_numpy_array=False) -> NDArray | vtkImageData:
+    def get_segment_labelmap(self, segment_id: str, *, as_numpy_array: bool = False) -> NDArray | vtkOrientedImageData:
+        """
+        Returns the labelmap corresponding to the input segment ID.
+        Labelmap is guaranteed to have the same dimensions as the reference volume.
+        """
         if not self.editor_logic or not self.editor_logic.GetSegmentEditorNode():
-            return None
+            return vtkImageData() if not as_numpy_array else np.array([])
 
         node = self.editor_logic.GetSegmentEditorNode()
         prev = node.GetSelectedSegmentID()
@@ -206,6 +211,11 @@ class Segmentation:
         self.editor_logic.UpdateSelectedSegmentLabelmap()
         labelmap = self.editor_logic.GetSelectedSegmentLabelmap()
         node.SetSelectedSegmentID(prev)
+
+        # If the segment is not initialized, return an empty modifier labelmap instead.
+        # Allows consumer code to always have segment labelmap with dimensions corresponding to the ref volume.
+        if labelmap.GetDimensions() == (0, 0, 0):
+            labelmap = self.create_modifier_labelmap()
 
         return labelmap if not as_numpy_array else vtk_image_to_np(labelmap)
 
@@ -284,16 +294,6 @@ class Segmentation:
 
     def _on_undo_changed(self, *_):
         self.trigger_modified()
-
-    def set_segment_labelmap(self, segment_id, label_map: vtkImageData | NDArray):
-        if segment_id not in self.get_segment_ids():
-            return
-
-        if isinstance(label_map, vtkImageData):
-            self.get_segment_labelmap(segment_id).DeepCopy(label_map)
-        else:
-            self.get_segment_labelmap(segment_id, as_numpy_array=True)[:] = label_map
-        self.segmentation_modified()
 
     def get_display(self) -> SegmentationDisplay | None:
         return SegmentationDisplay(self._segmentation_node.GetDisplayNode()) if self._segmentation_node else None

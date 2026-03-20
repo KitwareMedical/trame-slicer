@@ -1,6 +1,7 @@
 from .base_segmentation_logic import BaseEffectLogic, BaseSegmentationLogic
 from .brush_effect_logic import BrushEffectLogic
 from .islands_effect_logic import IslandsEffectLogic
+from .logical_operators_effect_logic import LogicalOperatorsEffectLogic
 from .paint_erase_effect_logic import (
     EraseEffectLogic,
     PaintEffectLogic,
@@ -18,6 +19,7 @@ __all__ = [
     "BrushEffectLogic",
     "EraseEffectLogic",
     "IslandsEffectLogic",
+    "LogicalOperatorsEffectLogic",
     "PaintEffectLogic",
     "PaintEraseEffectLogic",
     "ScissorsEffectLogic",

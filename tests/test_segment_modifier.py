@@ -26,7 +26,7 @@ def a_segment_modifier(a_simple_segmentation, a_segmentation_editor):
 def test_segmentation_modifier(a_segment_modifier, a_segmentation_editor):
     segment_id = a_segmentation_editor.add_empty_segment()
     labelmap = a_segment_modifier.get_segment_labelmap(segment_id, as_numpy_array=True)
-    np.testing.assert_array_equal(labelmap.tolist(), [])
+    np.testing.assert_array_equal(labelmap, [[[0, 0], [0, 0]], [[0, 0], [0, 0]]])
 
     vtk_modifier = a_segmentation_editor.create_modifier_labelmap()
     modifier = vtk_image_to_np(vtk_modifier)
@@ -117,3 +117,24 @@ def test_segment_modifier_erases_all_segments_in_erase_all(
     np.testing.assert_array_equal(a_segment_modifier.get_segment_labelmap(s1, as_numpy_array=True), empty)
     np.testing.assert_array_equal(a_segment_modifier.get_segment_labelmap(s2, as_numpy_array=True), empty)
     np.testing.assert_array_equal(a_segment_modifier.get_segment_labelmap(s3, as_numpy_array=True), empty)
+
+
+def test_set_segment_labelmap(a_segment_modifier):
+    segment_id = a_segment_modifier.segmentation.add_empty_segment()
+    segment_labelmap = a_segment_modifier.get_segment_labelmap(segment_id, as_numpy_array=True)
+    assert all(s > 0 for s in segment_labelmap.shape)
+    assert np.sum(segment_labelmap) == 0
+
+    h, w, d = segment_labelmap.shape
+    a_segment_modifier.set_segment_labelmap(segment_id, np.ones_like(segment_labelmap))
+    assert np.sum(a_segment_modifier.get_segment_labelmap(segment_id, as_numpy_array=True)) == h * w * d
+
+    a_segment_modifier.set_segment_labelmap(segment_id, np.zeros_like(segment_labelmap))
+    segment_labelmap = a_segment_modifier.get_segment_labelmap(segment_id, as_numpy_array=True)
+    assert np.sum(segment_labelmap) == 0
+
+
+@pytest.mark.parametrize("segment_id", ["", None, "NOT_SEGMENT"])
+def test_get_segment_labelmap_returns_empty_labelmap_for_not_existing_segment_id(a_segment_modifier, segment_id):
+    segment_labelmap = a_segment_modifier.get_segment_labelmap(segment_id, as_numpy_array=True)
+    assert all(s > 0 for s in segment_labelmap.shape)

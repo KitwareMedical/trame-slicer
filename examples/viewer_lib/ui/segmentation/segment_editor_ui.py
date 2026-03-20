@@ -20,6 +20,7 @@ from trame_slicer.segmentation import (
     SegmentationEffectDraw,
     SegmentationEffectErase,
     SegmentationEffectIslands,
+    SegmentationEffectLogicalOperators,
     SegmentationEffectNoTool,
     SegmentationEffectPaint,
     SegmentationEffectScissors,
@@ -31,6 +32,7 @@ from ..control_button import ControlButton
 from ..flex_container import FlexContainer
 from ..viewer_layout import ViewerLayoutState
 from .islands_effect_ui import IslandsEffectUI
+from .logical_operators_effect_ui import LogicalOperatorsEffectUI
 from .paint_effect_ui import PaintEffectUI
 from .scissors_effect_ui import ScissorsEffectUI
 from .segment_display_ui import SegmentDisplayState, SegmentDisplayUI
@@ -111,6 +113,7 @@ class SegmentEditorUI(FlexContainer):
                     with VCardText(classes="align-center", style="flex: 1; min-height: 0; overflow-y: auto;"):
                         self._register_effect_ui(SegmentationEffectPaint, PaintEffectUI)
                         self._register_effect_ui(SegmentationEffectErase, PaintEffectUI)
+                        self._register_effect_ui(SegmentationEffectLogicalOperators, LogicalOperatorsEffectUI)
                         self._register_effect_ui(SegmentationEffectThreshold, ThresholdEffectUI)
                         self._register_effect_ui(SegmentationEffectIslands, IslandsEffectUI)
                         self._register_effect_ui(SegmentationEffectScissors, ScissorsEffectUI)
@@ -155,6 +158,11 @@ class SegmentEditorUI(FlexContainer):
             **kwargs,
         )
         if all:
+            self._create_effect_button(
+                "Logical Operators",
+                "mdi-vector-intersection",
+                SegmentationEffectLogicalOperators,
+            )
             self._create_effect_button(
                 "Threshold",
                 "mdi-auto-fix",

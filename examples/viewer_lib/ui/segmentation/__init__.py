@@ -1,5 +1,10 @@
 from .brush_parameters_ui import BrushParametersState, BrushParametersUI
 from .islands_effect_ui import IslandsEffectUI, IslandsState
+from .logical_operators_effect_ui import (
+    LogicalOperatorsEffectUI,
+    LogicalOperatorsSegmentationMode,
+    LogicalOperatorsState,
+)
 from .paint_effect_ui import PaintEffectState, PaintEffectUI
 from .scissors_effect_ui import ScissorsEffectState, ScissorsEffectUI
 from .segment_display_ui import SegmentDisplayState, SegmentDisplayUI
@@ -27,6 +32,9 @@ __all__ = [
     "BrushParametersUI",
     "IslandsEffectUI",
     "IslandsState",
+    "LogicalOperatorsEffectUI",
+    "LogicalOperatorsSegmentationMode",
+    "LogicalOperatorsState",
     "PaintEffectState",
     "PaintEffectUI",
     "ScissorsEffectState",
