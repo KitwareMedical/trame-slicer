@@ -263,16 +263,6 @@ class Segmentation:
     def _on_undo_changed(self, *_):
         self.trigger_modified()
 
-    def set_segment_labelmap(self, segment_id, label_map: vtkImageData | NDArray):
-        if segment_id not in self.get_segment_ids():
-            return
-
-        if isinstance(label_map, vtkImageData):
-            self.get_segment_labelmap(segment_id).DeepCopy(label_map)
-        else:
-            self.get_segment_labelmap(segment_id, as_numpy_array=True)[:] = label_map
-        self.segmentation_modified()
-
     def get_display(self) -> SegmentationDisplay | None:
         return SegmentationDisplay(self._segmentation_node.GetDisplayNode()) if self._segmentation_node else None
 

@@ -8,6 +8,7 @@ from .segmentation import Segmentation
 from .segmentation_display import SegmentationDisplay, SegmentationOpacityEnum
 from .segmentation_effect import SegmentationEffect
 from .segmentation_effect_islands import SegmentationEffectIslands
+from .segmentation_effect_logical_operators import SegmentationEffectLogicalOperators
 from .segmentation_effect_no_tool import SegmentationEffectNoTool
 from .segmentation_effect_paint_erase import (
     SegmentationEffectErase,
@@ -53,6 +54,7 @@ __all__ = [
     "SegmentationEffect",
     "SegmentationEffectErase",
     "SegmentationEffectIslands",
+    "SegmentationEffectLogicalOperators",
     "SegmentationEffectNoTool",
     "SegmentationEffectPaint",
     "SegmentationEffectPaintErase",

@@ -141,6 +141,11 @@ def a_segmentation_nifti_file_path(a_data_folder) -> Path:
 
 
 @pytest.fixture
+def a_segmentation_overlap_file_path(a_data_folder) -> Path:
+    return a_data_folder.joinpath("segmentation_overlap.nrrd")
+
+
+@pytest.fixture
 def a_model_node(a_slicer_app, a_model_file_path):
     return load_model_node(
         a_model_file_path.as_posix(),
