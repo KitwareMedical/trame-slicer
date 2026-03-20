@@ -117,3 +117,20 @@ def test_segment_modifier_erases_all_segments_in_erase_all(
     np.testing.assert_array_equal(a_segment_modifier.get_segment_labelmap(s1, as_numpy_array=True), empty)
     np.testing.assert_array_equal(a_segment_modifier.get_segment_labelmap(s2, as_numpy_array=True), empty)
     np.testing.assert_array_equal(a_segment_modifier.get_segment_labelmap(s3, as_numpy_array=True), empty)
+
+
+def test_set_segment_labelmap(a_segment_modifier):
+    segment_id = a_segment_modifier.segmentation.add_empty_segment()
+    segment_labelmap = a_segment_modifier.get_segment_labelmap(segment_id, as_numpy_array=True)
+    h, w, d = segment_labelmap.shape
+    assert h > 0
+    assert w > 0
+    assert d > 0
+    assert np.sum(segment_labelmap) == 0
+
+    a_segment_modifier.set_segment_labelmap(segment_id, np.ones_like(segment_labelmap))
+    assert np.sum(a_segment_modifier.get_segment_labelmap(segment_id, as_numpy_array=True)) == h * w * d
+
+    a_segment_modifier.set_segment_labelmap(segment_id, np.zeros_like(segment_labelmap))
+    segment_labelmap = a_segment_modifier.get_segment_labelmap(segment_id, as_numpy_array=True)
+    assert np.sum(segment_labelmap) == 0

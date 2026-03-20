@@ -27,6 +27,7 @@ from vtkmodules.vtkImagingStencil import (
     vtkPolyDataToImageStencil,
 )
 
+from ..utils.vtk_numpy import vtk_image_to_np
 from .segmentation import Segmentation
 from .segmentation_undo_command import SegmentationLabelMapUndoCommand
 
@@ -230,6 +231,8 @@ class SegmentModifier:
         self,
         modifier_labelmap: vtkImageData,
         *,
+        segment_id: str | None = None,
+        modification_mode: ModificationMode | None = None,
         modifier_extent=None,
         is_per_segment: bool = True,
         do_bypass_masking: bool = False,
@@ -241,6 +244,8 @@ class SegmentModifier:
         with SegmentationLabelMapUndoCommand.push_state_change(self.segmentation):
             self._modify_active_segment_by_labelmap(
                 modifier_labelmap,
+                segment_id=segment_id,
+                modification_mode=modification_mode,
                 modifier_extent=modifier_extent,
                 is_per_segment=is_per_segment,
                 do_bypass_masking=do_bypass_masking,
@@ -251,11 +256,14 @@ class SegmentModifier:
         self,
         modifier_labelmap: vtkImageData,
         *,
+        segment_id: str | None = None,
+        modification_mode: ModificationMode | None = None,
         modifier_extent=None,
         is_per_segment: bool = True,
         do_bypass_masking: bool = False,
     ):
-        if not self.logic or self.active_segment_id == "":
+        segment_id = segment_id or self.active_segment_id
+        if not self.logic or segment_id == "":
             return
 
         if modifier_extent is None:
@@ -266,11 +274,11 @@ class SegmentModifier:
             ModificationMode.Add: vtkSlicerSegmentEditorLogic.ModificationModeAdd,
             ModificationMode.Remove: vtkSlicerSegmentEditorLogic.ModificationModeRemove,
             ModificationMode.RemoveAll: vtkSlicerSegmentEditorLogic.ModificationModeRemoveAll,
-        }[self.modification_mode]
+        }[modification_mode or self.modification_mode]
 
         self.logic.ModifySegmentByLabelmap(
             self.segmentation.segmentation_node,
-            self.active_segment_id,
+            segment_id,
             modifier_labelmap,
             modifier_mode,
             modifier_extent,
@@ -280,6 +288,19 @@ class SegmentModifier:
 
     def get_segment_labelmap(self, segment_id, *, as_numpy_array=False) -> NDArray | vtkImageData:
         return self._segmentation.get_segment_labelmap(segment_id=segment_id, as_numpy_array=as_numpy_array)
+
+    def set_segment_labelmap(self, segment_id, label_map: vtkImageData | NDArray):
+        if segment_id not in self.segmentation.get_segment_ids():
+            return
+
+        if isinstance(label_map, vtkImageData):
+            self.apply_labelmap(label_map, segment_id=segment_id, modification_mode=ModificationMode.Set)
+        else:
+            modifier_labelmap = self.create_modifier_labelmap()
+            modifier_labelmap_np = vtk_image_to_np(modifier_labelmap)
+            modifier_labelmap_np[:] = label_map  # modifier_labelmap is modified through reference
+            self.apply_labelmap(modifier_labelmap, segment_id=segment_id, modification_mode=ModificationMode.Set)
+        self.segmentation_modified()
 
     @staticmethod
     def _poly_to_image_data(poly: vtkPolyData) -> vtkOrientedImageData:

@@ -1,4 +1,9 @@
 from .islands_effect_ui import IslandsEffectUI, IslandsSegmentationMode, IslandsState
+from .logical_operators_effect_ui import (
+    LogicalOperatorsEffectUI,
+    LogicalOperatorsSegmentationMode,
+    LogicalOperatorsState,
+)
 from .paint_effect_ui import PaintEffectState, PaintEffectUI
 from .segment_display_ui import SegmentDisplayState, SegmentDisplayUI
 from .segment_edit_ui import (
@@ -19,6 +24,9 @@ __all__ = [
     "IslandsEffectUI",
     "IslandsSegmentationMode",
     "IslandsState",
+    "LogicalOperatorsEffectUI",
+    "LogicalOperatorsSegmentationMode",
+    "LogicalOperatorsState",
     "PaintEffectState",
     "PaintEffectUI",
     "SegmentDisplayState",

@@ -17,6 +17,7 @@ from ...ui import (
 )
 from .base_segmentation_logic import BaseEffectLogic, BaseSegmentationLogic
 from .islands_effect_logic import IslandsEffectLogic
+from .logical_operators_effect_logic import LogicalOperatorsEffectLogic
 from .paint_erase_effect_logic import EraseEffectLogic, PaintEffectLogic
 from .segment_edit_logic import SegmentEditLogic
 from .threshold_effect_logic import ThresholdEffectLogic
@@ -28,6 +29,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
 
         effect_logic = [
             IslandsEffectLogic,
+            LogicalOperatorsEffectLogic,
             ThresholdEffectLogic,
             PaintEffectLogic,
             EraseEffectLogic,
