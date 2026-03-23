@@ -30,6 +30,7 @@ from ..flex_container import FlexContainer
 from ..viewer_layout import ViewerLayoutState
 from .islands_effect_ui import IslandsEffectUI
 from .paint_effect_ui import PaintEffectUI
+from .scissors_effect_ui import ScissorsEffectUI
 from .segment_display_ui import SegmentDisplayState, SegmentDisplayUI
 from .segment_edit_ui import SegmentEditState, SegmentEditUI
 from .segment_list import SegmentList, SegmentListMenu, SegmentListState
@@ -96,21 +97,26 @@ class SegmentEditorUI(FlexContainer):
                         )
                 VDivider()
                 with VCard(
-                    v_if=(self._typed_state.name.segment_list.active_segment_id,), classes="flex-grow-1", variant="flat"
+                    v_if=(self._typed_state.name.segment_list.active_segment_id,),
+                    classes="flex-grow-1",
+                    variant="flat",
+                    style="display: flex; flex-direction: column; min-height: 0;",
                 ):
                     with VCardItem(), FlexContainer(row=True, justify="space-between"):
                         self.build_effect_buttons()
                     VDivider(classes="mx-3")
-                    with VCardText(classes="align-center"):
+                    with VCardText(classes="align-center", style="flex: 1; min-height: 0; overflow-y: auto;"):
                         self._register_effect_ui(SegmentationEffectPaint, PaintEffectUI)
                         self._register_effect_ui(SegmentationEffectErase, PaintEffectUI)
                         self._register_effect_ui(SegmentationEffectThreshold, ThresholdEffectUI)
                         self._register_effect_ui(SegmentationEffectIslands, IslandsEffectUI)
+                        self._register_effect_ui(SegmentationEffectScissors, ScissorsEffectUI)
                 VSpacer(v_else=True)
                 VDivider()
                 SegmentDisplayUI(
                     typed_state=self.sub_state(self._typed_state.name.segment_display),
                     variant="flat",
+                    style="display: flex; flex-direction: column; min-height: 0;",
                 )
 
     def build_effect_buttons(self, all: bool = True, **kwargs):

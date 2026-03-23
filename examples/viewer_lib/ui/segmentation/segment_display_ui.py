@@ -55,7 +55,11 @@ class SegmentDisplayUI(VCard):
                         click_stop=f"{self._typed_state.name.is_extended} = !{self._typed_state.name.is_extended};",
                         size="small",
                     )
-            with VCardText(v_if=(self._typed_state.name.is_extended,), classes="align-center"):
+            with VCardText(
+                v_if=(self._typed_state.name.is_extended,),
+                classes="align-center",
+                style="flex: 1; min-height: 0; overflow-y: auto;",
+            ):
                 Text("Display", subtitle=True)
                 with FlexContainer(
                     justify="space-between",
