@@ -1,4 +1,4 @@
-from .islands_effect_ui import IslandsEffectUI, IslandsSegmentationMode, IslandsState
+from .islands_effect_ui import IslandsEffectUI, IslandsState
 from .paint_effect_ui import PaintEffectState, PaintEffectUI
 from .segment_display_ui import SegmentDisplayState, SegmentDisplayUI
 from .segment_edit_ui import (
@@ -17,7 +17,6 @@ from .threshold_effect_ui import ThresholdEffectUI, ThresholdState
 
 __all__ = [
     "IslandsEffectUI",
-    "IslandsSegmentationMode",
     "IslandsState",
     "PaintEffectState",
     "PaintEffectUI",

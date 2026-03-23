@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Generator
 from contextlib import contextmanager
+from typing import Any
 
 from numpy.typing import NDArray
 from slicer import (
@@ -277,7 +278,7 @@ class Segmentation:
         return SegmentationDisplay(self._segmentation_node.GetDisplayNode()) if self._segmentation_node else None
 
     @contextmanager
-    def group_undo_commands(self, text: str = "") -> Generator:
+    def group_undo_commands(self, text: str = "") -> Generator[None, Any, None]:
         if not self.undo_stack:
             yield
             return

@@ -6,6 +6,8 @@ from undo_stack import UndoStack
 
 from trame_slicer.segmentation import SegmentationEffectIslands
 
+SPHERE_CENTER = [0, 40, 3]
+
 
 @pytest.fixture
 def a_segmentation_spheres_file_path(a_data_folder) -> Path:
@@ -64,3 +66,45 @@ def test_with_max_min_voxel_size_remove_small_islands_removes_all_islands(a_segm
     effect.remove_small_islands(int(1e15))
     segment_array = get_segment_array(a_segmentation_editor, segment_id)
     assert np.array_equal(segment_array, np.zeros_like(segment_array))
+
+
+def test_keep_selected(a_segmentation_editor, effect, segment_id):
+    assert effect.is_active
+    assert len(effect._get_label_values()) == 3
+    segment_array = get_segment_array(a_segmentation_editor, segment_id)
+
+    effect.keep_island_at_position([0, 0, 0])
+    assert np.sum(get_segment_array(a_segmentation_editor, segment_id)) == np.sum(segment_array)
+    assert len(effect._get_label_values()) == 3
+
+    effect.keep_island_at_position(SPHERE_CENTER)
+    assert np.sum(get_segment_array(a_segmentation_editor, segment_id)) < np.sum(segment_array)
+    assert len(effect._get_label_values()) == 1
+
+
+def test_remove_selected(a_segmentation_editor, effect, segment_id):
+    assert effect.is_active
+    assert len(effect._get_label_values()) == 3
+    segment_array = get_segment_array(a_segmentation_editor, segment_id)
+
+    effect.remove_island_at_position([0, 0, 0])
+    assert np.sum(get_segment_array(a_segmentation_editor, segment_id)) == np.sum(segment_array)
+    assert len(effect._get_label_values()) == 3
+
+    effect.remove_island_at_position(SPHERE_CENTER)
+    assert np.sum(get_segment_array(a_segmentation_editor, segment_id)) < np.sum(segment_array)
+    assert len(effect._get_label_values()) == 2
+
+
+def test_add_selected(a_segmentation_editor, effect):
+    assert effect.is_active
+    new_segment_id = a_segmentation_editor.add_empty_segment()
+    assert len(effect._get_label_values()) == 0
+
+    effect.add_island_at_position([0, 0, 0])
+    assert np.sum(get_segment_array(a_segmentation_editor, new_segment_id)) == 0
+    assert len(effect._get_label_values()) == 0
+
+    effect.add_island_at_position(SPHERE_CENTER)
+    assert np.sum(get_segment_array(a_segmentation_editor, new_segment_id)) > 0
+    assert len(effect._get_label_values()) == 1
