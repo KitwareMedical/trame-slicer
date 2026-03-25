@@ -25,8 +25,8 @@ class DirectViewFactory(IViewFactory):
         super().__init__()
         self._do_render_offscreen = do_render_offscreen
 
-    def can_create_view(self, _view: ViewLayoutDefinition) -> bool:
-        return _view.view_type in [ViewType.SLICE_VIEW, ViewType.THREE_D_VIEW]
+    def can_create_view(self, view: ViewLayoutDefinition) -> bool:
+        return view.view_type in [ViewType.SLICE_VIEW, ViewType.THREE_D_VIEW]
 
     def _create_view(
         self,
@@ -42,13 +42,14 @@ class DirectViewFactory(IViewFactory):
         return None
 
     def _create_threed_view(self, app_logic, scene, view: ViewLayoutDefinition) -> ThreeDView:
-        return self._update_offscreen_rendering(
+        return self._update_view_properties(
             ThreeDView(
                 scene,
                 app_logic,
                 view.singleton_tag,
                 scheduled_render_strategy=DirectRendering(),
-            )
+            ),
+            view,
         )
 
     def _create_slice_view(self, app_logic, scene, view: ViewLayoutDefinition) -> SliceView:
@@ -58,13 +59,14 @@ class DirectViewFactory(IViewFactory):
             view.singleton_tag,
             scheduled_render_strategy=DirectRendering(),
         )
-        if view.properties.orientation:
-            slice_view.set_orientation(view.properties.orientation)
-        return self._update_offscreen_rendering(slice_view)
+        return self._update_view_properties(slice_view, view)
 
     def _get_slicer_view(self, view: V) -> AbstractViewChild:
         return view.slicer_view
 
-    def _update_offscreen_rendering(self, view: AbstractViewChild) -> AbstractViewChild:
-        view.render_window().SetOffScreenRendering(self._do_render_offscreen)
-        return view
+    def _update_view_properties(
+        self, view_instance: AbstractViewChild, view: ViewLayoutDefinition
+    ) -> AbstractViewChild:
+        view_instance.render_window().SetOffScreenRendering(self._do_render_offscreen)
+        view_instance.set_view_properties(view.properties)
+        return view_instance
