@@ -4,14 +4,13 @@ import pytest
 from async_timeout import timeout
 from playwright.async_api import async_playwright
 
+import examples.minimal as min_examples
 from examples.medical_viewer_app import MedicalViewerApp
 from examples.segmentation_app import SegmentationApp
 
 
 def min_example_apps() -> list[type]:
     import inspect
-
-    import examples.minimal as min_examples
 
     return [obj for name, obj in inspect.getmembers(min_examples, inspect.isclass)]
 
@@ -31,3 +30,7 @@ async def test_example_app_can_be_loaded(async_server, a_server_port, example_cl
         await page.goto(url)
         await asyncio.sleep(1.0)
         await browser.close()
+
+
+def test_serverless_example_can_be_loaded(render_interactive):
+    min_examples.server_less_viewer(is_interactive=bool(render_interactive))

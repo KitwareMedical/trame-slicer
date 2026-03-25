@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .abstract_view import AbstractView, AbstractViewChild, ViewOrientation, ViewProps
 from .cursor_id import CursorId
+from .direct_view_factory import DirectViewFactory
 from .layout_grid import (
     Layout,
     LayoutDirection,
@@ -35,6 +36,7 @@ __all__ = [
     "AsyncIORendering",
     "CursorId",
     "DirectRendering",
+    "DirectViewFactory",
     "IViewFactory",
     "Layout",
     "LayoutDirection",

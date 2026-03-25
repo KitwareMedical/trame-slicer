@@ -372,3 +372,6 @@ class AbstractView:
         if isinstance(dm_class, type):
             dm_class = dm_class.__name__
         return self._displayable_manager_group.GetDisplayableManagerByClassName(dm_class)
+
+    def update_size(self, width, height):
+        self.interactor().UpdateSize(int(width), int(height))

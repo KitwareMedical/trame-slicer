@@ -12,7 +12,8 @@ from trame_slicer.views import (
     ViewLayoutDefinition,
     ViewType,
 )
-from trame_slicer.views.view_factory import V
+
+from .view_factory import V
 
 
 @dataclass
@@ -21,12 +22,16 @@ class _View(Generic[AbstractViewChild]):
 
 
 class DirectViewFactory(IViewFactory):
-    def __init__(self, do_render_offscreen: bool):
+    """
+    Creates views in serverless mode with a DirectRendering render scheduler.
+    """
+
+    def __init__(self, do_render_offscreen: bool = False):
         super().__init__()
         self._do_render_offscreen = do_render_offscreen
 
     def can_create_view(self, _view: ViewLayoutDefinition) -> bool:
-        return True
+        return _view.view_type in [ViewType.SLICE_VIEW, ViewType.THREE_D_VIEW]
 
     def _create_view(
         self,

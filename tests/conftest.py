@@ -14,9 +14,13 @@ from trame.app import get_server
 from trame_client.utils.testing import FixtureHelper
 from trame_server.utils.asynchronous import create_task
 
-from tests.direct_view_factory import DirectViewFactory
 from trame_slicer.core import SlicerApp
-from trame_slicer.views import ViewLayoutDefinition, ViewProps, ViewType
+from trame_slicer.views import (
+    DirectViewFactory,
+    ViewLayoutDefinition,
+    ViewProps,
+    ViewType,
+)
 
 
 @pytest.fixture
