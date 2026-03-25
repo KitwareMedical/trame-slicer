@@ -3,17 +3,12 @@ from typing import Generic
 
 from slicer import vtkMRMLApplicationLogic, vtkMRMLScene
 
-from trame_slicer.views import (
-    AbstractViewChild,
-    DirectRendering,
-    IViewFactory,
-    SliceView,
-    ThreeDView,
-    ViewLayoutDefinition,
-    ViewType,
-)
-
-from .view_factory import V
+from .abstract_view import AbstractViewChild
+from .render_scheduler import DirectRendering
+from .slice_view import SliceView
+from .threed_view import ThreeDView
+from .view_factory import IViewFactory, V
+from .view_layout_definition import ViewLayoutDefinition, ViewType
 
 
 @dataclass
