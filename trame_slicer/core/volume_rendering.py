@@ -260,14 +260,14 @@ class VolumeRendering(SlicerWrapper[vtkSlicerVolumeRenderingLogic]):
     def set_vr_opacity(self, volume_node: vtkMRMLVolumeNode, opacity: float, gradient_threshold_hu: float = 0):
         """
         Update volume node gradient opacity function applied on RBG value.
-        Copied from :
-            https://slicer.readthedocs.io/en/latest/developer_guide/script_repository.html#show-volume-rendering-making-soft-tissues-transparent
+        Copied from:
+        https://slicer.readthedocs.io/en/latest/developer_guide/script_repository.html#show-volume-rendering-making-soft-tissues-transparent
 
         Updates the Volume property node gradient opacity with 0 opacity below a given HU value and the updated slider
         position opacity value above.
 
         By default, the gradient threshold is set to around water HU value
-            https://www.sciencedirect.com/topics/medicine-and-dentistry/hounsfield-scale
+        https://www.sciencedirect.com/topics/medicine-and-dentistry/hounsfield-scale
 
         :param volume_node: volume node on which the VR opacity will be applied
         :param opacity: Opacity value between [0, 1]. 1 = fully opaque, 0 = fully transparent.

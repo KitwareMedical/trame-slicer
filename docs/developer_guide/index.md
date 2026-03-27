@@ -7,6 +7,7 @@ introduction
 features
 design_recipes
 segmentation/index
+examples
 ```
 
 # Trame Slicer API
@@ -14,9 +15,5 @@ segmentation/index
 ```{toctree}
 :maxdepth: 2
 
-trame_slicer.core
-trame_slicer.rca_view
-trame_slicer.segmentation
-trame_slicer.utils
-trame_slicer.views
+modules
 ```

@@ -32,12 +32,12 @@ The library can be installed in a Python environment as follows:
 
 - Setup a Python 3.10-3.13 (included) virtualenv and activate it
 - From PyPI
-  - Use `pip install trame-slicer[standalone]` to install the latest release
+  - Use `pip install "trame-slicer[standalone]"` to install the latest release
 - From GitHub
   - Git clone the library
   - cd into the library
-  - Use the `pip install -e .[standalone]` command to install the library along
-    it's dependencies
+  - Use the `pip install -e ".[standalone]"` command to install the library
+    along it's dependencies
 - For optimal performances, you should install
   [turbo-jpeg](<[url](https://github.com/Kitware/trame-rca?tab=readme-ov-file#optional-dependencies)>)
 
@@ -47,7 +47,7 @@ To get started using trame, please have a look at the
 [introductory trame course](https://kitware.github.io/trame/guide/intro/course.html).
 
 To start using the trame-slicer library, have a look and run the
-[medical viewer app](examples/medical_viewer_app.py):
+[medical viewer app](https://github.com/KitwareMedical/trame-slicer/blob/main/examples/medical_viewer_app.py):
 
 ```bash
 python examples/medical_viewer_app.py

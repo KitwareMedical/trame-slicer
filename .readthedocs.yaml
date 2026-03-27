@@ -14,3 +14,5 @@ python:
       path: .
       extra_requirements:
         - docs
+        - standalone
+        - dev

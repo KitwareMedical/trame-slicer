@@ -52,7 +52,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # -- Options for autodoc -----------------------------------------------------
 autodoc_member_order = "bysource"
-autodoc_mock_imports = ["slicer", "LayerDMLib", "vtkITK"]
+autodoc_mock_imports = []
 
 # -- Options for HTML output -------------------------------------------------
 
