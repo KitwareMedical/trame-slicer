@@ -6,14 +6,12 @@ from slicer import (
     vtkMRMLAbstractViewNode,
     vtkMRMLInteractionEventData,
     vtkMRMLNode,
-    vtkMRMLSliceNode,
 )
+from undo_stack.signal import Signal
 from vtkmodules.vtkCommonCore import vtkCommand, vtkPoints
-from vtkmodules.vtkCommonDataModel import vtkCellArray, vtkPolyData, vtkQuad
-from vtkmodules.vtkCommonMath import vtkMatrix4x4
+from vtkmodules.vtkCommonDataModel import vtkCellArray, vtkPolyData
 from vtkmodules.vtkRenderingCore import (
     vtkActor2D,
-    vtkCoordinate,
     vtkPolyDataMapper2D,
     vtkProp,
     vtkProperty2D,
@@ -22,6 +20,7 @@ from vtkmodules.vtkRenderingCore import (
 
 from .segment_modifier import SegmentModifier
 from .segmentation_effect_pipeline import SegmentationEffectPipeline
+from .segmentation_effect_scissors import SegmentationEffectScissors
 
 
 class ScissorsPolygonBrush:
@@ -92,6 +91,8 @@ class SegmentationScissorsWidget:
     On 3D view project 2D points on focal plane (world pos)
     """
 
+    interaction_stopped = Signal(vtkPoints)
+
     def __init__(self) -> None:
         self._modifier: SegmentModifier | None = None
         self._view_node: vtkMRMLAbstractViewNode | None = None
@@ -149,87 +150,17 @@ class SegmentationScissorsWidget:
 
     def stop_painting(self) -> None:
         self._painting = False
-        self.commit()
+        # Reset brush before emitting signal to ensure reset is done
+        points = vtkPoints()
+        points.DeepCopy(self._brush.points)
         self._brush.reset()
+        self.interaction_stopped.emit(points)
 
     def is_painting(self) -> bool:
         return self._painting
 
-    def commit(self):
-        # need at least 3 points to create a closed polydata
-        if self._brush.points.GetNumberOfPoints() >= 3:
-            self._modifier.apply_polydata_world(self._create_poly())
 
-    def _create_poly(self) -> vtkPolyData:
-        # DisplayToWorldCoordinate
-        nodes = self._brush.points
-        point_count = nodes.GetNumberOfPoints()
-
-        polydata = vtkPolyData()
-        points = vtkPoints()
-        points.SetNumberOfPoints(2 * point_count)
-        polydata.SetPoints(points)
-        cells = vtkCellArray()
-        polydata.SetPolys(cells)
-
-        quad = vtkQuad()
-        ids = quad.GetPointIds()
-        ids.SetNumberOfIds(4)
-
-        dc_to_wc = vtkCoordinate()
-        dc_to_wc.SetCoordinateSystemToDisplay()
-
-        for i in range(point_count):
-            node_position_dc = [0.0, 0.0, 0.0]
-            nodes.GetPoint(i, node_position_dc)
-
-            near, far = self._display_to_world(node_position_dc, dc_to_wc)
-
-            points.SetPoint(2 * i, near[:3])
-            points.SetPoint(2 * i + 1, far[:3])
-
-            ids.SetId(0, 2 * i)
-            ids.SetId(1, 2 * i + 1)
-            ids.SetId(2, (2 * i + 3) % (2 * point_count))
-            ids.SetId(3, (2 * i + 2) % (2 * point_count))
-            cells.InsertNextCell(quad)
-
-        return polydata
-
-    def _display_to_world(
-        self, display_coords: list[float], dc_to_wc: vtkCoordinate
-    ) -> tuple[list[float], list[float]]:
-        if isinstance(self._view_node, vtkMRMLSliceNode):
-            return self._display_to_world_slice(display_coords, self._view_node)
-        return self._display_to_world_generic(display_coords, dc_to_wc)
-
-    def _display_to_world_slice(
-        self, display_coords: list[float], slice_node: vtkMRMLSliceNode
-    ) -> tuple[list[float], list[float]]:
-        xy_to_slice: vtkMatrix4x4 = slice_node.GetXYToRAS()
-
-        max_dim = max(self._modifier.volume_node.GetImageData().GetBounds())
-
-        near = xy_to_slice.MultiplyPoint([display_coords[0], display_coords[1], -max_dim, 1.0])
-        far = xy_to_slice.MultiplyPoint([display_coords[0], display_coords[1], max_dim, 1.0])
-
-        return list(near), list(far)
-
-    def _display_to_world_generic(
-        self, display_coords: list[float], dc_to_wc: vtkCoordinate
-    ) -> tuple[list[float], list[float]]:
-        renderer = self._renderer
-
-        dc_to_wc.SetValue(display_coords[0], display_coords[1], 0.0)
-        near = dc_to_wc.GetComputedWorldValue(renderer)
-
-        dc_to_wc.SetValue(display_coords[0], display_coords[1], 1.0)
-        far = dc_to_wc.GetComputedWorldValue(renderer)
-
-        return list(near), list(far)
-
-
-class SegmentationScissorsPipeline(SegmentationEffectPipeline):
+class SegmentationScissorsPipeline(SegmentationEffectPipeline[SegmentationEffectScissors]):
     def __init__(self) -> None:
         super().__init__()
 
@@ -244,8 +175,14 @@ class SegmentationScissorsPipeline(SegmentationEffectPipeline):
 
     def SetActive(self, isActive: bool):
         super().SetActive(isActive)
+        self.widget.interaction_stopped.connect(self._OnWidgetInteractionStopped)
         self.widget.set_modifier(self._effect.modifier)
         self.widget.set_active(is_active=isActive)
+
+    def _OnWidgetInteractionStopped(self, points: vtkPoints) -> None:
+        if points.GetNumberOfPoints() == 0:
+            return
+        self._effect.apply_points_display_coordinates(points, self._view)
 
     def OnRendererAdded(self, renderer: vtkRenderer | None) -> None:
         self.widget.set_renderer(renderer)

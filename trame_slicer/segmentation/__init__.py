@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from .brush_source import BrushSource
 from .paint_effect_parameters import BrushDiameterMode, BrushShape
+from .scissors_effect_parameters import (
+    ScissorsEffectFillMode,
+    ScissorsEffectRangeMode,
+)
 from .segment_modifier import ModificationMode, SegmentModifier
 from .segment_properties import SegmentProperties
 from .segmentation import Segmentation
@@ -49,6 +53,8 @@ __all__ = [
     "BrushShape",
     "BrushSource",
     "ModificationMode",
+    "ScissorsEffectFillMode",
+    "ScissorsEffectRangeMode",
     "ScissorsPolygonBrush",
     "SegmentModifier",
     "SegmentProperties",
