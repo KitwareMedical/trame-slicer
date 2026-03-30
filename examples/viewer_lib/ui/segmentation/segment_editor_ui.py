@@ -17,6 +17,7 @@ from undo_stack import Signal
 
 from trame_slicer.segmentation import (
     SegmentationEffect,
+    SegmentationEffectDraw,
     SegmentationEffectErase,
     SegmentationEffectIslands,
     SegmentationEffectNoTool,
@@ -142,6 +143,12 @@ class SegmentEditorUI(FlexContainer):
             "Scissors",
             "mdi-content-cut",
             SegmentationEffectScissors,
+            **kwargs,
+        )
+        self._create_effect_button(
+            "Draw",
+            "mdi-draw",
+            SegmentationEffectDraw,
             **kwargs,
         )
         if all:

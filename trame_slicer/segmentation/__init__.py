@@ -11,6 +11,7 @@ from .segment_properties import SegmentProperties
 from .segmentation import Segmentation
 from .segmentation_display import SegmentationDisplay, SegmentationOpacityEnum
 from .segmentation_effect import SegmentationEffect
+from .segmentation_effect_draw import SegmentationEffectDraw
 from .segmentation_effect_islands import (
     SegmentationEffectIslands,
     SegmentationIslandsMode,
@@ -61,6 +62,7 @@ __all__ = [
     "Segmentation",
     "SegmentationDisplay",
     "SegmentationEffect",
+    "SegmentationEffectDraw",
     "SegmentationEffectErase",
     "SegmentationEffectIslands",
     "SegmentationEffectNoTool",
