@@ -61,13 +61,13 @@ class LayoutManager:
         If lazy_initialization is False, the views will not be instantiated unless the passed layout id matches the
         current selected layout id.
         """
-        with self.registered_layouts_changed.emit_once():
-            self._layouts[layout_id] = layout
-            if not lazy_initialization:
-                self.create_layout_views_if_needed(layout_id)
+        self._layouts[layout_id] = layout
+        if not lazy_initialization:
+            self.create_layout_views_if_needed(layout_id)
 
-            if self._current_layout == layout_id:
-                self._refresh_layout()
+        if self._current_layout == layout_id:
+            self._refresh_layout()
+        self.registered_layouts_changed.emit()
 
     def set_layout(self, layout_id: str) -> None:
         if layout_id == self._current_layout:
@@ -137,8 +137,9 @@ class LayoutManager:
         :param lazy_initialization: If True, the layout views will not be created until explicitly requested by
             set_layout or create_layout_views_if_needed
         """
-        for layout_id, layout in layout_dict.items():
-            self.register_layout(layout_id, layout, lazy_initialization)
+        with self.registered_layouts_changed.emit_once():
+            for layout_id, layout in layout_dict.items():
+                self.register_layout(layout_id, layout, lazy_initialization)
 
     @classmethod
     def default_grid_configuration(cls) -> dict[str, Layout]:

@@ -368,3 +368,48 @@ def test_on_initialize_refreshes_if_current_layout(
         layout_manager.initialize_layout_grid(ui)
 
     a_mock_ui.clear.assert_called_once()
+
+
+def test_emit_current_layout_changed(
+    a_mock_ui,
+    a_mock_view_manager,
+    a_slicer_scene,
+    a_server,
+    a_sagittal_layout,
+    a_coronal_layout,
+):
+    layout_manager = LayoutManager(
+        a_slicer_scene, a_mock_view_manager, a_server, virtual_node=a_mock_ui, is_virtual_node_initialized=False
+    )
+    on_current_layout_changed = mock.MagicMock()
+    layout_manager.current_layout_changed.connect(on_current_layout_changed)
+    layout_manager.register_layout_dict(
+        {
+            "Sagittal": a_sagittal_layout,
+            "Coronal": a_coronal_layout,
+        }
+    )
+    layout_manager.set_layout("Coronal")
+    on_current_layout_changed.assert_called_once_with("Coronal")
+
+
+def test_emit_registered_layouts_changed(
+    a_mock_ui,
+    a_mock_view_manager,
+    a_slicer_scene,
+    a_server,
+    a_sagittal_layout,
+    a_coronal_layout,
+):
+    layout_manager = LayoutManager(
+        a_slicer_scene, a_mock_view_manager, a_server, virtual_node=a_mock_ui, is_virtual_node_initialized=False
+    )
+    on_registered_layouts_changed = mock.MagicMock()
+    layout_manager.registered_layouts_changed.connect(on_registered_layouts_changed)
+    layout_manager.register_layout_dict(
+        {
+            "Sagittal": a_sagittal_layout,
+            "Coronal": a_coronal_layout,
+        }
+    )
+    on_registered_layouts_changed.assert_called_once()
