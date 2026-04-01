@@ -1,5 +1,11 @@
+import numpy as np
 import pytest
-from slicer import vtkMRMLAbstractViewNode, vtkMRMLNode, vtkMRMLScriptedModuleNode
+from slicer import (
+    vtkMRMLAbstractViewNode,
+    vtkMRMLNode,
+    vtkMRMLScriptedModuleNode,
+    vtkOrientedImageData,
+)
 from undo_stack import SignalContainerSpy, UndoStack
 
 from trame_slicer.segmentation import (
@@ -258,3 +264,17 @@ def test_scene_clear_clears_segmentation_stack(editor, a_slicer_app, undo_stack,
 def test_scene_clear_without_undo_stack_does_nothing(editor, a_slicer_app):
     assert editor.undo_stack is None
     a_slicer_app.scene.Clear()
+
+
+def test_get_merged_segment_labelmap(editor, segmentation_with_two_segments):
+    segment_id_1, _ = segmentation_with_two_segments
+    segmentation = editor.active_segmentation
+    merged_labelmap = segmentation.get_merged_segment_labelmap()
+    assert isinstance(merged_labelmap, vtkOrientedImageData)
+
+    merged_labelmap = segmentation.get_merged_segment_labelmap(as_numpy_array=True)
+    assert len(np.unique(merged_labelmap)) == 3
+
+    editor.set_segment_visibility(segment_id_1, False)
+    merged_labelmap = segmentation.get_merged_segment_labelmap(only_visible_segments=True, as_numpy_array=True)
+    assert len(np.unique(merged_labelmap)) == 2
