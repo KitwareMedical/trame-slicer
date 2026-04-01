@@ -122,19 +122,9 @@ class SegmentModifier:
     def volume_node(self):
         return self._segmentation.volume_node
 
-    def apply_glyph(self, poly: vtkPolyData, world_locations: vtkPoints) -> None:
-        """
-        :param poly: in world origin coordinates (no transform but world-coords sized)
-        :param world_locations: each location where glyph will be rendered at (world-coords)
-        """
-        if self.active_segment_id == "":
-            logging.warning("No active segment in apply_poly_glyph")
-            return
-
-        if world_locations.GetNumberOfPoints() == 0:
-            logging.warning("No points in set polydata")
-            return
-
+    def paint_glyph_in_labelmap(
+        self, polydata: vtkPolyData, world_locations: vtkPoints, labelmap: vtkOrientedImageData
+    ) -> list[float]:
         # Rotate poly to later be translated in ijk coordinates for each world_locations
         world_to_ijk_transform_matrix = vtkMatrix4x4()
         self.volume_node.GetIJKToRASMatrix(world_to_ijk_transform_matrix)
@@ -160,19 +150,18 @@ class SegmentModifier:
 
         world_origin_to_modifier_labelmap_ijk_transformer = vtkTransformPolyDataFilter()
         world_origin_to_modifier_labelmap_ijk_transformer.SetTransform(world_origin_to_modifier_labelmap_ijk_transform)
-        world_origin_to_modifier_labelmap_ijk_transformer.SetInputData(poly)
+        world_origin_to_modifier_labelmap_ijk_transformer.SetInputData(polydata)
         world_origin_to_modifier_labelmap_ijk_transformer.Update()
 
         # Pre-rotated polydata
         brush_model: vtkPolyData = world_origin_to_modifier_labelmap_ijk_transformer.GetOutput()
         brush_labelmap = self._poly_to_image_data(brush_model)
-        modifier_labelmap = self.segmentation.create_modifier_labelmap()
 
         points_ijk = self._world_points_to_ijk(world_locations)
         brush_positioner = vtkImageChangeInformation()
         brush_positioner.SetInputData(brush_labelmap)
-        brush_positioner.SetOutputSpacing(modifier_labelmap.GetSpacing())
-        brush_positioner.SetOutputOrigin(modifier_labelmap.GetOrigin())
+        brush_positioner.SetOutputSpacing(labelmap.GetSpacing())
+        brush_positioner.SetOutputOrigin(labelmap.GetOrigin())
 
         modifier_extent = [0, -1, 0, -1, 0, -1]
         oriented_brush_positioner_output = vtkOrientedImageData()
@@ -181,7 +170,7 @@ class SegmentModifier:
             brush_positioner.Update()
 
             oriented_brush_positioner_output.ShallowCopy(brush_positioner.GetOutput())
-            oriented_brush_positioner_output.CopyDirections(modifier_labelmap)
+            oriented_brush_positioner_output.CopyDirections(labelmap)
             if i == 0:
                 modifier_extent = list(oriented_brush_positioner_output.GetExtent())
             else:
@@ -193,9 +182,25 @@ class SegmentModifier:
                     )
 
             vtkOrientedImageDataResample.ModifyImage(
-                modifier_labelmap, oriented_brush_positioner_output, vtkOrientedImageDataResample.OPERATION_MAXIMUM
+                labelmap, oriented_brush_positioner_output, vtkOrientedImageDataResample.OPERATION_MAXIMUM
             )
+        return modifier_extent
 
+    def apply_glyph(self, poly: vtkPolyData, world_locations: vtkPoints) -> None:
+        """
+        :param poly: in world origin coordinates (no transform but world-coords sized)
+        :param world_locations: each location where glyph will be rendered at (world-coords)
+        """
+        if self.active_segment_id == "":
+            logging.warning("No active segment in apply_poly_glyph")
+            return
+
+        if world_locations.GetNumberOfPoints() == 0:
+            logging.warning("No points in set polydata")
+            return
+
+        modifier_labelmap = self.create_modifier_labelmap()
+        modifier_extent = self.paint_glyph_in_labelmap(poly, world_locations, modifier_labelmap)
         self.apply_labelmap(modifier_labelmap, modifier_extent=modifier_extent)
         self.trigger_active_segment_modified()
 
@@ -229,7 +234,7 @@ class SegmentModifier:
 
     def apply_labelmap(
         self,
-        modifier_labelmap: vtkImageData,
+        modifier_labelmap: vtkOrientedImageData,
         *,
         segment_id: str | None = None,
         modification_mode: ModificationMode | None = None,
@@ -254,7 +259,7 @@ class SegmentModifier:
 
     def _modify_active_segment_by_labelmap(
         self,
-        modifier_labelmap: vtkImageData,
+        modifier_labelmap: vtkOrientedImageData,
         *,
         segment_id: str | None = None,
         modification_mode: ModificationMode | None = None,

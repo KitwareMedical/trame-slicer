@@ -10,6 +10,7 @@ from .segmentation import (
     ScissorsEffectLogic,
     SegmentEditLogic,
     SegmentEditorLogic,
+    SmoothingEffectLogic,
     ThresholdEffectLogic,
 )
 from .segmentation_app_logic import SegmentationAppLogic
@@ -30,6 +31,7 @@ __all__ = [
     "SegmentEditorLogic",
     "SegmentationAppLogic",
     "SlabLogic",
+    "SmoothingEffectLogic",
     "ThresholdEffectLogic",
     "VolumePropertyLogic",
 ]
