@@ -29,7 +29,7 @@ class LayoutManager:
     """
 
     registered_layouts_changed = Signal()
-    current_layout_changed = Signal()
+    current_layout_changed = Signal(str)
 
     def __init__(
         self,
@@ -46,6 +46,10 @@ class LayoutManager:
         self._current_layout: str | None = None
         self._scene_node = scene.AddNewNodeByClass("vtkMRMLScriptedModuleNode", "layout_node")
         self._is_virtual_node_initialized = is_virtual_node_initialized
+
+    @property
+    def layout_id(self) -> str | None:
+        return self._current_layout
 
     def get_layout_ids(self) -> list[str]:
         return list(self._layouts.keys())
@@ -69,9 +73,9 @@ class LayoutManager:
         if layout_id == self._current_layout:
             return
 
-        with self.current_layout_changed.emit_once():
-            self._current_layout = layout_id
-            self._refresh_layout()
+        self._current_layout = layout_id
+        self._refresh_layout()
+        self.current_layout_changed.emit(self.layout_id)
 
     def create_layout_views_if_needed(self, layout_id: str) -> None:
         self._create_views_if_needed(self.get_layout(layout_id, Layout.empty_layout()))
