@@ -1,0 +1,35 @@
+This builds an image launching the medical_viewer_app example in a container with GPU capacities, on 127.0.0.1:8080.
+
+You need nvidia-container-toolkit and up to date NVIDIA drivers to run it.
+
+To build it, use `docker build . -f {Dockerfile_path} -t trame-slicer`
+
+The run command depends on the image:
+
+- WSL
+
+    - To use EGL:
+
+        `docker run -p 8080:8080 -it -e MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA -e VTK_DEFAULT_OPENGL_WINDOW=vtkEGLRenderWindow -e LD_LIBRARY_PATH=/usr/lib/wsl/lib -v /usr/lib/wsl:/usr/lib/wsl trame-slicer`
+
+    - To use X server: This image is supposed to allow using X server with the following command, but it still uses EGL
+
+        `docker run -p 8080:8080 -it -e MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -e LD_LIBRARY_PATH=/usr/lib/wsl/lib -v /usr/lib/wsl:/usr/lib/wsl trame-slicer`
+
+    - To use MESA: After removing NVIDIA_DRIVER_CAPABILITIES and NVIDIA_VISIBLE_DEVICES declarations from the Dockerfile
+
+        `docker run -p 8080:8080 -it trame-slicer`
+
+- Linux
+
+    - To use EGL:
+
+        `docker run -it -p 8080:8080 --runtime=nvidia -e VTK_DEFAULT_OPENGL_WINDOW=vtkEGLRenderWindow trame-slicer`
+
+    - To use X server:
+
+        `docker run -it -p 8080:8080 --runtime=nvidia -v {path to your Xauthority}:/root/.Xauthority -e DISPLAY=$DISPLAY --net host trame-slicer`
+
+    - To use MESA: After removing NVIDIA_DRIVER_CAPABILITIES and NVIDIA_VISIBLE_DEVICES declarations from the Dockerfile
+
+        `docker run -p 8080:8080 -it trame-slicer`
