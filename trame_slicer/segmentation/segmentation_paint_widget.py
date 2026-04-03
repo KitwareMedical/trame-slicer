@@ -4,6 +4,7 @@ import math
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
+from undo_stack import Signal
 from vtkmodules.vtkCommonCore import vtkPoints
 from vtkmodules.vtkCommonDataModel import vtkPolyData
 from vtkmodules.vtkCommonExecutionModel import vtkAlgorithmOutput
@@ -18,12 +19,13 @@ from .paint_effect_parameters import (
     BrushShape,
     PaintEffectParameters,
 )
-from .segment_modifier import SegmentModifier
 
 T = TypeVar("T")
 
 
 class SegmentationPaintWidget(Generic[T], ABC):
+    paint_interaction_stopped = Signal()
+
     def __init__(self, view: T) -> None:
         super().__init__()
 
@@ -34,13 +36,16 @@ class SegmentationPaintWidget(Generic[T], ABC):
         self._paint_coordinates_polydata.SetPoints(self._paint_coordinates_world)
 
         self._painting = False
-        self._modifier: SegmentModifier | None = None
         self._feedback_glyph = vtkGlyph3D()
         self._feedback_glyph.SetSourceConnection(self._brush_model.get_untransformed_output_port())
         self._feedback_glyph.SetInputData(self._paint_coordinates_polydata)
 
         self._params = PaintEffectParameters()
         self._stroke_rel_spacing = 0.1
+
+    def clear(self):
+        self._paint_coordinates_world.SetNumberOfPoints(0)
+        self._feedback_glyph.Modified()
 
     def _vertical_screen_size_pix(self):
         return self._view.render_window().GetScreenSize()[1]
@@ -53,9 +58,6 @@ class SegmentationPaintWidget(Generic[T], ABC):
 
     def get_feedback_polydata_port(self):
         return self._feedback_glyph.GetOutputPort()
-
-    def set_modifier(self, modifier: SegmentModifier | None):
-        self._modifier = modifier
 
     def _add_point_to_selection(self, position: list[float]) -> None:
         self._paint_coordinates_world.InsertNextPoint(position)
@@ -71,20 +73,10 @@ class SegmentationPaintWidget(Generic[T], ABC):
     def stop_painting(self) -> None:
         self._painting = False
         if self._paint_coordinates_world.GetNumberOfPoints() > 0:
-            self._commit()
+            self.paint_interaction_stopped()
 
     def is_painting(self) -> bool:
         return self._painting
-
-    def _commit(self) -> None:
-        try:
-            algo = self._brush_model.get_untransformed_output_port().GetProducer()
-            algo.Update()
-            self._modifier.apply_glyph(algo.GetOutput(), self._paint_coordinates_world)
-        finally:
-            # ensure points are always cleared
-            self._paint_coordinates_world.SetNumberOfPoints(0)
-            self._feedback_glyph.Modified()
 
     def _convert_relative_brush_diameter_to_mm(self, rel_diameter):
         return (rel_diameter / 100) * self._vertical_screen_size_pix() * self._get_view_mm_per_pix()
@@ -117,6 +109,11 @@ class SegmentationPaintWidget(Generic[T], ABC):
         if self._has_paint_coordinates():
             return list(self._paint_coordinates_world.GetPoint(self._paint_coordinates_world.GetNumberOfPoints() - 1))
         return None
+
+    def get_paint_glyph(self) -> vtkPolyData:
+        algo = self._brush_model.get_untransformed_output_port().GetProducer()
+        algo.Update()
+        return algo.GetOutput()
 
     def _interpolate_brush_position_if_needed(self, position):
         if not self._has_paint_coordinates():

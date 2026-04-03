@@ -15,7 +15,7 @@ from slicer import (
     vtkSlicerSegmentEditorLogic,
 )
 from undo_stack import Signal, UndoStack
-from vtkmodules.vtkCommonCore import vtkCommand
+from vtkmodules.vtkCommonCore import vtkCommand, vtkStringArray
 from vtkmodules.vtkCommonDataModel import vtkImageData
 
 from trame_slicer.utils import vtk_image_to_np
@@ -173,6 +173,24 @@ class Segmentation:
 
         self.push_undo(SegmentationRemoveUndoCommand(self, segment_id))
         self.segmentation_modified()
+
+    def get_merged_segment_labelmap(
+        self, *, only_visible_segments: bool = False, as_numpy_array: bool = False
+    ) -> NDArray | vtkImageData | None:
+        if not self.editor_logic or not self.editor_logic.GetSegmentEditorNode():
+            return None
+
+        merged_image = vtkOrientedImageData()
+        segment_ids = self.get_visible_segment_ids() if only_visible_segments else self.get_segment_ids()
+        segment_ids_string_array = vtkStringArray()
+        for segment_id in segment_ids:
+            segment_ids_string_array.InsertNextValue(segment_id)
+        if not self.segmentation_node.GenerateMergedLabelmapForAllSegments(
+            merged_image, vtkSegmentation.EXTENT_REFERENCE_GEOMETRY, None, segment_ids_string_array
+        ):
+            return None
+
+        return merged_image if not as_numpy_array else vtk_image_to_np(merged_image)
 
     def get_segment_labelmap(self, segment_id, *, as_numpy_array=False) -> NDArray | vtkImageData:
         if not self.editor_logic or not self.editor_logic.GetSegmentEditorNode():

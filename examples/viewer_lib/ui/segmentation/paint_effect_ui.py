@@ -1,41 +1,25 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from trame.widgets.vuetify3 import Template
 from trame_server.utils.typed_state import TypedState
 
-from trame_slicer.segmentation import BrushDiameterMode
-from trame_slicer.ui import Slider, SliderState
+from trame_slicer.ui import SliderState
 
-from ..control_button import ControlButton
 from ..flex_container import FlexContainer
-from ..text_components import Text
+from .brush_parameters_ui import BrushParametersState, BrushParametersUI
 
 
 @dataclass
-class PaintEffectState:
-    brush_diameter_slider: SliderState = field(default_factory=SliderState)
-    brush_diameter_mode: BrushDiameterMode = BrushDiameterMode.ScreenRelative
-    use_sphere_brush: bool = True
+class PaintEffectState(BrushParametersState):
+    pass
 
 
 class PaintEffectUI(FlexContainer):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._typed_state = TypedState(self.state, PaintEffectState)
-        self._typed_state.data.brush_diameter_slider.min_value = 1
-        self._typed_state.data.brush_diameter_slider.max_value = 30
-        self._typed_state.data.brush_diameter_slider.step = 1
-        self._typed_state.data.brush_diameter_slider.value = 5
+        TypedState.from_dataclass(
+            self._typed_state.data.brush_diameter_slider, SliderState(min_value=1, max_value=30, step=1, value=5)
+        )
 
         with self:
-            Text("Brush size", subtitle=True)
-            with (
-                Slider(typed_state=self._typed_state.get_sub_state(self._typed_state.name.brush_diameter_slider)),
-                Template(v_slot_append=True),
-            ):
-                ControlButton(
-                    icon="mdi-sphere",
-                    name="Sphere brush",
-                    click=f"{self._typed_state.name.use_sphere_brush} = ! {self._typed_state.name.use_sphere_brush}",
-                    active=(self._typed_state.name.use_sphere_brush,),
-                )
+            BrushParametersUI(self._typed_state)

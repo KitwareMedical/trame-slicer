@@ -6,6 +6,8 @@ from .markups_button import MarkupsButton
 from .medical_viewer_ui import MedicalViewerUI
 from .mpr_interaction_button import MprInteractionButton, MprInteractionButtonState
 from .segmentation import (
+    BrushParametersState,
+    BrushParametersUI,
     IslandsEffectUI,
     IslandsState,
     PaintEffectState,
@@ -23,6 +25,9 @@ from .segmentation import (
     SegmentList,
     SegmentListState,
     SegmentState,
+    SmoothingEffectMode,
+    SmoothingEffectUI,
+    SmoothingState,
     ThresholdEffectUI,
     ThresholdState,
 )
@@ -33,6 +38,8 @@ from .viewer_layout import ViewerLayout, ViewerLayoutState
 from .volume_property_ui import Preset, VolumePropertyState, VolumePropertyUI
 
 __all__ = [
+    "BrushParametersState",
+    "BrushParametersUI",
     "ControlButton",
     "FlexContainer",
     "IslandsEffectUI",
@@ -64,6 +71,9 @@ __all__ = [
     "SegmentationAppUI",
     "SlabState",
     "SlabType",
+    "SmoothingEffectMode",
+    "SmoothingEffectUI",
+    "SmoothingState",
     "Text",
     "TextField",
     "ThresholdEffectUI",

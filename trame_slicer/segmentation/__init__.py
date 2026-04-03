@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .abstract_segmentation_effect_brush import AbstractSegmentationEffectBrush
 from .brush_source import BrushSource
 from .paint_effect_parameters import BrushDiameterMode, BrushShape
 from .scissors_effect_parameters import (
@@ -29,6 +30,7 @@ from .segmentation_effect_scissors_widget import (
     SegmentationScissorsPipeline,
     SegmentationScissorsWidget,
 )
+from .segmentation_effect_smoothing import SegmentationEffectSmoothing
 from .segmentation_effect_threshold import (
     AutoThresholdMethod,
     AutoThresholdMode,
@@ -48,6 +50,7 @@ from .segmentation_paint_widget import (
 )
 
 __all__ = [
+    "AbstractSegmentationEffectBrush",
     "AutoThresholdMethod",
     "AutoThresholdMode",
     "BrushDiameterMode",
@@ -70,6 +73,7 @@ __all__ = [
     "SegmentationEffectPaintErase",
     "SegmentationEffectPipeline",
     "SegmentationEffectScissors",
+    "SegmentationEffectSmoothing",
     "SegmentationEffectThreshold",
     "SegmentationIslandsMode",
     "SegmentationIslandsPipeline",
