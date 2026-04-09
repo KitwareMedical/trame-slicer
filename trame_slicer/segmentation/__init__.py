@@ -17,6 +17,7 @@ from .segmentation_effect_islands import (
     SegmentationEffectIslands,
     SegmentationIslandsMode,
 )
+from .segmentation_effect_logical_operators import SegmentationEffectLogicalOperators
 from .segmentation_effect_no_tool import SegmentationEffectNoTool
 from .segmentation_effect_paint_erase import (
     SegmentationEffectErase,
@@ -68,6 +69,7 @@ __all__ = [
     "SegmentationEffectDraw",
     "SegmentationEffectErase",
     "SegmentationEffectIslands",
+    "SegmentationEffectLogicalOperators",
     "SegmentationEffectNoTool",
     "SegmentationEffectPaint",
     "SegmentationEffectPaintErase",

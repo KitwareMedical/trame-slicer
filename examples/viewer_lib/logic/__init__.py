@@ -5,6 +5,7 @@ from .medical_viewer_logic import MedicalViewerLogic
 from .segmentation import (
     EraseEffectLogic,
     IslandsEffectLogic,
+    LogicalOperatorsEffectLogic,
     PaintEffectLogic,
     PaintEraseEffectLogic,
     ScissorsEffectLogic,
@@ -22,6 +23,7 @@ __all__ = [
     "EraseEffectLogic",
     "IslandsEffectLogic",
     "LoadVolumeLogic",
+    "LogicalOperatorsEffectLogic",
     "MarkupsButtonLogic",
     "MedicalViewerLogic",
     "PaintEffectLogic",
