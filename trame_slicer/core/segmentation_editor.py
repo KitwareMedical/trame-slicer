@@ -30,6 +30,7 @@ from vtkmodules.vtkCommonDataModel import vtkImageData
 from trame_slicer.segmentation import (
     Segmentation,
     SegmentationDisplay,
+    SegmentationEditableAreaMode,
     SegmentationEffect,
     SegmentationEffectDraw,
     SegmentationEffectErase,
@@ -39,6 +40,7 @@ from trame_slicer.segmentation import (
     SegmentationEffectPipeline,
     SegmentationEffectScissors,
     SegmentationEffectThreshold,
+    SegmentationOverwriteMode,
     SegmentModifier,
     SegmentProperties,
 )
@@ -69,6 +71,7 @@ class SegmentationEditor(SignalContainer):
     active_segment_id_changed = Signal(str)
     active_effect_name_changed = Signal(str)
     show_3d_changed = Signal(bool)
+    parameter_changed = Signal()
 
     def __init__(
         self,
@@ -124,6 +127,7 @@ class SegmentationEditor(SignalContainer):
         editor_node = vtkMRMLSegmentEditorNode()
         editor_node.SetName(f"SegmentEditorNode_{id(self)}")
         editor_node.SetSingletonOn()
+        editor_node.AddObserver(vtkMRMLSegmentEditorNode.EffectParameterModified, lambda *_: self.parameter_changed())
         self._scene.AddNode(editor_node)
         return editor_node
 
@@ -417,6 +421,7 @@ class SegmentationEditor(SignalContainer):
         self._do_show_3d = is_enabled
         self._ensure_active_segmentation_surface_repr_consistency()
         self.show_3d_changed(is_enabled)
+        self.parameter_changed()
 
     def is_surface_representation_enabled(self) -> bool:
         return self.active_segmentation.is_surface_representation_enabled() if self.active_segmentation else False
@@ -445,6 +450,7 @@ class SegmentationEditor(SignalContainer):
         self.active_effect_name_changed(self.active_effect_name)
         self.show_3d_changed(self.is_3d_shown())
         self.segmentation_modified()
+        self.parameter_changed()
 
     def set_segment_visibility(self, segment_id, visibility: bool) -> None:
         if not self.active_segmentation_display:
@@ -455,6 +461,24 @@ class SegmentationEditor(SignalContainer):
         if not self.active_segmentation_display:
             return None
         return self.active_segmentation_display.get_segment_visibility(segment_id)
+
+    def set_editable_area(self, editable_area: SegmentationEditableAreaMode) -> None:
+        self.editor_node.SetMaskMode(editable_area.value)
+
+    def get_editable_area(self) -> SegmentationEditableAreaMode:
+        return SegmentationEditableAreaMode(self.editor_node.GetMaskMode())
+
+    def set_mask_segment_id(self, segment_id: str):
+        self.editor_node.SetMaskSegmentID(segment_id)
+
+    def get_mask_segment_id(self) -> str:
+        return self.editor_node.GetMaskSegmentID() or ""
+
+    def set_overwrite_mode(self, overwrite_mode: SegmentationOverwriteMode) -> None:
+        self.editor_node.SetOverwriteMode(overwrite_mode.value)
+
+    def get_overwrite_mode(self) -> SegmentationOverwriteMode:
+        return SegmentationOverwriteMode(self.editor_node.GetOverwriteMode())
 
     def get_effect_parameter_node(
         self, effect: SegmentationEffect | type[SegmentationEffect]

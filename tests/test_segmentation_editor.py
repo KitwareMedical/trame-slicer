@@ -1,19 +1,25 @@
+from unittest.mock import MagicMock
+
 import numpy as np
 import pytest
 from slicer import (
     vtkMRMLAbstractViewNode,
     vtkMRMLNode,
     vtkMRMLScriptedModuleNode,
+    vtkMRMLSegmentationNode,
+    vtkMRMLSegmentEditorNode,
     vtkOrientedImageData,
 )
 from undo_stack import SignalContainerSpy, UndoStack
 
 from trame_slicer.segmentation import (
+    SegmentationEditableAreaMode,
     SegmentationEffect,
     SegmentationEffectNoTool,
     SegmentationEffectPaint,
     SegmentationEffectPipeline,
     SegmentationEffectScissors,
+    SegmentationOverwriteMode,
 )
 from trame_slicer.utils import vtk_image_to_np
 
@@ -278,3 +284,28 @@ def test_get_merged_segment_labelmap(editor, segmentation_with_two_segments):
     editor.set_segment_visibility(segment_id_1, False)
     merged_labelmap = segmentation.get_merged_segment_labelmap(only_visible_segments=True, as_numpy_array=True)
     assert len(np.unique(merged_labelmap)) == 2
+
+
+def test_set_masking_parameters_triggers_parameter_update(
+    a_segmentation_editor, active_segmentation_node, a_volume_node
+):
+    spy = MagicMock()
+    a_segmentation_editor.parameter_changed.connect(spy)
+
+    a_segmentation_editor.set_active_segmentation(active_segmentation_node, a_volume_node)
+    segment_id = a_segmentation_editor.add_empty_segment()
+
+    a_segmentation_editor.set_editable_area(SegmentationEditableAreaMode.INSIDE_ALL_SEGMENTS)
+    a_segmentation_editor.set_overwrite_mode(SegmentationOverwriteMode.ALLOW_OVERLAP)
+
+    assert a_segmentation_editor.editor_node.GetMaskMode() == vtkMRMLSegmentationNode.EditAllowedInsideAllSegments
+    assert a_segmentation_editor.editor_node.GetOverwriteMode() == vtkMRMLSegmentEditorNode.OverwriteNone
+
+    a_segmentation_editor.set_editable_area(SegmentationEditableAreaMode.INSIDE_SINGLE_SEGMENT)
+    a_segmentation_editor.set_mask_segment_id(segment_id)
+    a_segmentation_editor.set_overwrite_mode(SegmentationOverwriteMode.OVERWRITE_ALL_VISIBLE_SEGMENTS)
+    assert a_segmentation_editor.editor_node.GetMaskMode() == vtkMRMLSegmentationNode.EditAllowedInsideSingleSegment
+    assert a_segmentation_editor.editor_node.GetMaskSegmentID() == segment_id
+    assert a_segmentation_editor.editor_node.GetOverwriteMode() == vtkMRMLSegmentEditorNode.OverwriteVisibleSegments
+
+    spy.assert_called()

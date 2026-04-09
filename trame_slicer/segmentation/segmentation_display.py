@@ -23,7 +23,7 @@ class SegmentationDisplay(SlicerWrapper[vtkMRMLSegmentationDisplayNode]):
             return None
         return self.GetSliceIntersectionThickness()
 
-    def set_border_thickness(self, thickness: int) -> None:
+    def set_border_thickness(self, thickness: float) -> None:
         if not self._slicer_obj:
             return
         self.SetSliceIntersectionThickness(int(thickness))

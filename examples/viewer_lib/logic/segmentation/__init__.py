@@ -10,6 +10,7 @@ from .paint_erase_effect_logic import (
 from .scissors_effect_logic import ScissorsEffectLogic
 from .segment_edit_logic import SegmentEditLogic
 from .segment_editor_logic import SegmentEditorLogic
+from .segment_mask_select_logic import SegmentMaskSelectLogic
 from .smoothing_effect_logic import SmoothingEffectLogic
 from .threshold_effect_logic import ThresholdEffectLogic
 
@@ -25,6 +26,7 @@ __all__ = [
     "ScissorsEffectLogic",
     "SegmentEditLogic",
     "SegmentEditorLogic",
+    "SegmentMaskSelectLogic",
     "SmoothingEffectLogic",
     "ThresholdEffectLogic",
 ]

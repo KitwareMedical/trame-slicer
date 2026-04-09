@@ -7,6 +7,7 @@ from trame_slicer.segmentation import (
     SegmentationDisplay,
     SegmentationEffect,
     SegmentationEffectThreshold,
+    SegmentationOverwriteMode,
 )
 
 from ...ui import (
@@ -21,6 +22,7 @@ from .logical_operators_effect_logic import LogicalOperatorsEffectLogic
 from .paint_erase_effect_logic import EraseEffectLogic, PaintEffectLogic
 from .scissors_effect_logic import ScissorsEffectLogic
 from .segment_edit_logic import SegmentEditLogic
+from .segment_mask_select_logic import SegmentMaskSelectLogic
 from .smoothing_effect_logic import SmoothingEffectLogic
 from .threshold_effect_logic import ThresholdEffectLogic
 
@@ -50,8 +52,16 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
             {
                 self.name.segment_display: self._on_segment_display_changed,
                 self.name.segment_list.active_segment_id: self._on_active_segment_changed,
+                self.name.segment_edit_area.overwrite_mode: self._on_overwrite_mode_changed,
             }
         )
+
+        self._mask_logic = SegmentMaskSelectLogic(
+            self.sub_state(self.name.segment_edit_area.mask_select),
+            self.segmentation_editor,
+        )
+
+        self._on_segment_editor_changed()
 
     def _connect_segmentation_editor_to_state(self):
         for sig in self.segmentation_editor.signals():
@@ -120,7 +130,9 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         self.data.segment_list.active_segment_id = self.segmentation_editor.get_active_segment_id()
         self.data.segment_display.show_3d = self.segmentation_editor.is_surface_representation_enabled()
         self.data.active_effect_name = self.segmentation_editor.get_active_effect_name()
+        self.data.segment_edit_area.overwrite_mode = self.segmentation_editor.get_overwrite_mode()
         self._update_segment_list()
+        self._mask_logic.update_ui_from_slicer()
 
     def _on_undo_changed(self, *_):
         self.data.can_undo = self._undo_stack.can_undo()
@@ -166,3 +178,6 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
             volume_node,
         )
         self._on_segment_display_changed(self.data.segment_display)
+
+    def _on_overwrite_mode_changed(self, overwrite_mode: SegmentationOverwriteMode):
+        self.segmentation_editor.set_overwrite_mode(overwrite_mode)

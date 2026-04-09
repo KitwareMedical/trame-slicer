@@ -202,7 +202,7 @@ class Segmentation:
         Labelmap is guaranteed to have the same dimensions as the reference volume.
         """
         if not self.editor_logic or not self.editor_logic.GetSegmentEditorNode():
-            return vtkImageData() if not as_numpy_array else np.array([])
+            return vtkOrientedImageData() if not as_numpy_array else np.array([])
 
         node = self.editor_logic.GetSegmentEditorNode()
         prev = node.GetSelectedSegmentID()

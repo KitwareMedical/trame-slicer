@@ -10,9 +10,11 @@ from examples.viewer_lib.ui import (
     ViewerLayout,
 )
 from trame_slicer.segmentation import (
+    SegmentationEditableAreaMode,
     SegmentationEffectNoTool,
     SegmentationEffectPaint,
     SegmentationEffectThreshold,
+    SegmentationOverwriteMode,
 )
 
 
@@ -91,3 +93,31 @@ def test_can_add_remove_segments(a_state, editor_logic, editor_state, editor_ui)
     a_state.flush()
 
     assert len(editor_state.data.segment_list.segments) == 1
+
+
+def test_set_segment_edit_options(a_state, editor_logic, editor_ui):
+    a_state.ready()
+    editor_ui.add_segment_clicked()
+    editor_ui.add_segment_clicked()
+    a_state.flush()
+
+    segments: list[SegmentState] = editor_logic.data.segment_list.segments
+    assert len(segments) == 2
+    assert editor_logic.segmentation_editor.get_overwrite_mode() == SegmentationOverwriteMode.OVERWRITE_ALL
+    assert editor_logic.segmentation_editor.get_editable_area() == SegmentationEditableAreaMode.EVERYWHERE
+    assert editor_logic.segmentation_editor.get_mask_segment_id() == ""
+
+    mask_items = editor_logic.data.segment_edit_area.mask_select.items
+    assert len(mask_items) == len(SegmentationEditableAreaMode) + 1
+    assert mask_items[-1]["title"] == segments[-1].name
+
+    editor_logic.data.segment_edit_area.mask_select.current_id = len(SegmentationEditableAreaMode)
+    editor_logic.data.segment_edit_area.overwrite_mode = SegmentationOverwriteMode.OVERWRITE_ALL_VISIBLE_SEGMENTS
+    a_state.flush()
+
+    assert editor_logic.segmentation_editor.get_editable_area() == SegmentationEditableAreaMode.INSIDE_SINGLE_SEGMENT
+    assert (
+        editor_logic.segmentation_editor.get_overwrite_mode()
+        == SegmentationOverwriteMode.OVERWRITE_ALL_VISIBLE_SEGMENTS
+    )
+    assert editor_logic.segmentation_editor.get_mask_segment_id() == segments[-1].segment_id
