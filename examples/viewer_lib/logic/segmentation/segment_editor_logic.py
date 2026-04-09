@@ -20,6 +20,7 @@ from .islands_effect_logic import IslandsEffectLogic
 from .paint_erase_effect_logic import EraseEffectLogic, PaintEffectLogic
 from .scissors_effect_logic import ScissorsEffectLogic
 from .segment_edit_logic import SegmentEditLogic
+from .smoothing_effect_logic import SmoothingEffectLogic
 from .threshold_effect_logic import ThresholdEffectLogic
 
 
@@ -33,6 +34,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
             PaintEffectLogic,
             EraseEffectLogic,
             ScissorsEffectLogic,
+            SmoothingEffectLogic,
         ]
         self._effect_logic: list[BaseEffectLogic] = [logic(server, slicer_app) for logic in effect_logic]
         self._edit_segment_logic = SegmentEditLogic(server, slicer_app)

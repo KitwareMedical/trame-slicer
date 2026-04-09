@@ -23,6 +23,7 @@ from trame_slicer.segmentation import (
     SegmentationEffectNoTool,
     SegmentationEffectPaint,
     SegmentationEffectScissors,
+    SegmentationEffectSmoothing,
     SegmentationEffectThreshold,
 )
 
@@ -35,6 +36,7 @@ from .scissors_effect_ui import ScissorsEffectUI
 from .segment_display_ui import SegmentDisplayState, SegmentDisplayUI
 from .segment_edit_ui import SegmentEditState, SegmentEditUI
 from .segment_list import SegmentList, SegmentListMenu, SegmentListState
+from .smoothing_effect_ui import SmoothingEffectUI
 from .threshold_effect_ui import ThresholdEffectUI
 
 
@@ -112,6 +114,7 @@ class SegmentEditorUI(FlexContainer):
                         self._register_effect_ui(SegmentationEffectThreshold, ThresholdEffectUI)
                         self._register_effect_ui(SegmentationEffectIslands, IslandsEffectUI)
                         self._register_effect_ui(SegmentationEffectScissors, ScissorsEffectUI)
+                        self._register_effect_ui(SegmentationEffectSmoothing, SmoothingEffectUI)
                 VSpacer(v_else=True)
                 VDivider()
                 SegmentDisplayUI(
@@ -161,6 +164,12 @@ class SegmentEditorUI(FlexContainer):
                 "Islands",
                 "mdi-scatter-plot",
                 SegmentationEffectIslands,
+                **kwargs,
+            )
+            self._create_effect_button(
+                "Smoothing",
+                "mdi-square-rounded-outline",
+                SegmentationEffectSmoothing,
                 **kwargs,
             )
 

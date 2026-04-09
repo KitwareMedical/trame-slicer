@@ -1,3 +1,4 @@
+from .brush_parameters_ui import BrushParametersState, BrushParametersUI
 from .islands_effect_ui import IslandsEffectUI, IslandsState
 from .paint_effect_ui import PaintEffectState, PaintEffectUI
 from .scissors_effect_ui import ScissorsEffectState, ScissorsEffectUI
@@ -14,9 +15,16 @@ from .segment_editor_ui import (
 )
 from .segment_list import SegmentList, SegmentListState
 from .segment_state import SegmentState
+from .smoothing_effect_ui import (
+    SmoothingEffectMode,
+    SmoothingEffectUI,
+    SmoothingState,
+)
 from .threshold_effect_ui import ThresholdEffectUI, ThresholdState
 
 __all__ = [
+    "BrushParametersState",
+    "BrushParametersUI",
     "IslandsEffectUI",
     "IslandsState",
     "PaintEffectState",
@@ -34,6 +42,9 @@ __all__ = [
     "SegmentList",
     "SegmentListState",
     "SegmentState",
+    "SmoothingEffectMode",
+    "SmoothingEffectUI",
+    "SmoothingState",
     "ThresholdEffectUI",
     "ThresholdState",
 ]

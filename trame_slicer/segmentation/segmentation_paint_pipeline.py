@@ -68,12 +68,19 @@ class SegmentationPaintPipeline(SegmentationEffectPipeline):
         self._SetFeedbackVisible(isActive)
         if isActive and not self.widget:
             self.CreateWidget()
+            self.widget.paint_interaction_stopped.connect(self.OnPaintInteractionStopped)
             self.OnEffectParameterUpdate()
 
         if not self.widget:
             return
 
-        self.widget.set_modifier(self._effect.modifier)
+    def OnPaintInteractionStopped(self):
+        try:
+            self._effect.paint_glyph_at_world_coordinates(
+                self.widget.get_paint_glyph(), self.widget._paint_coordinates_world
+            )
+        finally:
+            self.widget.clear()
 
     def IsSupportedEvent(self, event_data: vtkMRMLInteractionEventData):
         return event_data.GetType() in self._supported_events
