@@ -36,6 +36,7 @@ from .logical_operators_effect_ui import LogicalOperatorsEffectUI
 from .paint_effect_ui import PaintEffectUI
 from .scissors_effect_ui import ScissorsEffectUI
 from .segment_display_ui import SegmentDisplayState, SegmentDisplayUI
+from .segment_edit_area_ui import SegmentEditAreaState, SegmentEditAreaUI
 from .segment_edit_ui import SegmentEditState, SegmentEditUI
 from .segment_list import SegmentList, SegmentListMenu, SegmentListState
 from .smoothing_effect_ui import SmoothingEffectUI
@@ -46,6 +47,7 @@ from .threshold_effect_ui import ThresholdEffectUI
 class SegmentEditorState:
     segment_list: SegmentListState = field(default_factory=SegmentListState)
     segment_display: SegmentDisplayState = field(default_factory=SegmentDisplayState)
+    segment_edit_area: SegmentEditAreaState = field(default_factory=SegmentEditAreaState)
     can_undo: bool = False
     can_redo: bool = False
     active_effect_name: str = ""
@@ -124,6 +126,11 @@ class SegmentEditorUI(FlexContainer):
                     typed_state=self.sub_state(self._typed_state.name.segment_display),
                     variant="flat",
                     style="display: flex; flex-direction: column; min-height: 0;",
+                )
+                VDivider()
+                SegmentEditAreaUI(
+                    segment_edit_area_typed_state=self.sub_state(self._typed_state.name.segment_edit_area),
+                    variant="flat",
                 )
 
     def build_effect_buttons(self, all: bool = True, **kwargs):

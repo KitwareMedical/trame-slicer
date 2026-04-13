@@ -43,3 +43,6 @@ class BaseLogic(Generic[T]):
 
     def set_ui(self, ui: Any):
         pass
+
+    def sub_state(self, sub_name) -> TypedState:
+        return self._typed_state.get_sub_state(sub_name)
