@@ -6,7 +6,7 @@ from typing import Generic, TypeVar
 from trame_server.utils.typed_state import TypedState
 from undo_stack import Signal
 
-from examples.viewer_lib.ui.dynamic_select import DynamicSelectState
+from ..ui import DynamicSelectState
 
 
 class IDynamicSelectItem(ABC):
