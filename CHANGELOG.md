@@ -2,6 +2,68 @@
 
 <!-- version list -->
 
+## v1.10.0 (2026-04-15)
+
+### Bug Fixes
+
+- **LayoutManager**: Fix current_layout_changed not emitted
+  ([`60cc893`](https://github.com/KitwareMedical/trame-slicer/commit/60cc893efb2a3d9f896d3ac4280278ffaa91152e))
+
+- **LayoutManager**: Fix register_layouts_changed signal
+  ([`1558ca2`](https://github.com/KitwareMedical/trame-slicer/commit/1558ca268bceaad110706ba00d021261b6b691b8))
+
+- **views**: Fix direct_view_factory imports
+  ([`55b4519`](https://github.com/KitwareMedical/trame-slicer/commit/55b45191e869270d5369e80084b85fef58e1bbbd))
+
+### Documentation
+
+- Fix pip install and add examples to read the docs
+  ([`5323e5a`](https://github.com/KitwareMedical/trame-slicer/commit/5323e5a1ad13e6ca16ad7f40e2a6b058cd95cd5b))
+
+- Update feature list and built in effects
+  ([`992d95e`](https://github.com/KitwareMedical/trame-slicer/commit/992d95e90ca5873702e0a141bce3e44b8ab6048a))
+
+- **dynamic_select_logic**: Fix import
+  ([`8ac910b`](https://github.com/KitwareMedical/trame-slicer/commit/8ac910bcbd599aeae1985f0ce3f6eecc814f1959))
+
+- **introduction**: Fix typo and add link to trame-rca
+  ([`704be94`](https://github.com/KitwareMedical/trame-slicer/commit/704be94f92ed3407206fd9f41a8f64794b8d68e2))
+
+- **medical example**: Fix overflow in segmentation panel
+  ([`5241085`](https://github.com/KitwareMedical/trame-slicer/commit/52410856400faf06ac212718b6afc67aec55a226))
+
+### Features
+
+- **segmentation**: Add Draw segmentation effect
+  ([`4ee47f0`](https://github.com/KitwareMedical/trame-slicer/commit/4ee47f02dfe439c064528c1be222bb4b38eb842d))
+
+- **segmentation**: Add editable area control
+  ([`e9cefa0`](https://github.com/KitwareMedical/trame-slicer/commit/e9cefa06ad73da90189cf4553a3097dfe15dd816))
+
+- **segmentation**: Add interactive edition methods to islands segmentation effect
+  ([`b83cf89`](https://github.com/KitwareMedical/trame-slicer/commit/b83cf8912c63d22fa892f94f22b6d0a1cfbbf0dd))
+
+- **segmentation**: Add logical operators effect
+  ([`dcdbea0`](https://github.com/KitwareMedical/trame-slicer/commit/dcdbea077426b645aa210d99acc76cffbad0023c))
+
+- **segmentation**: Add parametrization to Scissors effect
+  ([`75ef9ca`](https://github.com/KitwareMedical/trame-slicer/commit/75ef9ca66e614da5a404379742031447fa50086c))
+
+- **segmentation**: Add smoothing effect
+  ([`d0ffaf4`](https://github.com/KitwareMedical/trame-slicer/commit/d0ffaf47b685c77814ae6c6ae9aa69c54977e5d3))
+
+- **views**: Add DirectViewFactory for serverless apps
+  ([`a5eec05`](https://github.com/KitwareMedical/trame-slicer/commit/a5eec057be40da67c6eb8f3eeaf84c98b79ab49e))
+
+- **views**: Update view properties in direct mode
+  ([`f5f071b`](https://github.com/KitwareMedical/trame-slicer/commit/f5f071b55ec2448becc895d84c891fd03bc008aa))
+
+### Testing
+
+- **LayoutManager**: Add signal emission tests
+  ([`94f48e1`](https://github.com/KitwareMedical/trame-slicer/commit/94f48e14c93910952c6077338b32bb0f8621dc44))
+
+
 ## v1.9.0 (2026-03-19)
 
 ### Bug Fixes
