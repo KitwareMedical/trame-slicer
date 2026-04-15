@@ -9,28 +9,32 @@ The following features are currently supported in trame-slicer :
   - Core loadable modules
 - Rendering
   - 3D views & displayable managers
-  - Slice views & displayable managers
   - Server side (trame-rca)
+  - Slice views & displayable managers
 - I/O
   - DICOM
-  - Scalar Volumes
-  - Segmentation
   - Models
+  - Scalar Volumes
   - Scene
+  - Segmentation
 - Segmentation
-  - Paint
+  - Draw
   - Erase
+  - Islands
+  - Logical operators
+  - Paint
   - Scissors
+  - Smoothing
   - Threshold
   - Undo / Redo
 - Markups
+  - Angle
+  - Closed Curve
   - Fiducial
   - Line
-  - Angle
   - Open Curve
-  - Closed Curve
-  - ROI
   - Plane
+  - ROI
 
 ## _MISSING_ features
 
@@ -38,18 +42,16 @@ The following features are currently supported in trame-slicer :
 The following features are currently not available in trame-slicer
 ```
 
+- Rendering
+  - Client side rendering
 - I/O plugin mechanism
 - Subject Hierarchy plugins / helper logic
 - Segmentation effects
-  - Draw
   - FillBetweenSlices
   - GrowFromSeeds
   - Hollow
-  - Islands
   - LevelTracing
-  - Logical
   - Margin
   - MaskVolume
-  - Smoothing
 - External modules
 - CLI(s)

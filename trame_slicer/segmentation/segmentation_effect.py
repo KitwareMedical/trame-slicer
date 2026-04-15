@@ -51,7 +51,7 @@ class SegmentationEffect(ABC):
 
     def set_modifier(self, modifier: SegmentModifier | None) -> None:
         """
-        Set the segment editor of the current pipeline.
+        Set the segment modifier of the current pipeline.
         """
         self._modifier = modifier
         self._synchronize_pipelines_modifiers()
@@ -70,10 +70,10 @@ class SegmentationEffect(ABC):
         qualname = cls.__qualname__
         return qualname if module in (None, "builtins") else f"{module}.{qualname}"
 
-    def _create_parameter_node(self):
+    def _create_parameter_node(self) -> vtkMRMLScriptedModuleNode:
         """
-        Create the segment editor effect parameter for the current class.
-        By default, the parameter contains the class fully qualified name for creation logic.
+        Create the segment editor effect parameter node for the current class.
+        By default, the node contains the class's fully qualified name for creation logic.
         The effect's save / restore from scene is deactivated by default as creation and management should be handled
         by an instance of the segmentation editor object.
 

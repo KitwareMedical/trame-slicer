@@ -35,10 +35,12 @@ from trame_slicer.segmentation import (
     SegmentationEffectDraw,
     SegmentationEffectErase,
     SegmentationEffectIslands,
+    SegmentationEffectLogicalOperators,
     SegmentationEffectNoTool,
     SegmentationEffectPaint,
     SegmentationEffectPipeline,
     SegmentationEffectScissors,
+    SegmentationEffectSmoothing,
     SegmentationEffectThreshold,
     SegmentationOverwriteMode,
     SegmentModifier,
@@ -60,9 +62,11 @@ class SegmentationEditor(SignalContainer):
         SegmentationEffectDraw,
         SegmentationEffectErase,
         SegmentationEffectIslands,
+        SegmentationEffectLogicalOperators,
         SegmentationEffectNoTool,
         SegmentationEffectPaint,
         SegmentationEffectScissors,
+        SegmentationEffectSmoothing,
         SegmentationEffectThreshold,
     ]
 
@@ -144,9 +148,7 @@ class SegmentationEditor(SignalContainer):
 
     def register_effect_type(self, effect_type: type[SegmentationEffect]) -> None:
         """
-        Registers the input segment editor effect pipeline for the segmentation editor.
-        :param effect_type:
-        :return:
+        Registers the input segment editor effect type for the segmentation editor.
         """
         if self.is_effect_type_registered(effect_type):
             return
