@@ -131,6 +131,7 @@ class SegmentEditorUI(FlexContainer):
                 SegmentEditAreaUI(
                     segment_edit_area_typed_state=self.sub_state(self._typed_state.name.segment_edit_area),
                     variant="flat",
+                    style="display: flex; flex-direction: column; min-height: 0;",
                 )
 
     def build_effect_buttons(self, all: bool = True, **kwargs):
