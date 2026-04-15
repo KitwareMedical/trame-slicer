@@ -40,7 +40,11 @@ class SegmentEditAreaUI(VCard):
                         size="small",
                     )
 
-            with VCardText(v_if=(self._typed_state.name.is_extended,), classes="align-center"):
+            with VCardText(
+                v_if=(self._typed_state.name.is_extended,),
+                classes="align-center",
+                style="flex: 1; min-height: 0; overflow-y: auto;",
+            ):
                 DynamicSelect(
                     label="Editable Area",
                     state=self._typed_state.get_sub_state(self._typed_state.name.mask_select),
@@ -58,4 +62,5 @@ class SegmentEditAreaUI(VCard):
                     item_title="title",
                     hide_details=True,
                     density="compact",
+                    style="margin-top: 5px;",
                 )
