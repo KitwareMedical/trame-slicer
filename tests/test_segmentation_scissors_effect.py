@@ -2,8 +2,9 @@ import pytest
 from undo_stack import UndoStack
 
 from tests.conftest import a_slice_view, a_threed_view
-from tests.view_events import ViewEvents
+from tests.view_events import MouseButton, ViewEvents
 from trame_slicer.segmentation import (
+    BrushInteractionMode,
     ScissorsEffectFillMode,
     ScissorsEffectRangeMode,
     SegmentationEffectScissors,
@@ -17,7 +18,7 @@ def undo_stack(a_segmentation_editor):
     return undo_stack
 
 
-def apply_scissors_effect(view):
+def apply_scissors_effect_continuous(view):
     view_events = ViewEvents(view)
     center_x, center_y = view_events.view_center()
     view_events.mouse_move_to(center_x, center_y)
@@ -25,6 +26,15 @@ def apply_scissors_effect(view):
     view_events.mouse_move_to(0, center_y)
     view_events.mouse_move_to(0, 0)
     view_events.mouse_release_event()
+
+
+def apply_scissors_effect_point_by_point(view):
+    view_events = ViewEvents(view)
+    center_x, center_y = view_events.view_center()
+    view_events.click_at_coordinate(center_x, center_y)
+    view_events.click_at_coordinate(0, center_y)
+    view_events.click_at_coordinate(0, 0)
+    view_events.click_at_coordinate(0, 0, mouse_button=MouseButton.Right)
 
 
 def labelmap_sum_is_inferior(ref, labelmap):
@@ -36,6 +46,13 @@ def labelmap_sum_is_superior(ref, labelmap):
 
 
 @pytest.mark.parametrize("view", [a_threed_view, a_slice_view])
+@pytest.mark.parametrize(
+    ("brush_interaction_mode", "apply_function"),
+    [
+        (BrushInteractionMode.CONTINUOUS, apply_scissors_effect_continuous),
+        (BrushInteractionMode.POINT_BY_POINT, apply_scissors_effect_point_by_point),
+    ],
+)
 @pytest.mark.parametrize(
     ("operation", "check"),
     [
@@ -50,6 +67,8 @@ def test_scissors_effect_can_erase_and_fill(
     a_segmentation_model,
     a_volume_node,
     view,
+    brush_interaction_mode,
+    apply_function,
     operation,
     check,
     render_interactive,
@@ -67,7 +86,8 @@ def test_scissors_effect_can_erase_and_fill(
     prev_sum = labelmap.sum()
     effect: SegmentationEffectScissors = a_segmentation_editor.set_active_effect_type(SegmentationEffectScissors)
     effect.set_fill_mode(operation)
-    apply_scissors_effect(view)
+    effect.set_brush_interaction_mode(brush_interaction_mode)
+    apply_function(view)
 
     labelmap = a_segmentation_editor.get_segment_labelmap(
         a_segmentation_editor.get_segment_ids()[0], as_numpy_array=True
@@ -78,11 +98,20 @@ def test_scissors_effect_can_erase_and_fill(
         view.interactor().Start()
 
 
+@pytest.mark.parametrize(
+    ("brush_interaction_mode", "apply_function"),
+    [
+        (BrushInteractionMode.CONTINUOUS, apply_scissors_effect_continuous),
+        (BrushInteractionMode.POINT_BY_POINT, apply_scissors_effect_point_by_point),
+    ],
+)
 def test_scissors_effect_cut_modes(
     a_segmentation_editor,
     a_segmentation_model,
     a_volume_node,
     a_slice_view,
+    brush_interaction_mode,
+    apply_function,
     undo_stack,
     render_interactive,
 ):
@@ -97,6 +126,7 @@ def test_scissors_effect_cut_modes(
     prev_sum = labelmap.sum()
     effect: SegmentationEffectScissors = a_segmentation_editor.set_active_effect_type(SegmentationEffectScissors)
     effect.set_fill_mode(ScissorsEffectFillMode.ERASE_INSIDE)
+    effect.set_brush_interaction_mode(brush_interaction_mode)
 
     parameters = [
         (ScissorsEffectRangeMode.UNLIMITED, None),
@@ -113,7 +143,7 @@ def test_scissors_effect_cut_modes(
         if distance is not None:
             effect.set_symmetric_distance(distance)
 
-        apply_scissors_effect(a_slice_view)
+        apply_function(a_slice_view)
         labelmap = a_segmentation_editor.get_segment_labelmap(
             a_segmentation_editor.get_segment_ids()[0], as_numpy_array=True
         )

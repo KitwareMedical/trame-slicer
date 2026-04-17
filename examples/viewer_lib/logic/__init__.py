@@ -4,6 +4,7 @@ from .load_volume_logic import LoadVolumeLogic
 from .markups_button_logic import MarkupsButtonLogic
 from .medical_viewer_logic import MedicalViewerLogic
 from .segmentation import (
+    DrawEffectLogic,
     EraseEffectLogic,
     IslandsEffectLogic,
     LogicalOperatorsEffectLogic,
@@ -22,6 +23,7 @@ from .volume_property_logic import VolumePropertyLogic
 __all__ = [
     "AbstractDynamicSelectLogic",
     "BaseLogic",
+    "DrawEffectLogic",
     "EraseEffectLogic",
     "IDynamicSelectItem",
     "IslandsEffectLogic",

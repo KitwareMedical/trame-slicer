@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from collections.abc import Callable
 
 from slicer import (
@@ -14,13 +15,117 @@ from vtkmodules.vtkRenderingCore import (
     vtkActor2D,
     vtkPolyDataMapper2D,
     vtkProp,
-    vtkProperty2D,
     vtkRenderer,
 )
 
+from .scissors_effect_parameters import BrushInteractionMode
 from .segment_modifier import SegmentModifier
 from .segmentation_effect_pipeline import SegmentationEffectPipeline
 from .segmentation_effect_scissors import SegmentationEffectScissors
+
+
+class _IDrawer(ABC):
+    @abstractmethod
+    def add_point(self, x: float, y: float) -> None:
+        pass
+
+    @abstractmethod
+    def set_visible(self, is_visible: bool) -> None:
+        pass
+
+    @abstractmethod
+    def reset(self) -> None:
+        pass
+
+    @abstractmethod
+    def get_props(self) -> list[vtkProp]:
+        pass
+
+
+class _OpenCurveDrawer(_IDrawer):
+    """
+    Stores and manipulates data related to drawing an open poly line in 2D
+    """
+
+    def __init__(self, color: tuple[float, float, float], point_size: float, line_width: float):
+        self.points = vtkPoints()
+        self.lines = vtkCellArray()
+        self.vertices = vtkCellArray()
+        self.polydata = vtkPolyData()
+        self.polydata.SetLines(self.lines)
+        self.polydata.SetVerts(self.vertices)
+        self.polydata.SetPoints(self.points)
+
+        self.mapper = vtkPolyDataMapper2D()
+        self.mapper.SetInputData(self.polydata)
+        self.actor = vtkActor2D()
+        self.actor.SetMapper(self.mapper)
+        self.actor.SetVisibility(False)
+
+        props = self.actor.GetProperty()
+        props.SetColor(*color)
+        props.SetPointSize(point_size)
+        props.SetLineWidth(line_width)
+
+    def add_point(self, x: float, y: float) -> None:
+        self.points.InsertNextPoint(x, y, 1.0)
+        if self.n_points > 1:
+            self.lines.InsertNextCell(2, [self.n_points - 1, self.n_points - 2])
+        self.vertices.InsertNextCell(1, [self.n_points - 1])
+        self.points.Modified()
+
+    def set_point(self, i_pt: int, x: float, y: float) -> None:
+        while self.n_points <= i_pt:
+            self.add_point(x, y)
+        self.points.SetPoint(i_pt, x, y, 0)
+        self.points.Modified()
+
+    def set_visible(self, visibility: bool) -> None:
+        self.actor.SetVisibility(visibility)
+
+    def reset(self) -> None:
+        self.points.SetNumberOfPoints(0)
+        self.vertices.Reset()
+        self.lines.Reset()
+        self.polydata.Modified()
+
+    def get_props(self) -> list[vtkProp]:
+        return [self.actor]
+
+    @property
+    def n_points(self) -> int:
+        return self.points.GetNumberOfPoints()
+
+
+class _PreviewDrawer(_IDrawer):
+    """
+    Store and manipulates two lines representing the closing and preview lines of an ongoing 2D drawing
+    """
+
+    def __init__(self):
+        self._close_line = _OpenCurveDrawer((0.8, 0.8, 0.0), 0.0, 2.0)
+        self._preview_line = _OpenCurveDrawer((1.0, 1.0, 0.0), 4.0, 2.0)
+
+    def preview_point(self, x: int, y: int) -> None:
+        if self._close_line.n_points:
+            self._close_line.set_point(1, x, y)
+        self._preview_line.set_point(0, x, y)
+
+    def add_point(self, x: int, y: int) -> None:
+        if not self._close_line.n_points:
+            self._close_line.set_point(0, x, y)
+        self._preview_line.set_point(1, x, y)
+
+    def set_visible(self, visibility: bool) -> None:
+        self._close_line.set_visible(visibility)
+        self._preview_line.set_visible(visibility)
+
+    def get_props(self) -> list[vtkProp]:
+        return [*self._close_line.get_props(), *self._preview_line.get_props()]
+
+    def reset(self) -> None:
+        self._close_line.reset()
+        self._preview_line.reset()
 
 
 class ScissorsPolygonBrush:
@@ -28,61 +133,30 @@ class ScissorsPolygonBrush:
 
     def __init__(self):
         super().__init__()
-        self._points = vtkPoints()
-        self._lines = vtkCellArray()
-        self._vertices = vtkCellArray()
-        self._poly = vtkPolyData()
-        self._poly.SetLines(self._lines)
-        self._poly.SetVerts(self._vertices)
-        self._poly.SetPoints(self._points)
+        self._open_curve = _OpenCurveDrawer((1.0, 1.0, 0.0), 4.0, 2.0)
+        self._preview = _PreviewDrawer()
 
-        self._brush_mapper = vtkPolyDataMapper2D()
-        self._brush_mapper.SetInputData(self._poly)
-        self._brush_actor = vtkActor2D()
-        self._brush_actor.SetMapper(self._brush_mapper)
-        self._brush_actor.VisibilityOff()
-        props = self._brush_actor.GetProperty()
-        props.SetColor(1.0, 1.0, 0.0)
-        props.SetPointSize(4.0)
-        props.SetLineWidth(2.0)
+    def set_visible(self, visible: bool):
+        self._open_curve.set_visible(visible)
+        self._preview.set_visible(visible)
 
-    def set_visibility(self, visible: bool):
-        self._brush_actor.SetVisibility(int(visible))
-
-    def move_last_point(self, x: int, y: int) -> None:
-        count = self._points.GetNumberOfPoints()
-        if count == 0:
-            self.add_point(x, y)
-        else:
-            self._points.SetPoint(count - 1, [float(x), float(y), 1.0])
-            self._points.Modified()
+    def preview_point(self, x: int, y: int) -> None:
+        self._preview.preview_point(x, y)
 
     def add_point(self, x: int, y: int) -> None:
-        self._points.InsertNextPoint([float(x), float(y), 1.0])
-        count = self._points.GetNumberOfPoints()
-        if count > 1:
-            self._lines.InsertNextCell(2, [count - 1, count - 2])
-        self._vertices.InsertNextCell(1, [count - 1])
+        self._open_curve.add_point(x, y)
+        self._preview.add_point(x, y)
 
     def reset(self) -> None:
-        self._points.SetNumberOfPoints(0)
-        self._lines.Reset()
-        self._vertices.Reset()
-        self._poly.Modified()
+        self._open_curve.reset()
+        self._preview.reset()
 
     @property
     def points(self) -> vtkPoints:
-        return self._points
+        return self._open_curve.points
 
-    def get_prop(self) -> vtkProp:
-        """
-        Return brush prop.
-        Can be used to add or remove the brush from the renderer, configure rendering properties (visibility, color, ...)
-        """
-        return self._brush_actor
-
-    def get_property(self) -> vtkProperty2D:
-        return self._brush_actor.GetProperty()
+    def get_props(self) -> list[vtkProp]:
+        return [*self._open_curve.get_props(), *self._preview.get_props()]
 
 
 class SegmentationScissorsWidget:
@@ -111,8 +185,9 @@ class SegmentationScissorsWidget:
         self.disable_brush()
         self._renderer = renderer
 
-    def move_last_point(self, x: int, y: int) -> None:
-        self._brush.move_last_point(x, y)
+    def preview_point(self, x: int, y: int) -> None:
+        self._brush.set_visible(True)
+        self._brush.preview_point(x, y)
 
     def add_point(self, x: int, y: int) -> None:
         self._brush.add_point(x, y)
@@ -127,9 +202,9 @@ class SegmentationScissorsWidget:
         if not self._renderer:
             return
 
-        self._brush.set_visibility(True)
         self._brush_enabled = True
-        self._renderer.AddViewProp(self._brush.get_prop())
+        for prop in self._brush.get_props():
+            self._renderer.AddViewProp(prop)
 
     def disable_brush(self) -> None:
         if not self._renderer:
@@ -137,9 +212,10 @@ class SegmentationScissorsWidget:
 
         if self.is_painting():
             self.stop_painting()
-        self._brush.set_visibility(False)
+        self._brush.set_visible(False)
         self._brush_enabled = False
-        self._renderer.RemoveViewProp(self._brush.get_prop())
+        for prop in self._brush.get_props():
+            self._renderer.RemoveViewProp(prop)
 
     def is_brush_enabled(self) -> bool:
         return self._brush_enabled
@@ -171,7 +247,12 @@ class SegmentationScissorsPipeline(SegmentationEffectPipeline[SegmentationEffect
             int(vtkCommand.MouseMoveEvent): self._MouseMoved,
             int(vtkCommand.LeftButtonPressEvent): self._LeftButtonPressed,
             int(vtkCommand.LeftButtonReleaseEvent): self._LeftButtonReleased,
+            int(vtkCommand.RightButtonPressEvent): self._RightButtonPressed,
         }
+
+    @property
+    def brush_interaction_mode(self) -> BrushInteractionMode:
+        return self._effect.brush_interaction_mode
 
     def SetActive(self, isActive: bool):
         super().SetActive(isActive)
@@ -210,23 +291,39 @@ class SegmentationScissorsPipeline(SegmentationEffectPipeline[SegmentationEffect
 
     def _LeftButtonPressed(self, event_data: vtkMRMLInteractionEventData) -> bool:
         x, y = event_data.GetDisplayPosition()
-        self.widget.start_painting(x, y)
+        if self.brush_interaction_mode == BrushInteractionMode.CONTINUOUS:
+            self.widget.start_painting(x, y)
+        elif self.brush_interaction_mode == BrushInteractionMode.POINT_BY_POINT:
+            if not self.widget.is_painting():
+                self.widget.start_painting(x, y)
+            else:
+                self.widget.add_point(x, y)
+            self.widget.preview_point(x, y)
         self.RequestRender()
         return True
 
     def _LeftButtonReleased(self, _event_data: vtkMRMLInteractionEventData) -> bool:
-        self.widget.stop_painting()
-        self.RequestRender()
-        return True
+        if self.brush_interaction_mode == BrushInteractionMode.CONTINUOUS:
+            self.widget.stop_painting()
+            self.RequestRender()
+            return True
+        return False
 
     def _MouseMoved(self, event_data: vtkMRMLInteractionEventData) -> bool:
         x, y = event_data.GetDisplayPosition()
-        self.widget.move_last_point(x, y)
-        if self.widget.is_painting():
+        if self.widget.is_painting() and self.brush_interaction_mode == BrushInteractionMode.CONTINUOUS:
             self.widget.add_point(x, y)
+        self.widget.preview_point(x, y)
         self.RequestRender()
 
         # Always let other interactor and displayable managers do whatever they want
+        return False
+
+    def _RightButtonPressed(self, _event_data: vtkMRMLInteractionEventData) -> bool:
+        if self.brush_interaction_mode == BrushInteractionMode.POINT_BY_POINT:
+            self.widget.stop_painting()
+            self.RequestRender()
+            return True
         return False
 
     def IsSupportedEvent(self, event_data: vtkMRMLInteractionEventData):
