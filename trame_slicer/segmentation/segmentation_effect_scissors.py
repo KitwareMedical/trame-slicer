@@ -27,7 +27,11 @@ from vtkmodules.vtkRenderingCore import vtkCoordinate, vtkRenderer
 
 from ..utils import vtk_image_to_np
 from ..views import AbstractView
-from .scissors_effect_parameters import ScissorsEffectFillMode, ScissorsEffectRangeMode
+from .scissors_effect_parameters import (
+    BrushInteractionMode,
+    ScissorsEffectFillMode,
+    ScissorsEffectRangeMode,
+)
 from .segment_modifier import ModificationMode
 from .segmentation_effect import SegmentationEffect
 from .segmentation_effect_pipeline import SegmentationEffectPipeline
@@ -37,9 +41,14 @@ class SegmentationEffectScissors(SegmentationEffect):
     def __init__(self) -> None:
         super().__init__()
 
+        self._brush_interaction_mode: BrushInteractionMode = BrushInteractionMode.CONTINUOUS
         self._range_mode: ScissorsEffectRangeMode = ScissorsEffectRangeMode.UNLIMITED
         self._fill_mode: ScissorsEffectFillMode = ScissorsEffectFillMode.ERASE_INSIDE
         self._symmetric_distance: float = 0.0
+
+    @property
+    def brush_interaction_mode(self) -> BrushInteractionMode:
+        return self._brush_interaction_mode
 
     def _create_pipeline(
         self, _view_node: vtkMRMLAbstractViewNode, _parameter: vtkMRMLNode
@@ -47,6 +56,9 @@ class SegmentationEffectScissors(SegmentationEffect):
         from .segmentation_effect_scissors_widget import SegmentationScissorsPipeline
 
         return SegmentationScissorsPipeline()
+
+    def set_brush_interaction_mode(self, mode: BrushInteractionMode):
+        self._brush_interaction_mode = mode
 
     def set_symmetric_distance(self, symmetric_distance: float):
         self._symmetric_distance = symmetric_distance

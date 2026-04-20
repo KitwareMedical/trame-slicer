@@ -4,6 +4,7 @@ from .abstract_segmentation_effect_brush import AbstractSegmentationEffectBrush
 from .brush_source import BrushSource
 from .paint_effect_parameters import BrushDiameterMode, BrushShape
 from .scissors_effect_parameters import (
+    BrushInteractionMode,
     ScissorsEffectFillMode,
     ScissorsEffectRangeMode,
 )
@@ -57,6 +58,7 @@ __all__ = [
     "AutoThresholdMethod",
     "AutoThresholdMode",
     "BrushDiameterMode",
+    "BrushInteractionMode",
     "BrushShape",
     "BrushSource",
     "ModificationMode",

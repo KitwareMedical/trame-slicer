@@ -1,4 +1,5 @@
 from .brush_parameters_ui import BrushParametersState, BrushParametersUI
+from .draw_effect_ui import DrawEffectState, DrawEffectUI
 from .islands_effect_ui import IslandsEffectUI, IslandsState
 from .logical_operators_effect_ui import (
     LogicalOperatorsEffectUI,
@@ -28,6 +29,8 @@ from .threshold_effect_ui import ThresholdEffectUI, ThresholdState
 __all__ = [
     "BrushParametersState",
     "BrushParametersUI",
+    "DrawEffectState",
+    "DrawEffectUI",
     "IslandsEffectUI",
     "IslandsState",
     "LogicalOperatorsEffectUI",

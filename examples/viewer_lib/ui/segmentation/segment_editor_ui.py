@@ -31,6 +31,7 @@ from trame_slicer.segmentation import (
 from ..control_button import ControlButton
 from ..flex_container import FlexContainer
 from ..viewer_layout import ViewerLayoutState
+from .draw_effect_ui import DrawEffectUI
 from .islands_effect_ui import IslandsEffectUI
 from .logical_operators_effect_ui import LogicalOperatorsEffectUI
 from .paint_effect_ui import PaintEffectUI
@@ -118,6 +119,7 @@ class SegmentEditorUI(FlexContainer):
                         self._register_effect_ui(SegmentationEffectLogicalOperators, LogicalOperatorsEffectUI)
                         self._register_effect_ui(SegmentationEffectThreshold, ThresholdEffectUI)
                         self._register_effect_ui(SegmentationEffectIslands, IslandsEffectUI)
+                        self._register_effect_ui(SegmentationEffectDraw, DrawEffectUI)
                         self._register_effect_ui(SegmentationEffectScissors, ScissorsEffectUI)
                         self._register_effect_ui(SegmentationEffectSmoothing, SmoothingEffectUI)
                 VSpacer(v_else=True)

@@ -17,6 +17,7 @@ from ...ui import (
     SegmentState,
 )
 from .base_segmentation_logic import BaseEffectLogic, BaseSegmentationLogic
+from .draw_effect_logic import DrawEffectLogic
 from .islands_effect_logic import IslandsEffectLogic
 from .logical_operators_effect_logic import LogicalOperatorsEffectLogic
 from .paint_erase_effect_logic import EraseEffectLogic, PaintEffectLogic
@@ -37,6 +38,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
             ThresholdEffectLogic,
             PaintEffectLogic,
             EraseEffectLogic,
+            DrawEffectLogic,
             ScissorsEffectLogic,
             SmoothingEffectLogic,
         ]
