@@ -80,6 +80,13 @@ class _OpenCurveDrawer(_IDrawer):
         self.points.SetPoint(i_pt, x, y, 0)
         self.points.Modified()
 
+    def remove_last_point(self) -> None:
+        points = vtkPoints()
+        points.DeepCopy(self.points)
+        self.reset()
+        for i in range(points.GetNumberOfPoints() - 1):
+            self.add_point(*points.GetPoint(i)[:2])
+
     def set_visible(self, visibility: bool) -> None:
         self.actor.SetVisibility(visibility)
 
@@ -146,6 +153,15 @@ class ScissorsPolygonBrush:
     def add_point(self, x: int, y: int) -> None:
         self._open_curve.add_point(x, y)
         self._preview.add_point(x, y)
+
+    def remove_last_point(self) -> None:
+        if self._open_curve.n_points > 0:
+            self._open_curve.remove_last_point()
+            n_points = self._open_curve.n_points
+            if n_points == 0:
+                self._preview.reset()
+            else:
+                self._preview.add_point(*self._open_curve.points.GetPoint(n_points - 1)[:2])
 
     def reset(self) -> None:
         self._open_curve.reset()
@@ -232,6 +248,13 @@ class SegmentationScissorsWidget:
         self._brush.reset()
         self.interaction_stopped.emit(points)
 
+    def cancel_painting(self) -> None:
+        self._painting = False
+        self._brush.reset()
+
+    def remove_last_point(self) -> None:
+        self._brush.remove_last_point()
+
     def is_painting(self) -> bool:
         return self._painting
 
@@ -248,6 +271,7 @@ class SegmentationScissorsPipeline(SegmentationEffectPipeline[SegmentationEffect
             int(vtkCommand.LeftButtonPressEvent): self._LeftButtonPressed,
             int(vtkCommand.LeftButtonReleaseEvent): self._LeftButtonReleased,
             int(vtkCommand.RightButtonPressEvent): self._RightButtonPressed,
+            int(vtkCommand.KeyReleaseEvent): self._KeyReleased,
         }
 
     @property
@@ -324,6 +348,16 @@ class SegmentationScissorsPipeline(SegmentationEffectPipeline[SegmentationEffect
             self.widget.stop_painting()
             self.RequestRender()
             return True
+        return False
+
+    def _KeyReleased(self, event_data: vtkMRMLInteractionEventData) -> bool:
+        key = event_data.GetKeySym()
+        if self.widget.is_painting():
+            if key == "Escape":
+                self.widget.cancel_painting()
+            elif key.lower() == "x" and self.brush_interaction_mode == BrushInteractionMode.POINT_BY_POINT:
+                self.widget.remove_last_point()
+            self.RequestRender()
         return False
 
     def IsSupportedEvent(self, event_data: vtkMRMLInteractionEventData):

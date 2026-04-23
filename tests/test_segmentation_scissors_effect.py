@@ -162,3 +162,46 @@ def test_scissors_effect_cut_modes(
 
     if render_interactive:
         a_slice_view.interactor().Start()
+
+
+def test_scissors_can_delete_points(
+    a_segmentation_editor,
+    a_segmentation_model,
+    a_volume_node,
+    a_slice_view,
+    render_interactive,
+):
+    segmentation_node = a_segmentation_editor.create_segmentation_node_from_model_node(a_segmentation_model)
+    a_segmentation_editor.set_active_segmentation(segmentation_node, a_volume_node)
+
+    effect: SegmentationEffectScissors = a_segmentation_editor.set_active_effect_type(SegmentationEffectScissors)
+    effect.set_fill_mode(ScissorsEffectFillMode.FILL_INSIDE)
+    effect.set_brush_interaction_mode(BrushInteractionMode.POINT_BY_POINT)
+
+    pipeline = effect.pipelines[0]()
+    line = pipeline.widget._brush._open_curve
+    assert line.n_points == 0
+
+    view_events = ViewEvents(a_slice_view)
+
+    def apply():
+        center_x, center_y = view_events.view_center()
+        view_events.click_at_coordinate(center_x, center_y)
+        view_events.click_at_coordinate(0, center_y)
+        view_events.click_at_coordinate(0, 0)
+
+    apply()
+    assert line.n_points == 3
+
+    # Assert points are deleted one by one
+    # and there are no error when pressing "x" with no points left
+    for i in range(4):
+        view_events.key_press("x")
+        assert line.n_points == max(0, 3 - (i + 1))
+
+    apply()
+    view_events.key_press("Escape")
+    assert line.n_points == 0
+
+    if render_interactive:
+        a_slice_view.interactor().Start()
