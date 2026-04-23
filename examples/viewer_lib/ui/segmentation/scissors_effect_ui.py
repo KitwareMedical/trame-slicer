@@ -28,7 +28,7 @@ class ScissorsEffectUI(FlexContainer):
 
         with self:
             with (
-                vuetify.VRow(style="margin-top: 20px;"),
+                vuetify.VRow(style="margin-top: 5px"),
                 vuetify.VRadioGroup(
                     v_model=self._typed_state.name.brush_interaction_mode,
                     label="Brush interaction mode",
@@ -49,7 +49,7 @@ class ScissorsEffectUI(FlexContainer):
                     vuetify.VRadioGroup(v_model=self._typed_state.name.range_mode, label="Cut mode", hide_details=True),
                 ):
                     enum_to_radio_buttons(self._typed_state, ScissorsEffectRangeMode)
-            with vuetify.VRow(style="margin-top: 20px; margin-left: 2px; margin-right: 2px;"):
+            with vuetify.VRow(style="margin-top: 20px; margin-left: 2px; margin-right: 2px; margin-bottom: 0px;"):
                 vuetify.VNumberInput(
                     v_model=self._typed_state.name.symmetric_distance,
                     label="Distance (mm)",
