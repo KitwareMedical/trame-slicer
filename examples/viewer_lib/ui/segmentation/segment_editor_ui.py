@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any
 
+from trame.widgets import html
 from trame.widgets.vuetify3 import (
     VBtn,
     VCard,
@@ -106,35 +107,34 @@ class SegmentEditorUI(FlexContainer):
                 VDivider()
                 with VCard(
                     v_if=(self._typed_state.name.segment_list.active_segment_id,),
-                    classes="flex-grow-1",
                     variant="flat",
-                    style="display: flex; flex-direction: column; min-height: 0;",
+                    style="height:50%; display: flex; flex-direction: column;",
                 ):
                     with VCardItem(), FlexContainer(row=True, justify="space-between"):
                         self.build_effect_buttons()
                     VDivider(classes="mx-3")
-                    with VCardText(classes="align-center", style="flex: 1; min-height: 0; overflow-y: auto;"):
-                        self._register_effect_ui(SegmentationEffectPaint, PaintEffectUI)
-                        self._register_effect_ui(SegmentationEffectErase, PaintEffectUI)
-                        self._register_effect_ui(SegmentationEffectLogicalOperators, LogicalOperatorsEffectUI)
-                        self._register_effect_ui(SegmentationEffectThreshold, ThresholdEffectUI)
-                        self._register_effect_ui(SegmentationEffectIslands, IslandsEffectUI)
-                        self._register_effect_ui(SegmentationEffectDraw, DrawEffectUI)
-                        self._register_effect_ui(SegmentationEffectScissors, ScissorsEffectUI)
-                        self._register_effect_ui(SegmentationEffectSmoothing, SmoothingEffectUI)
-                VSpacer(v_else=True)
-                VDivider()
-                SegmentDisplayUI(
-                    typed_state=self.sub_state(self._typed_state.name.segment_display),
-                    variant="flat",
-                    style="display: flex; flex-direction: column; min-height: 0;",
-                )
-                VDivider()
-                SegmentEditAreaUI(
-                    segment_edit_area_typed_state=self.sub_state(self._typed_state.name.segment_edit_area),
-                    variant="flat",
-                    style="display: flex; flex-direction: column; min-height: 0;",
-                )
+                    with VCardText(style="display: flex; flex-direction: column; overflow-y: auto;"):
+                        with html.Div(style="margin-bottom: 10px;"):
+                            self._register_effect_ui(SegmentationEffectPaint, PaintEffectUI)
+                            self._register_effect_ui(SegmentationEffectErase, PaintEffectUI)
+                            self._register_effect_ui(SegmentationEffectLogicalOperators, LogicalOperatorsEffectUI)
+                            self._register_effect_ui(SegmentationEffectThreshold, ThresholdEffectUI)
+                            self._register_effect_ui(SegmentationEffectIslands, IslandsEffectUI)
+                            self._register_effect_ui(SegmentationEffectDraw, DrawEffectUI)
+                            self._register_effect_ui(SegmentationEffectScissors, ScissorsEffectUI)
+                            self._register_effect_ui(SegmentationEffectSmoothing, SmoothingEffectUI)
+                        VSpacer()
+                        with html.Div(classes="mt-auto"):
+                            VDivider()
+                            SegmentDisplayUI(
+                                typed_state=self.sub_state(self._typed_state.name.segment_display),
+                                variant="flat",
+                            )
+                            VDivider()
+                            SegmentEditAreaUI(
+                                segment_edit_area_typed_state=self.sub_state(self._typed_state.name.segment_edit_area),
+                                variant="flat",
+                            )
 
     def build_effect_buttons(self, all: bool = True, **kwargs):
         self._create_effect_button(

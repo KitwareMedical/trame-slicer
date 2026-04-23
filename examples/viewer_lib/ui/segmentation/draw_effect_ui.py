@@ -21,7 +21,7 @@ class DrawEffectUI(FlexContainer):
 
         with (
             self,
-            vuetify.VRow(style="margin-top: 20px;"),
+            vuetify.VRow(style="margin-top: 2px; margin-bottom: 0px;"),
             vuetify.VRadioGroup(
                 v_model=self._typed_state.name.brush_interaction_mode,
                 label="Brush interaction mode",
