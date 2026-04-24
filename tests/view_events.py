@@ -52,7 +52,7 @@ class ViewEvents:
         self.click_at_coordinate(*self.view_center())
 
     def key_press(self, key: str):
-        self.interactor.SetKeyEventInformation(0, 0, key, 0, key)
+        self.interactor.SetKeyEventInformation(0, 0, " ", 0, key)
         self.interactor.InvokeEvent("KeyPressEvent")
         self.interactor.InvokeEvent("KeyReleaseEvent")
         self.interactor.SetKeyEventInformation(0, 0, " ", 0, " ")
