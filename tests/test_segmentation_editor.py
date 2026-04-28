@@ -12,6 +12,7 @@ from slicer import (
 )
 from undo_stack import SignalContainerSpy, UndoStack
 
+from tests.view_events import ViewEvents
 from trame_slicer.segmentation import (
     SegmentationEditableAreaMode,
     SegmentationEffect,
@@ -70,11 +71,11 @@ def test_segmentation_editor_can_add_segments(editor, a_volume_node, active_segm
 
 def test_segmentation_can_enable_3d_repr(editor, a_volume_node, a_segmentation_model):
     segmentation_node = editor.create_segmentation_node_from_model_node(a_segmentation_model)
-    editor.set_surface_representation_enabled(True)
+    editor.display.set_surface_representation_enabled(True)
     editor.set_active_segmentation(segmentation_node, a_volume_node)
     assert segmentation_node.GetSegmentation().ContainsRepresentation(editor.active_segmentation._surface_repr_name)
 
-    editor.set_surface_representation_enabled(False)
+    editor.display.set_surface_representation_enabled(False)
     assert not segmentation_node.GetSegmentation().ContainsRepresentation(editor.active_segmentation._surface_repr_name)
 
 
@@ -184,7 +185,7 @@ def test_notifies_changes_on_new_segmentation(editor, a_volume_node, editor_spy)
     editor_spy[editor.active_effect_name_changed].assert_called_with(SegmentationEffectNoTool.get_effect_name())
     editor_spy.reset()
 
-    editor.show_3d(True)
+    editor.display.show_3d(True)
     editor_spy[editor.show_3d_changed].assert_called_with(True)
 
     segment_id = editor.add_empty_segment()
@@ -281,7 +282,7 @@ def test_get_merged_segment_labelmap(editor, segmentation_with_two_segments):
     merged_labelmap = segmentation.get_merged_segment_labelmap(as_numpy_array=True)
     assert len(np.unique(merged_labelmap)) == 3
 
-    editor.set_segment_visibility(segment_id_1, False)
+    editor.display.set_segment_visibility(segment_id_1, False)
     merged_labelmap = segmentation.get_merged_segment_labelmap(only_visible_segments=True, as_numpy_array=True)
     assert len(np.unique(merged_labelmap)) == 2
 
@@ -309,3 +310,50 @@ def test_set_masking_parameters_triggers_parameter_update(
     assert a_segmentation_editor.editor_node.GetOverwriteMode() == vtkMRMLSegmentEditorNode.OverwriteVisibleSegments
 
     spy.assert_called()
+
+
+def paint(view):
+    view_events = ViewEvents(view)
+    center_x, center_y = view_events.view_center()
+    view_events.mouse_move_to(center_x, center_y)
+    view_events.mouse_press_event()
+    view_events.mouse_move_to(0, center_y)
+    view_events.mouse_move_to(0, 0)
+    view_events.mouse_release_event()
+
+
+def test_segmentation_mask_threshold(a_segmentation_editor, active_segmentation_node, a_volume_node, a_slice_view):
+    a_segmentation_editor.set_active_segmentation(active_segmentation_node, a_volume_node)
+    assert a_segmentation_editor._display_manager.pipelines[0]().GetViewNode() == a_slice_view.get_view_node()
+
+    a_segmentation_editor.set_active_effect_type(SegmentationEffectPaint)
+    segment_id = a_segmentation_editor.add_empty_segment()
+
+    def get_sum():
+        return np.sum(vtk_image_to_np(a_segmentation_editor.get_segment_labelmap(segment_id)))
+
+    sum_before = get_sum()
+    assert sum_before == 0
+
+    # Zero-range: assert no modification
+    a_segmentation_editor.display.set_source_volume_intensity_mask(True)
+    a_segmentation_editor.display.set_source_volume_intensity_mask_range(0.0, -1.0)
+    paint(a_slice_view)
+    sum_after = get_sum()
+    assert sum_after == 0
+
+    # Normal range: assert modification
+    a_segmentation_editor.display.set_source_volume_intensity_mask_range(-1000.0, 1000.0)
+    paint(a_slice_view)
+    sum_after = get_sum()
+    assert sum_after > 0
+
+    # Zero-range with intensity mak disabled: assert modification
+    a_segmentation_editor.active_segment_modifier.set_segment_labelmap(
+        segment_id, np.zeros_like(a_segmentation_editor.get_segment_labelmap(segment_id))
+    )
+    a_segmentation_editor.display.set_source_volume_intensity_mask(False)
+    a_segmentation_editor.display.set_source_volume_intensity_mask_range(0.0, -1.0)
+    paint(a_slice_view)
+    sum_after = get_sum()
+    assert sum_after > 0

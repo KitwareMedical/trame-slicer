@@ -39,7 +39,7 @@ from .paint_effect_ui import PaintEffectUI
 from .scissors_effect_ui import ScissorsEffectUI
 from .segment_display_ui import SegmentDisplayState, SegmentDisplayUI
 from .segment_edit_area_ui import SegmentEditAreaState, SegmentEditAreaUI
-from .segment_edit_ui import SegmentEditState, SegmentEditUI
+from .segment_edit_ui import SegmentEditUI
 from .segment_list import SegmentList, SegmentListMenu, SegmentListState
 from .smoothing_effect_ui import SmoothingEffectUI
 from .threshold_effect_ui import ThresholdEffectUI
@@ -77,7 +77,7 @@ class SegmentEditorUI(FlexContainer):
 
     def _build_ui(self):
         with self:
-            self.edit_ui._build_color_dialog()
+            self.edit_ui.build_color_dialog()
             VBtn(
                 v_if=(f"{self._typed_state.name.segment_list.segments}.length < 1",),
                 classes="ma-4",
@@ -253,7 +253,6 @@ class SegmentEditorToolbarUI(FlexContainer):
         self._editor_ui = editor_ui
 
         self._typed_state = TypedState(self.state, SegmentEditorState)
-        self._segment_edit_state = TypedState(self.state, SegmentEditState)
 
         self._build_ui()
 

@@ -13,7 +13,7 @@ from undo_stack import Signal
 
 from ..control_button import ControlButton
 from ..text_components import Text, TextField
-from .segment_edit_ui import SegmentEditState, SegmentEditUI
+from .segment_edit_ui import SegmentEditUI
 from .segment_state import SegmentState
 
 
@@ -63,7 +63,7 @@ class SegmentList(VList):
                         disabled=True,
                         v_model=("item.name",),
                     )
-                    self._edit_ui._build_name_textfield(
+                    self._edit_ui.build_name_textfield(
                         v_else=True,
                     )
 
@@ -106,7 +106,7 @@ class SegmentListMenu(VMenu):
     def __init__(self, segment_list_ui: SegmentList, **kwargs):
         super().__init__(v_model=("segment_list_menu", False), location="end", width=200, max_height=500, **kwargs)
 
-        self._segment_edit_state = TypedState(self.state, SegmentEditState)
+        self._segment_edit_state = TypedState(self.state, SegmentState)
         self._segment_list_ui = segment_list_ui
 
         self._build_ui()
@@ -115,10 +115,10 @@ class SegmentListMenu(VMenu):
         with self:
             with Template(v_slot_activator="{ props : activatorProps }"):
                 ControlButton(
-                    disabled=(f"!{self._segment_edit_state.name.segment_state.segment_id}",),
+                    disabled=(f"!{self._segment_edit_state.name.segment_id}",),
                     name="Select segment",
                     icon="mdi-circle",
-                    color=(self._segment_edit_state.name.segment_state.color,),
+                    color=(self._segment_edit_state.name.color,),
                     v_bind="activatorProps",
                 )
             with VList():

@@ -5,7 +5,7 @@ from dataclasses import asdict, dataclass
 import vtk
 from slicer import vtkSegment
 
-from trame_slicer.utils import hex_to_rgb_float, rgb_float_to_hex
+from trame_slicer.utils import hex_to_rgba_float, rgba_float_to_hex
 
 
 @dataclass
@@ -41,11 +41,11 @@ class SegmentProperties:
 
     @property
     def color_hex(self) -> str:
-        return rgb_float_to_hex(self.color)
+        return rgba_float_to_hex(self.color)
 
     @color_hex.setter
     def color_hex(self, value: str) -> None:
-        self.color = hex_to_rgb_float(value)
+        self.color = hex_to_rgba_float(value)
 
     def to_dict(self):
         d = asdict(self)

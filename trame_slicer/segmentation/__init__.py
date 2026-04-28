@@ -12,6 +12,7 @@ from .segment_modifier import ModificationMode, SegmentModifier
 from .segment_properties import SegmentProperties
 from .segmentation import Segmentation
 from .segmentation_display import SegmentationDisplay, SegmentationOpacityEnum
+from .segmentation_display_manager import SegmentationDisplayManager
 from .segmentation_editable_area_mode import SegmentationEditableAreaMode
 from .segmentation_effect import SegmentationEffect
 from .segmentation_effect_draw import SegmentationEffectDraw
@@ -39,6 +40,7 @@ from .segmentation_effect_threshold import (
     AutoThresholdMode,
     SegmentationEffectThreshold,
     SegmentationThresholdPipeline2D,
+    SegmentationThresholdPipeline2DBlinking,
     ThresholdParameters,
 )
 from .segmentation_islands_pipeline import SegmentationIslandsPipeline
@@ -52,6 +54,7 @@ from .segmentation_paint_widget import (
     SegmentationPaintWidget2D,
     SegmentationPaintWidget3D,
 )
+from .segmentation_threshold_mask_pipeline import SegmentationThresholdMaskPipeline
 
 __all__ = [
     "AbstractSegmentationEffectBrush",
@@ -69,6 +72,7 @@ __all__ = [
     "SegmentProperties",
     "Segmentation",
     "SegmentationDisplay",
+    "SegmentationDisplayManager",
     "SegmentationEditableAreaMode",
     "SegmentationEffect",
     "SegmentationEffectDraw",
@@ -93,6 +97,8 @@ __all__ = [
     "SegmentationPaintWidget3D",
     "SegmentationScissorsPipeline",
     "SegmentationScissorsWidget",
+    "SegmentationThresholdMaskPipeline",
     "SegmentationThresholdPipeline2D",
+    "SegmentationThresholdPipeline2DBlinking",
     "ThresholdParameters",
 ]

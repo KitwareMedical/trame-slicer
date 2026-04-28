@@ -30,7 +30,7 @@ class LogicalOperatorsEffectLogic(BaseEffectLogic[LogicalOperatorsState, Segment
                 name=segment_properties.name,
                 color=segment_properties.color_hex,
                 segment_id=segment_id,
-                is_visible=self.segmentation_editor.get_segment_visibility(segment_id),
+                is_visible=self.segmentation_editor.display.get_segment_visibility(segment_id),
             )
             for segment_id, segment_properties in self.segmentation_editor.get_all_segment_properties().items()
         ]

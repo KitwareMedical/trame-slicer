@@ -108,7 +108,7 @@ class SegmentationEffectTrameSlicerApp(TrameApp):
             self._segmentation_node = self._slicer_app.segmentation_editor.create_empty_segmentation_node()
 
         self._slicer_app.segmentation_editor.set_active_segmentation(self._segmentation_node, self._volume_node)
-        self._slicer_app.segmentation_editor.set_surface_representation_enabled(False)
+        self._slicer_app.segmentation_editor.display.set_surface_representation_enabled(False)
 
         if not self._slicer_app.segmentation_editor.get_segment_ids():
             self._slicer_app.segmentation_editor.add_empty_segment(segment_name="Segment Name")

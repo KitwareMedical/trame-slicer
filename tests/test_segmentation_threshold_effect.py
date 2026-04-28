@@ -6,7 +6,7 @@ from trame_slicer.core import LayoutManager
 from trame_slicer.rca_view import register_rca_factories
 from trame_slicer.segmentation import (
     SegmentationEffectThreshold,
-    SegmentationThresholdPipeline2D,
+    SegmentationThresholdPipeline2DBlinking,
 )
 
 
@@ -45,8 +45,8 @@ def test_can_apply_threshold(
     assert len(effect.pipelines) == 1
 
     # Verify that pipeline was correctly added to the view and that its brush is correctly active
-    view_pipeline: SegmentationThresholdPipeline2D = effect.pipelines[0]()
-    assert isinstance(view_pipeline, SegmentationThresholdPipeline2D)
+    view_pipeline: SegmentationThresholdPipeline2DBlinking = effect.pipelines[0]()
+    assert isinstance(view_pipeline, SegmentationThresholdPipeline2DBlinking)
     assert view_pipeline.IsActive()
 
     # Activate the segment ID and apply segmentation

@@ -17,12 +17,32 @@ if TYPE_CHECKING:
 T = TypeVar("T", bound=SegmentationEffect)
 
 
-class SegmentationEffectPipeline(vtkMRMLLayerDMScriptedPipeline, Generic[T]):
+class SegmentationPipeline(vtkMRMLLayerDMScriptedPipeline):
+    def __init__(self):
+        super().__init__()
+        self._view: AbstractViewChild | None = None
+        self._isActive = False
+
+    def IsActive(self) -> bool:
+        return self._isActive
+
+    def SetView(self, view: AbstractViewChild):
+        self._view = view
+
+    def SetActive(self, isActive: bool):
+        if self._isActive == isActive:
+            return
+
+        self._isActive = isActive
+
+        if not self._isActive:
+            self.LoseFocus(None)
+
+
+class SegmentationEffectPipeline(SegmentationPipeline, Generic[T]):
     def __init__(self):
         super().__init__()
         self._effect: T | None = None
-        self._view: AbstractViewChild | None = None
-        self._isActive = False
 
     def GetModifier(self) -> SegmentModifier | None:
         return self._effect.modifier if self._effect else None
@@ -39,18 +59,6 @@ class SegmentationEffectPipeline(vtkMRMLLayerDMScriptedPipeline, Generic[T]):
     def SetDisplayNode(self, displayNode: vtkMRMLNode) -> None:
         super().SetDisplayNode(displayNode)
         self.OnEffectParameterUpdate()
-
-    def SetView(self, view: AbstractViewChild):
-        self._view = view
-
-    def SetActive(self, isActive: bool):
-        if self._isActive == isActive:
-            return
-
-        self._isActive = isActive
-
-        if not self._isActive:
-            self.LoseFocus(None)
 
     def OnUpdate(self, obj: vtkObject, _eventId: int, _callData: Any | None) -> None:
         if obj == self.GetDisplayNode():

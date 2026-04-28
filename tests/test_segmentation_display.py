@@ -87,10 +87,10 @@ def test_segment_visibility(
     segment_id = a_segmentation_editor.add_empty_segment()
     assert segment_id != ""
 
-    a_segmentation_editor.set_segment_visibility(segment_id, False)
+    a_segmentation_editor.display.set_segment_visibility(segment_id, False)
     assert not display_node.GetSegmentVisibility(segment_id)
 
-    a_segmentation_editor.set_segment_visibility(segment_id, True)
+    a_segmentation_editor.display.set_segment_visibility(segment_id, True)
     assert display_node.GetSegmentVisibility(segment_id)
 
     if render_interactive:
