@@ -64,7 +64,7 @@ class AbstractSegmentationEffectBrush(SegmentationEffect, ABC):
         paint_parameters.paint_feedback_model_node.SetDisplayVisibility(self.is_active)
 
     def _get_paint_parameters(self) -> PaintEffectParameters:
-        return create_scripted_module_dataclass_proxy(PaintEffectParameters, self._param_node, self._scene)
+        return create_scripted_module_dataclass_proxy(PaintEffectParameters, self.get_parameter_node(), self._scene)
 
     def _create_pipeline(
         self, view_node: vtkMRMLAbstractViewNode, _parameter: vtkMRMLNode
