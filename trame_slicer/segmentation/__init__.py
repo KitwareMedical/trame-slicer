@@ -44,6 +44,9 @@ from .segmentation_effect_threshold import (
     ThresholdParameters,
 )
 from .segmentation_islands_pipeline import SegmentationIslandsPipeline
+from .segmentation_masked_volume_intensity_range_pipeline import (
+    SegmentationMaskedVolumeIntensityRangePipeline,
+)
 from .segmentation_overwrite_mode import SegmentationOverwriteMode
 from .segmentation_paint_pipeline import (
     SegmentationPaintPipeline2D,
@@ -54,7 +57,6 @@ from .segmentation_paint_widget import (
     SegmentationPaintWidget2D,
     SegmentationPaintWidget3D,
 )
-from .segmentation_threshold_mask_pipeline import SegmentationThresholdMaskPipeline
 
 __all__ = [
     "AbstractSegmentationEffectBrush",
@@ -88,6 +90,7 @@ __all__ = [
     "SegmentationEffectThreshold",
     "SegmentationIslandsMode",
     "SegmentationIslandsPipeline",
+    "SegmentationMaskedVolumeIntensityRangePipeline",
     "SegmentationOpacityEnum",
     "SegmentationOverwriteMode",
     "SegmentationPaintPipeline2D",
@@ -97,7 +100,6 @@ __all__ = [
     "SegmentationPaintWidget3D",
     "SegmentationScissorsPipeline",
     "SegmentationScissorsWidget",
-    "SegmentationThresholdMaskPipeline",
     "SegmentationThresholdPipeline2D",
     "SegmentationThresholdPipeline2DBlinking",
     "ThresholdParameters",

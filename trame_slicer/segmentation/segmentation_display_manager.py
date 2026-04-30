@@ -17,7 +17,10 @@ from undo_stack import Signal, SignalContainer
 from ..utils import ensure_node_in_scene
 from .segmentation import Segmentation
 from .segmentation_display import SegmentationDisplay
-from .segmentation_threshold_mask_pipeline import SegmentationThresholdMaskPipeline
+from .segmentation_masked_volume_intensity_range_pipeline import (
+    SegmentationMaskedVolumeIntensityRangePipeline,
+    _MaskedVolumeParameterNode,
+)
 
 if TYPE_CHECKING:
     from trame_slicer.core import SegmentationEditor, ViewManager
@@ -41,9 +44,8 @@ class SegmentationDisplayManager(SignalContainer):
         self._segmentation_editor = segmentation_editor
 
         self._do_show_3d = False
-        self._threshold_mask_color: tuple[float, float, float, float] = (1.0, 0.0, 0.0, 0.5)
 
-        self._pipelines: list[ref[SegmentationThresholdMaskPipeline]] = []
+        self._pipelines: list[ref[SegmentationMaskedVolumeIntensityRangePipeline]] = []
         self._threshold_mask_parameter_node = None
         self._threshold_mask_pipeline_creator = vtkMRMLLayerDMPipelineScriptedCreator()
         self._threshold_mask_pipeline_creator.SetPythonCallback(self._try_create_threshold_mask_pipeline)
@@ -62,7 +64,13 @@ class SegmentationDisplayManager(SignalContainer):
         return self._segmentation_editor.editor_node
 
     @property
-    def pipelines(self) -> list[ref[SegmentationThresholdMaskPipeline]]:
+    def threshold_mask_parameter_node(self) -> _MaskedVolumeParameterNode:
+        if self._threshold_mask_parameter_node is None:
+            self.create_threshold_mask_pipeline_parameter_node()
+        return self._threshold_mask_parameter_node
+
+    @property
+    def pipelines(self) -> list[ref[SegmentationMaskedVolumeIntensityRangePipeline]]:
         return self._pipelines
 
     def set_surface_representation_enabled(self, is_enabled: bool) -> None:
@@ -111,19 +119,19 @@ class SegmentationDisplayManager(SignalContainer):
 
     def set_source_volume_intensity_mask_range(self, low: float, high: float):
         self.editor_node.SetSourceVolumeIntensityMaskRange(low, high)
-        self._update_pipelines()
+        self.threshold_mask_parameter_node.set_range(low, high)
 
     def create_threshold_mask_pipeline_parameter_node(self):
         if self._threshold_mask_parameter_node is None:
-            self._threshold_mask_parameter_node = SegmentationThresholdMaskPipeline.CreateParameterNode()
+            self._threshold_mask_parameter_node = SegmentationMaskedVolumeIntensityRangePipeline.CreateParameterNode()
         ensure_node_in_scene(self._threshold_mask_parameter_node, self._scene)
 
     def _try_create_threshold_mask_pipeline(
         self, view_node: vtkMRMLAbstractViewNode, parameter_node: vtkMRMLNode
-    ) -> SegmentationThresholdMaskPipeline | None:
+    ) -> SegmentationMaskedVolumeIntensityRangePipeline | None:
         if parameter_node != self._threshold_mask_parameter_node:
             return None
-        pipeline = SegmentationThresholdMaskPipeline.TryCreatePipeline(view_node, parameter_node, self)
+        pipeline = SegmentationMaskedVolumeIntensityRangePipeline.TryCreatePipeline(view_node, parameter_node, self)
         if pipeline is not None:
             self._pipelines.append(ref(pipeline))
             pipeline.SetView(self._view_manager.get_view(view_node))
@@ -131,18 +139,10 @@ class SegmentationDisplayManager(SignalContainer):
         return pipeline
 
     def set_threshold_mask_visibility(self, visibility: bool):
-        for weak_pipeline in self._pipelines:
-            if pipeline := weak_pipeline():
-                pipeline.SetActive(visibility)
+        self.threshold_mask_parameter_node.set_visibility(visibility)
 
     def get_threshold_mask_color(self) -> tuple[float, float, float, float]:
-        return self._threshold_mask_color
+        return self.threshold_mask_parameter_node.get_color()
 
     def set_threshold_mask_color(self, r: float, g: float, b: float, a: float = 0.5):
-        self._threshold_mask_color = (r, g, b, a)
-        self._update_pipelines()
-
-    def _update_pipelines(self):
-        for weak_pipeline in self._pipelines:
-            if pipeline := weak_pipeline():
-                pipeline.RequestRender()
+        self.threshold_mask_parameter_node.set_color(r, g, b, a)

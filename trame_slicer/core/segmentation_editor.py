@@ -206,7 +206,6 @@ class SegmentationEditor(SignalContainer):
     def set_active_segmentation(
         self, segmentation_node: vtkMRMLSegmentationNode, volume_node: vtkMRMLVolumeNode
     ) -> Segmentation:
-        self.display.create_threshold_mask_pipeline_parameter_node()
         segmentation_node.SetReferenceImageGeometryParameterFromVolumeNode(volume_node)
 
         if self._modified_obs is not None:

@@ -38,6 +38,20 @@ class SegmentationPipeline(vtkMRMLLayerDMScriptedPipeline):
         if not self._isActive:
             self.LoseFocus(None)
 
+    def SetDisplayNode(self, displayNode: vtkMRMLNode) -> None:
+        super().SetDisplayNode(displayNode)
+        self.OnEffectParameterUpdate()
+
+    def OnUpdate(self, obj: vtkObject, _eventId: int, _callData: Any | None) -> None:
+        if obj == self.GetDisplayNode():
+            self.OnEffectParameterUpdate()
+
+    def OnEffectParameterUpdate(self):
+        pass
+
+    def GetEffectParameterNode(self) -> vtkMRMLScriptedModuleNode | None:
+        return self.GetDisplayNode()
+
 
 class SegmentationEffectPipeline(SegmentationPipeline, Generic[T]):
     def __init__(self):
@@ -55,17 +69,3 @@ class SegmentationEffectPipeline(SegmentationPipeline, Generic[T]):
 
     def SetSegmentationEffect(self, effect: T):
         self._effect = effect
-
-    def SetDisplayNode(self, displayNode: vtkMRMLNode) -> None:
-        super().SetDisplayNode(displayNode)
-        self.OnEffectParameterUpdate()
-
-    def OnUpdate(self, obj: vtkObject, _eventId: int, _callData: Any | None) -> None:
-        if obj == self.GetDisplayNode():
-            self.OnEffectParameterUpdate()
-
-    def OnEffectParameterUpdate(self):
-        pass
-
-    def GetEffectParameterNode(self) -> vtkMRMLScriptedModuleNode | None:
-        return self.GetDisplayNode()
