@@ -30,6 +30,7 @@ from vtkmodules.vtkCommonDataModel import vtkImageData
 from trame_slicer.segmentation import (
     Segmentation,
     SegmentationDisplay,
+    SegmentationDisplayManager,
     SegmentationEditableAreaMode,
     SegmentationEffect,
     SegmentationEffectDraw,
@@ -94,9 +95,17 @@ class SegmentationEditor(SignalContainer):
 
         self._scene = scene
         self._view_manager = view_manager
-        self._editor_node = self._create_editor_node()
+        self._display_manager = SegmentationDisplayManager(
+            self._scene,
+            self._logic,
+            self,
+            self._view_manager,
+        )
+        self._display_manager.show_3d_changed.connect(self.show_3d_changed)
+        self._display_manager.parameter_changed.connect(self.parameter_changed)
 
         # Configure segment editor logic (Set maximum of states to undo / redo to 0 to cherry pick undo / redo behavior)
+        self._editor_node = self._create_editor_node()
         self._editor_logic = vtkSlicerSegmentEditorLogic()
         self._editor_logic.SetMRMLScene(scene)
         self._editor_logic.SetSegmentEditorNode(self._editor_node)
@@ -142,6 +151,10 @@ class SegmentationEditor(SignalContainer):
     @property
     def editor_node(self) -> vtkMRMLSegmentEditorNode:
         return self._editor_node
+
+    @property
+    def display(self) -> SegmentationDisplayManager:
+        return self._display_manager
 
     def is_effect_type_registered(self, effect_type: type[SegmentationEffect]) -> bool:
         return effect_type.get_effect_name() in self._effects
@@ -417,23 +430,6 @@ class SegmentationEditor(SignalContainer):
         node_name = segmentation_file.stem
         return self._logic.LoadSegmentationFromFile(segmentation_file.as_posix(), True, node_name)
 
-    def set_surface_representation_enabled(self, is_enabled: bool) -> None:
-        if self._do_show_3d == is_enabled:
-            return
-        self._do_show_3d = is_enabled
-        self._ensure_active_segmentation_surface_repr_consistency()
-        self.show_3d_changed(is_enabled)
-        self.parameter_changed()
-
-    def is_surface_representation_enabled(self) -> bool:
-        return self.active_segmentation.is_surface_representation_enabled() if self.active_segmentation else False
-
-    def show_3d(self, show_3d: bool):
-        self.set_surface_representation_enabled(show_3d)
-
-    def is_3d_shown(self):
-        return self.is_surface_representation_enabled()
-
     def create_modifier_labelmap(self) -> vtkImageData | None:
         return self.active_segmentation.create_modifier_labelmap() if self.active_segmentation else None
 
@@ -450,19 +446,9 @@ class SegmentationEditor(SignalContainer):
     def trigger_all_signals(self):
         self.active_segment_id_changed(self.active_segment_id)
         self.active_effect_name_changed(self.active_effect_name)
-        self.show_3d_changed(self.is_3d_shown())
+        self.show_3d_changed(self.display.is_3d_shown())
         self.segmentation_modified()
         self.parameter_changed()
-
-    def set_segment_visibility(self, segment_id, visibility: bool) -> None:
-        if not self.active_segmentation_display:
-            return None
-        return self.active_segmentation_display.set_segment_visibility(segment_id, visibility)
-
-    def get_segment_visibility(self, segment_id) -> bool | None:
-        if not self.active_segmentation_display:
-            return None
-        return self.active_segmentation_display.get_segment_visibility(segment_id)
 
     def set_editable_area(self, editable_area: SegmentationEditableAreaMode) -> None:
         self.editor_node.SetMaskMode(editable_area.value)
@@ -534,15 +520,7 @@ class SegmentationEditor(SignalContainer):
         return None
 
     def _on_segmentation_modified(self):
-        self._ensure_active_segmentation_surface_repr_consistency()
-
-    def _ensure_active_segmentation_surface_repr_consistency(self):
-        # make sure the current segmentation surface representation matches the show_3d state
-        if not self.active_segmentation:
-            return
-
-        if self._do_show_3d != self.is_surface_representation_enabled():
-            self.active_segmentation.set_surface_representation_enabled(self._do_show_3d)
+        self._display_manager.ensure_active_segmentation_surface_repr_consistency()
 
     def _on_scene_close(self, *_):
         self.clear()

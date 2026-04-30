@@ -19,6 +19,8 @@ class ThresholdState:
 class ThresholdEffectUI(FlexContainer):
     auto_threshold_clicked = Signal()
     apply_clicked = Signal()
+    reset_mask_clicked = Signal()
+    use_as_mask_clicked = Signal()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -32,5 +34,8 @@ class ThresholdEffectUI(FlexContainer):
             ):
                 ControlButton(name="Auto range", icon="mdi-refresh-auto", click=self.auto_threshold_clicked)
 
-            with FlexContainer(align="end", classes="mt-2"):
+            with FlexContainer(row=True, justify="end", classes="mt-2"):
                 VBtn(text="Apply", prepend_icon="mdi-check", variant="tonal", click=self.apply_clicked)
+            with FlexContainer(row=True, justify="end", classes="mt-2"):
+                VBtn(classes="mr-2", text="Reset mask", variant="tonal", click=self.reset_mask_clicked)
+                VBtn(text="Use as mask", variant="tonal", click=self.use_as_mask_clicked)

@@ -7,11 +7,14 @@ from trame_vuetify.widgets.vuetify3 import (
     VCard,
     VCardItem,
     VCardText,
+    VIcon,
+    VRow,
     VSelect,
 )
 
 from trame_slicer.segmentation import SegmentationOverwriteMode
 
+from ..color_dialog import ColorDialog
 from ..dynamic_select import DynamicSelect, DynamicSelectState
 from ..enum_to_title import enum_to_title
 from ..text_components import Text
@@ -22,6 +25,8 @@ class SegmentEditAreaState:
     mask_select: DynamicSelectState = field(default_factory=DynamicSelectState)
     overwrite_mode: SegmentationOverwriteMode = SegmentationOverwriteMode.OVERWRITE_ALL
     is_extended: bool = False
+    show_threshold_mask: bool = False
+    threshold_mask_color: str = "#FF00004D"
 
 
 class SegmentEditAreaUI(VCard):
@@ -65,3 +70,35 @@ class SegmentEditAreaUI(VCard):
                     density="compact",
                     style="margin-top: 5px;",
                 )
+
+                with VRow(style="margin-top: 15px; margin-right: 10px; margin-left: 10px; position: relative;"):
+                    VIcon(
+                        classes="mr-2",
+                        icon="mdi-circle",
+                        color=(self._typed_state.name.threshold_mask_color,),
+                        click=(self.open_color_dialog,),
+                    )
+                    Text("Threshold Mask", title=True)
+                    VIcon(
+                        icon=(
+                            f"{self._typed_state.name.show_threshold_mask} ? 'mdi-eye-outline' : 'mdi-eye-off-outline'",
+                        ),
+                        click=f"{self._typed_state.name.show_threshold_mask} = !{self._typed_state.name.show_threshold_mask}",
+                        style="position: absolute; right:0;",
+                    )
+
+                self.color_dialog = ColorDialog(self._typed_state.name.threshold_mask_color, mode="rgba", width="auto")
+                self.color_dialog.apply_clicked.connect(self._color_changed)
+                self.color_dialog.cancel_clicked.connect(self._cancel_clicked)
+
+    def open_color_dialog(self):
+        self.color_dialog.set_color(self._typed_state.data.threshold_mask_color)
+        self.color_dialog.open()
+
+    def _color_changed(self):
+        self.color_dialog.close()
+        self._typed_state.data.threshold_mask_color = self.color_dialog.get_color()
+
+    def _cancel_clicked(self):
+        self.color_dialog.close()
+        self.color_dialog.set_color(self._typed_state.data.threshold_mask_color)

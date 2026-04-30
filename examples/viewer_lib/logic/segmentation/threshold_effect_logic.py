@@ -18,6 +18,8 @@ class ThresholdEffectLogic(BaseEffectLogic[ThresholdState, SegmentationEffectThr
     def set_effect_ui(self, threshold_ui: ThresholdEffectUI):
         threshold_ui.auto_threshold_clicked.connect(self._on_auto_threshold_clicked)
         threshold_ui.apply_clicked.connect(self._on_apply_threshold_clicked)
+        threshold_ui.use_as_mask_clicked.connect(self._on_use_as_mask_clicked)
+        threshold_ui.reset_mask_clicked.connect(self._on_reset_mask_clicked)
 
     def _on_auto_threshold_clicked(self):
         if not self.is_active():
@@ -30,6 +32,17 @@ class ThresholdEffectLogic(BaseEffectLogic[ThresholdState, SegmentationEffectThr
             return
         self.effect.apply()
         self.segmentation_editor.deactivate_effect()
+
+    def _on_reset_mask_clicked(self):
+        if not self.is_active():
+            return
+        self.segmentation_editor.display.set_source_volume_intensity_mask_range(-9999.0, 9999.0)
+
+    def _on_use_as_mask_clicked(self):
+        if not self.is_active():
+            return
+        self.segmentation_editor.display.set_source_volume_intensity_mask(True)
+        self.segmentation_editor.display.set_source_volume_intensity_mask_range(*self.data.threshold_slider.value)
 
     def _on_threshold_changed(self, value: tuple[float, float]) -> None:
         if not self.is_active():

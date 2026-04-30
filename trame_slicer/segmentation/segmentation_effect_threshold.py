@@ -84,6 +84,39 @@ class SegmentationThresholdPipeline2D(SegmentationEffectPipeline):
         self.color_mapper.SetInputConnection(self.threshold.GetOutputPort())
         self.mapper.SetInputConnection(self.color_mapper.GetOutputPort())
 
+    def OnRendererAdded(self, renderer: vtkRenderer | None) -> None:
+        super().OnRendererAdded(renderer)
+        if renderer:
+            renderer.AddViewProp(self.actor)
+
+    def OnRendererRemoved(self, renderer: vtkRenderer) -> None:
+        super().OnRendererRemoved(renderer)
+        if renderer and renderer.HasViewProp(self.actor):
+            renderer.RemoveViewProp(self.actor)
+
+    def SetActive(self, isActive: bool):
+        super().SetActive(isActive)
+        self.actor.SetVisibility(isActive)
+        self.RequestRender()
+
+    def SetView(self, view: SliceView):
+        if self._view:
+            self._view.modified.disconnect(self.OnViewModified)
+        super().SetView(view)
+        if self._view:
+            self._view.modified.connect(self.OnViewModified)
+
+    def OnViewModified(self, *_):
+        if not self._view:
+            return
+
+        self.threshold.SetInputConnection(self._view.get_volume_layer_logic().GetReslice().GetOutputPort())
+
+
+class SegmentationThresholdPipeline2DBlinking(SegmentationThresholdPipeline2D):
+    def __init__(self):
+        super().__init__()
+
         # Preview coroutine
         self.preview_update_period_s = 0.2
         self.preview_steps = 6
@@ -101,21 +134,6 @@ class SegmentationThresholdPipeline2D(SegmentationEffectPipeline):
                 self.preview_state += self.preview_direction
             self.preview_state = max(0, min(self.preview_steps, self.preview_state))
             self._UpdateThreshold()
-
-    def OnRendererAdded(self, renderer: vtkRenderer | None) -> None:
-        super().OnRendererAdded(renderer)
-        if renderer:
-            renderer.AddViewProp(self.actor)
-
-    def OnRendererRemoved(self, renderer: vtkRenderer) -> None:
-        super().OnRendererRemoved(renderer)
-        if renderer and renderer.HasViewProp(self.actor):
-            renderer.RemoveViewProp(self.actor)
-
-    def SetActive(self, isActive: bool):
-        super().SetActive(isActive)
-        self.actor.SetVisibility(isActive)
-        self.RequestRender()
 
     def OnEffectParameterUpdate(self):
         super().OnEffectParameterUpdate()
@@ -142,28 +160,13 @@ class SegmentationThresholdPipeline2D(SegmentationEffectPipeline):
         self.threshold.Update()
         self.RequestRender()
 
-    def SetView(self, view: SliceView):
-        if self._view:
-            self._view.modified.disconnect(self.OnViewModified)
-        super().SetView(view)
-        if self._view:
-            self._view.modified.connect(self.OnViewModified)
-
-    def OnViewModified(self, *_):
-        if not self._view or not self.GetModifier():
-            return
-
-        self.threshold.SetInputConnection(
-            self._view.get_volume_layer_logic(self.GetModifier().volume_node).GetReslice().GetOutputPort()
-        )
-
 
 class SegmentationEffectThreshold(SegmentationEffect):
     def _create_pipeline(
         self, view_node: vtkMRMLAbstractViewNode, _parameter: vtkMRMLNode
     ) -> SegmentationEffectPipeline | None:
         if isinstance(view_node, vtkMRMLSliceNode):
-            return SegmentationThresholdPipeline2D()
+            return SegmentationThresholdPipeline2DBlinking()
         return None
 
     def apply(self):
@@ -190,14 +193,6 @@ class SegmentationEffectThreshold(SegmentationEffect):
         threshold.Update()
         label_map.DeepCopy(threshold.GetOutput())
         self.modifier.apply_labelmap(label_map)
-
-    def use_for_volume_intensity_masking(self):
-        if not self.is_active:
-            return
-
-        param = self.get_param_proxy()
-        self.modifier.set_source_volume_intensity_mask_range(param.min_value, param.max_value)
-        self.modifier.set_source_volume_intensity_mask_enabled(True)
 
     def auto_threshold(
         self,

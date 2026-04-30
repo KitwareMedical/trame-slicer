@@ -7,11 +7,12 @@ from trame_slicer.segmentation import (
     SegmentationDisplay,
     SegmentationEffect,
     SegmentationEffectThreshold,
+    SegmentationOpacityEnum,
     SegmentationOverwriteMode,
 )
+from trame_slicer.utils import hex_to_rgba_float
 
 from ...ui import (
-    SegmentDisplayState,
     SegmentEditorState,
     SegmentEditorUI,
     SegmentState,
@@ -52,7 +53,13 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         self._connect_undo_stack_to_state()
         self.bind_changes(
             {
-                self.name.segment_display: self._on_segment_display_changed,
+                self.name.segment_display.border_thickness.value: self.set_border_thickness,
+                self.name.segment_display.opacity_2d.value: self.set_opacity_2d,
+                self.name.segment_display.opacity_3d.value: self.set_opacity_3d,
+                self.name.segment_display.opacity_mode: self.set_opacity_mode,
+                self.name.segment_display.show_3d: self.set_surface_representation_enabled,
+                self.name.segment_edit_area.show_threshold_mask: self.set_threshold_mask_visibility,
+                self.name.segment_edit_area.threshold_mask_color: self.set_threshold_mask_color,
                 self.name.segment_list.active_segment_id: self._on_active_segment_changed,
                 self.name.segment_edit_area.overwrite_mode: self._on_overwrite_mode_changed,
             }
@@ -89,8 +96,8 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         self._edit_segment_logic.set_ui(ui.edit_ui)
 
     def _on_toggle_segment_visibility_clicked(self, segment_id: str):
-        self.segmentation_editor.set_segment_visibility(
-            segment_id, not self.segmentation_editor.get_segment_visibility(segment_id)
+        self.segmentation_editor.display.set_segment_visibility(
+            segment_id, not self.segmentation_editor.display.get_segment_visibility(segment_id)
         )
         self._update_segment_list()
 
@@ -128,9 +135,18 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         effect.apply()
         self.segmentation_editor.deactivate_effect()
 
+    def _on_segment_display_changed(self) -> None:
+        self.set_border_thickness(self.data.segment_display.border_thickness.value)
+        self.set_opacity_2d(self.data.segment_display.opacity_2d.value)
+        self.set_opacity_3d(self.data.segment_display.opacity_3d.value)
+        self.set_opacity_mode(self.data.segment_display.opacity_mode)
+        self.set_surface_representation_enabled(self.data.segment_display.show_3d)
+        self.set_threshold_mask_color(self.data.segment_edit_area.threshold_mask_color)
+        self.set_threshold_mask_visibility(self.data.segment_edit_area.show_threshold_mask)
+
     def _on_segment_editor_changed(self, *_):
         self.data.segment_list.active_segment_id = self.segmentation_editor.get_active_segment_id()
-        self.data.segment_display.show_3d = self.segmentation_editor.is_surface_representation_enabled()
+        self.data.segment_display.show_3d = self.segmentation_editor.display.is_surface_representation_enabled()
         self.data.active_effect_name = self.segmentation_editor.get_active_effect_name()
         self.data.segment_edit_area.overwrite_mode = self.segmentation_editor.get_overwrite_mode()
         self._update_segment_list()
@@ -148,7 +164,7 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
                 name=segment_properties.name,
                 color=segment_properties.color_hex,
                 segment_id=segment_id,
-                is_visible=self.segmentation_editor.get_segment_visibility(segment_id),
+                is_visible=self.segmentation_editor.display.get_segment_visibility(segment_id),
             )
             for segment_id, segment_properties in self.segmentation_editor.get_all_segment_properties().items()
         ]
@@ -157,15 +173,38 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
     def _segmentation_display(self) -> SegmentationDisplay | None:
         return self.segmentation_editor.active_segmentation_display
 
-    def _on_segment_display_changed(self, display_state: SegmentDisplayState) -> None:
+    def set_border_thickness(self, border_thickness: float):
         if not self._segmentation_display:
             return
 
-        self._segmentation_display.set_border_thickness(display_state.border_thickness.value)
-        self._segmentation_display.set_opacity_2d(display_state.opacity_2d.value)
-        self._segmentation_display.set_opacity_3d(display_state.opacity_3d.value)
-        self._segmentation_display.set_opacity_mode(display_state.opacity_mode)
-        self.segmentation_editor.set_surface_representation_enabled(display_state.show_3d)
+        self._segmentation_display.set_border_thickness(border_thickness)
+
+    def set_opacity_2d(self, opacity_2d: float):
+        if not self._segmentation_display:
+            return
+
+        self._segmentation_display.set_opacity_2d(opacity_2d)
+
+    def set_opacity_3d(self, opacity_3d: float):
+        if not self._segmentation_display:
+            return
+
+        self._segmentation_display.set_opacity_3d(opacity_3d)
+
+    def set_opacity_mode(self, opacity_mode: SegmentationOpacityEnum):
+        if not self._segmentation_display:
+            return
+
+        self._segmentation_display.set_opacity_mode(opacity_mode)
+
+    def set_surface_representation_enabled(self, enable: bool):
+        self.segmentation_editor.display.set_surface_representation_enabled(enable)
+
+    def set_threshold_mask_visibility(self, visibility: bool):
+        self.segmentation_editor.display.set_threshold_mask_visibility(visibility)
+
+    def set_threshold_mask_color(self, color: str):
+        self.segmentation_editor.display.set_threshold_mask_color(*hex_to_rgba_float(color))
 
     def on_volume_changed(self, volume_node: vtkMRMLVolumeNode) -> None:
         segmentation_nodes = list(self.scene.GetNodesByClass("vtkMRMLSegmentationNode"))
@@ -179,7 +218,8 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
             segmentation_node,
             volume_node,
         )
-        self._on_segment_display_changed(self.data.segment_display)
+
+        self._on_segment_display_changed()
 
     def _on_overwrite_mode_changed(self, overwrite_mode: SegmentationOverwriteMode):
         self.segmentation_editor.set_overwrite_mode(overwrite_mode)

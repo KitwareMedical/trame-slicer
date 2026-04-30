@@ -1,3 +1,4 @@
+from .color_dialog import ColorDialog
 from .control_button import ControlButton
 from .dynamic_select import DynamicSelect, DynamicSelectState
 from .enum_to_title import enum_to_radio_buttons, enum_to_title
@@ -29,7 +30,6 @@ from .segmentation import (
     SegmentEditorToolbarUI,
     SegmentEditorUI,
     SegmentEditorUndoRedoUI,
-    SegmentEditState,
     SegmentEditUI,
     SegmentList,
     SegmentListState,
@@ -49,6 +49,7 @@ from .volume_property_ui import Preset, VolumePropertyState, VolumePropertyUI
 __all__ = [
     "BrushParametersState",
     "BrushParametersUI",
+    "ColorDialog",
     "ControlButton",
     "DrawEffectState",
     "DrawEffectUI",
@@ -77,7 +78,6 @@ __all__ = [
     "SegmentDisplayUI",
     "SegmentEditAreaState",
     "SegmentEditAreaUI",
-    "SegmentEditState",
     "SegmentEditUI",
     "SegmentEditorState",
     "SegmentEditorToolbarUI",

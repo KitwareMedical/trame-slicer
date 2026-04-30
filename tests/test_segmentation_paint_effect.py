@@ -79,7 +79,7 @@ def test_erase_effect_removes_segmentation_from_selected_segment(
     a_segmentation_editor.set_active_segmentation(segmentation_node, a_volume_node)
     segment_id = a_segmentation_editor.get_active_segment_id()
     a_segmentation_editor.set_active_effect_type(SegmentationEffectErase)
-    a_segmentation_editor.set_surface_representation_enabled(False)
+    a_segmentation_editor.display.set_surface_representation_enabled(False)
 
     prev_sum = a_segmentation_editor.get_segment_labelmap(segment_id, as_numpy_array=True).sum()
     ViewEvents(view).click_at_center()
