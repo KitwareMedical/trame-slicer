@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from enum import Enum, IntFlag, auto
 
 from slicer import vtkMRMLAbstractViewNode, vtkMRMLNode, vtkMRMLSliceNode
+from undo_stack import Signal
 from vtkmodules.vtkCommonCore import VTK_UNSIGNED_INT, vtkLookupTable
 from vtkmodules.vtkCommonDataModel import vtkImageData
 from vtkmodules.vtkCommonMath import vtkMatrix4x4
@@ -51,6 +52,7 @@ class AutoThresholdMode(IntFlag):
 class ThresholdParameters:
     min_value: float = 0
     max_value: float = 0
+    preview_opacity: float = 0.5
 
 
 class SegmentationThresholdPipeline2D(SegmentationEffectPipeline):
@@ -84,24 +86,6 @@ class SegmentationThresholdPipeline2D(SegmentationEffectPipeline):
         self.color_mapper.SetInputConnection(self.threshold.GetOutputPort())
         self.mapper.SetInputConnection(self.color_mapper.GetOutputPort())
 
-        # Preview coroutine
-        self.preview_update_period_s = 0.2
-        self.preview_steps = 6
-        self.preview_state = 0
-        self.preview_direction = 1
-        loop = asyncio.get_event_loop()
-        self.preview_task = loop.create_task(self._UpdatePreviewState())
-
-    async def _UpdatePreviewState(self):
-        while True:
-            await asyncio.sleep(self.preview_update_period_s)
-            self.preview_state += self.preview_direction
-            if self.preview_state > self.preview_steps or self.preview_state < 0:
-                self.preview_direction *= -1
-                self.preview_state += self.preview_direction
-            self.preview_state = max(0, min(self.preview_steps, self.preview_state))
-            self._UpdateThreshold()
-
     def OnRendererAdded(self, renderer: vtkRenderer | None) -> None:
         super().OnRendererAdded(renderer)
         if renderer:
@@ -133,9 +117,8 @@ class SegmentationThresholdPipeline2D(SegmentationEffectPipeline):
 
         active_id = self.GetModifier().active_segment_id
         if segmentation := self.GetSegmentation():
-            opacity = 0.5 + 0.5 * self.preview_state / self.preview_steps
             r, g, b = segmentation.get_segment_properties(active_id).color
-            self.lookup_table.SetTableValue(1, r, g, b, opacity)
+            self.lookup_table.SetTableValue(1, r, g, b, param.preview_opacity)
 
         self.threshold.ThresholdBetween(param.min_value, param.max_value)
         self.OnViewModified()
@@ -158,13 +141,67 @@ class SegmentationThresholdPipeline2D(SegmentationEffectPipeline):
         )
 
 
+class _ThresholdOpacityBlinker:
+    opacity_changed = Signal(float)
+
+    def __init__(self):
+        self._blink_opacity_min = 0.5
+        self._blink_opacity_max = 1.0
+        self._preview_update_period_s = 0.2
+        self._preview_steps = 6
+        self._preview_state = 0
+        self._preview_direction = 1
+        self._preview_task: asyncio.Task | None = None
+
+    def set_opacity_range(self, low: float, high: float):
+        self._blink_opacity_min = low
+        self._blink_opacity_max = high
+
+    def start(self):
+        if self._preview_task is None:
+            loop = asyncio.get_event_loop()
+            self._preview_task = loop.create_task(self._update_preview_state())
+
+    def stop(self):
+        if self._preview_task is not None:
+            self._preview_task.cancel()
+            self._preview_task = None
+
+    async def _update_preview_state(self):
+        while True:
+            await asyncio.sleep(self._preview_update_period_s)
+            self._preview_state += self._preview_direction
+            if self._preview_state >= self._preview_steps or self._preview_state < 0:
+                self._preview_direction *= -1
+                self._preview_state += 2 * self._preview_direction
+            self._preview_state = max(0, min(self._preview_steps - 1, self._preview_state))
+            opacity_range = self._blink_opacity_max - self._blink_opacity_min
+            opacity = self._blink_opacity_min + opacity_range * self._preview_state / (self._preview_steps - 1)
+            self.opacity_changed(opacity)
+
+
 class SegmentationEffectThreshold(SegmentationEffect):
+    def __init__(self):
+        super().__init__()
+        self._opacity_blinker = _ThresholdOpacityBlinker()
+        self._opacity_blinker.opacity_changed.connect(self._update_preview_opacity)
+
     def _create_pipeline(
         self, view_node: vtkMRMLAbstractViewNode, _parameter: vtkMRMLNode
     ) -> SegmentationEffectPipeline | None:
         if isinstance(view_node, vtkMRMLSliceNode):
             return SegmentationThresholdPipeline2D()
         return None
+
+    def _update_preview_opacity(self, opacity: float):
+        self.get_param_proxy().preview_opacity = opacity
+
+    def set_active(self, is_active: bool):
+        super().set_active(is_active)
+        if is_active:
+            self._opacity_blinker.start()
+        else:
+            self._opacity_blinker.stop()
 
     def apply(self):
         if not self.is_active:
