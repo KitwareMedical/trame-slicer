@@ -34,6 +34,8 @@ class SegmentMaskSelectLogic(AbstractDynamicSelectLogic[SegmentMaskModeSelectIte
     def __init__(self, state: TypedState[DynamicSelectState], segmentation_editor: SegmentationEditor):
         super().__init__(state)
         self.segmentation_editor = segmentation_editor
+        self.segmentation_editor.editor_node_modified.connect(self.update_ui_from_slicer)
+        self.segmentation_editor.segmentation_modified.connect(self.update_ui_from_slicer)
 
     def _set_slicer_state(self, item: SegmentMaskModeSelectItem):
         self.segmentation_editor.set_mask_segment_id(item.segment_id)

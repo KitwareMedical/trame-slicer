@@ -3,7 +3,7 @@ from __future__ import annotations
 import inspect
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 from numpy.typing import NDArray
 from slicer import (
@@ -25,6 +25,7 @@ from slicer import (
     vtkSlicerSegmentEditorLogic,
 )
 from undo_stack import Signal, SignalContainer, UndoStack
+from vtkmodules.vtkCommonCore import vtkCommand
 from vtkmodules.vtkCommonDataModel import vtkImageData
 
 from trame_slicer.segmentation import (
@@ -42,6 +43,7 @@ from trame_slicer.segmentation import (
     SegmentationEffectScissors,
     SegmentationEffectSmoothing,
     SegmentationEffectThreshold,
+    SegmentationEffectVolumeIntensityMask,
     SegmentationOverwriteMode,
     SegmentModifier,
     SegmentProperties,
@@ -50,6 +52,9 @@ from trame_slicer.utils import ensure_node_in_scene
 
 if TYPE_CHECKING:
     from trame_slicer.core import ViewManager
+
+
+TEffect = TypeVar("TEffect", bound=SegmentationEffect)
 
 
 class SegmentationEditor(SignalContainer):
@@ -68,6 +73,7 @@ class SegmentationEditor(SignalContainer):
         SegmentationEffectScissors,
         SegmentationEffectSmoothing,
         SegmentationEffectThreshold,
+        SegmentationEffectVolumeIntensityMask,
     ]
 
     segmentation_modified = Signal()
@@ -76,6 +82,7 @@ class SegmentationEditor(SignalContainer):
     active_effect_name_changed = Signal(str)
     show_3d_changed = Signal(bool)
     parameter_changed = Signal()
+    editor_node_modified = Signal()
 
     def __init__(
         self,
@@ -132,6 +139,7 @@ class SegmentationEditor(SignalContainer):
         editor_node.SetName(f"SegmentEditorNode_{id(self)}")
         editor_node.SetSingletonOn()
         editor_node.AddObserver(vtkMRMLSegmentEditorNode.EffectParameterModified, lambda *_: self.parameter_changed())
+        editor_node.AddObserver(vtkCommand.ModifiedEvent, lambda *_: self.editor_node_modified())
         self._scene.AddNode(editor_node)
         return editor_node
 
@@ -155,6 +163,7 @@ class SegmentationEditor(SignalContainer):
 
         effect = effect_type()
         effect.set_scene(self._scene)
+        effect.set_editor(self)
         self._effects[effect_type.get_effect_name()] = effect
 
     def set_undo_stack(self, undo_stack: UndoStack):
@@ -203,9 +212,6 @@ class SegmentationEditor(SignalContainer):
         )
 
         self._active_modifier.segmentation_modified.connect(self.segmentation_modified)
-
-        if self._active_effect:
-            self._active_effect.set_modifier(self._active_modifier)
 
         self.set_active_segment_id(self.get_nth_segment_id(0))
 
@@ -262,14 +268,12 @@ class SegmentationEditor(SignalContainer):
             return self._active_effect
 
         if self._active_effect:
-            self._active_effect.set_modifier(None)
             self._active_effect.deactivate()
 
         self._add_effect_parameters_to_scene(effect)
         self._active_effect = effect
 
         if self._active_effect:
-            self._active_effect.set_modifier(self._active_modifier)
             self._active_effect.activate()
 
         self.active_effect_name_changed(self.active_effect_name)
@@ -495,7 +499,13 @@ class SegmentationEditor(SignalContainer):
             effect = self._effects[effect.get_effect_name()]
         return self._add_effect_parameters_to_scene(effect)
 
-    def _add_effect_parameters_to_scene(self, effect: SegmentationEffect) -> vtkMRMLScriptedModuleNode:
+    def get_effect(self, effect_type: type[TEffect]) -> TEffect | None:
+        self.register_effect_type(effect_type)
+        effect = self._effects[effect_type.get_effect_name()]
+        self._add_effect_parameters_to_scene(effect)
+        return effect
+
+    def _add_effect_parameters_to_scene(self, effect: SegmentationEffect | None) -> vtkMRMLScriptedModuleNode | None:
         """
         Create the default effect parameters linked to the input effect id and add it the current list of tracked
         segmentation effect parameters.
@@ -506,6 +516,9 @@ class SegmentationEditor(SignalContainer):
         :param effect: Segment editor effect instance.
         :return: Instance of the created parameter.
         """
+        if not effect:
+            return None
+
         effect_name = effect.get_effect_name()
         if effect_name not in self._effect_parameters:
             self._effect_parameters[effect_name] = effect.get_parameter_node()

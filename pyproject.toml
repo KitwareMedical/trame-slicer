@@ -59,6 +59,7 @@ dev = [
     "pytest-asyncio",
     "pytest-cov",
     "pytest-playwright",
+    "pytest-repeat",
     "pytest-xdist",
     "pytest-xprocess",
     "trame-plotly",

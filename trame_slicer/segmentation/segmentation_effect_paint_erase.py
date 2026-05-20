@@ -9,7 +9,7 @@ from .segment_modifier import ModificationMode
 
 class SegmentationEffectPaintErase(AbstractSegmentationEffectBrush):
     def paint_glyph_at_world_coordinates(self, polydata: vtkPolyData, paint_coordinates_world: vtkPoints):
-        self._modifier.apply_glyph(polydata, paint_coordinates_world)
+        self.modifier.apply_glyph(polydata, paint_coordinates_world)
 
 
 class SegmentationEffectPaint(SegmentationEffectPaintErase):

@@ -31,16 +31,20 @@ class BaseEffectLogic(BaseSegmentationLogic[T], Generic[T, U], ABC):
         super().__init__(server, slicer_app, state_type)
         self._effect_type = effect_type
         self.segmentation_editor.active_effect_name_changed.connect(self._on_effect_changed)
+        self.segmentation_editor.segmentation_modified.connect(self._on_segmentation_changed)
 
     def is_active(self) -> bool:
         return type(self.active_effect) is self._effect_type
 
     @property
     def effect(self) -> U:
-        return self.active_effect
+        return self.segmentation_editor.get_effect(self._effect_type)
 
     def set_active(self):
         self.segmentation_editor.set_active_effect_type(self._effect_type)
 
     def _on_effect_changed(self, _effect_name: str) -> None:
+        pass
+
+    def _on_segmentation_changed(self) -> None:
         pass

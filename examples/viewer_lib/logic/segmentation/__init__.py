@@ -14,6 +14,9 @@ from .segment_editor_logic import SegmentEditorLogic
 from .segment_mask_select_logic import SegmentMaskSelectLogic
 from .smoothing_effect_logic import SmoothingEffectLogic
 from .threshold_effect_logic import ThresholdEffectLogic
+from .volume_intensity_range_mask_effect_logic import (
+    VolumeIntensityRangeMaskEffectLogic,
+)
 
 __all__ = [
     "BaseEffectLogic",
@@ -31,4 +34,5 @@ __all__ = [
     "SegmentMaskSelectLogic",
     "SmoothingEffectLogic",
     "ThresholdEffectLogic",
+    "VolumeIntensityRangeMaskEffectLogic",
 ]

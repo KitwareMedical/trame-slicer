@@ -312,7 +312,7 @@ class SliceView(AbstractView):
         )
         return getter()
 
-    def get_volume_layer_logic(self, volume_node: vtkMRMLVolumeNode) -> vtkMRMLSliceLayerLogic:
+    def get_volume_layer_logic(self, volume_node: vtkMRMLVolumeNode | None = None) -> vtkMRMLSliceLayerLogic:
         volume_id = volume_node.GetID() if volume_node else ""
         return (
             self._logic.GetForegroundLayer()

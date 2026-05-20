@@ -15,6 +15,7 @@ from trame_slicer.segmentation import SegmentationOverwriteMode
 from ..dynamic_select import DynamicSelect, DynamicSelectState
 from ..enum_to_title import enum_to_title
 from ..text_components import Text
+from .volume_intensity_range_mask_effect_ui import VolumeIntensityRangeMaskUI
 
 
 @dataclass
@@ -65,3 +66,5 @@ class SegmentEditAreaUI(VCard):
                     density="compact",
                     style="margin-top: 5px;",
                 )
+
+                VolumeIntensityRangeMaskUI(classes="pt-6")

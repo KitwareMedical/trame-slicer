@@ -15,6 +15,7 @@ from .segmentation import (
     SegmentEditorLogic,
     SmoothingEffectLogic,
     ThresholdEffectLogic,
+    VolumeIntensityRangeMaskEffectLogic,
 )
 from .segmentation_app_logic import SegmentationAppLogic
 from .slab_logic import SlabLogic
@@ -40,5 +41,6 @@ __all__ = [
     "SlabLogic",
     "SmoothingEffectLogic",
     "ThresholdEffectLogic",
+    "VolumeIntensityRangeMaskEffectLogic",
     "VolumePropertyLogic",
 ]

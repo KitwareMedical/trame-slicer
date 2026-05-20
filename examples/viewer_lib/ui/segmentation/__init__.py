@@ -25,6 +25,10 @@ from .smoothing_effect_ui import (
     SmoothingState,
 )
 from .threshold_effect_ui import ThresholdEffectUI, ThresholdState
+from .volume_intensity_range_mask_effect_ui import (
+    VolumeIntensityRangeMaskState,
+    VolumeIntensityRangeMaskUI,
+)
 
 __all__ = [
     "BrushParametersState",
@@ -58,4 +62,6 @@ __all__ = [
     "SmoothingState",
     "ThresholdEffectUI",
     "ThresholdState",
+    "VolumeIntensityRangeMaskState",
+    "VolumeIntensityRangeMaskUI",
 ]

@@ -6,7 +6,6 @@ from trame_slicer.core import SlicerApp
 from trame_slicer.segmentation import (
     SegmentationDisplay,
     SegmentationEffect,
-    SegmentationEffectThreshold,
     SegmentationOverwriteMode,
 )
 
@@ -26,6 +25,9 @@ from .segment_edit_logic import SegmentEditLogic
 from .segment_mask_select_logic import SegmentMaskSelectLogic
 from .smoothing_effect_logic import SmoothingEffectLogic
 from .threshold_effect_logic import ThresholdEffectLogic
+from .volume_intensity_range_mask_effect_logic import (
+    VolumeIntensityRangeMaskEffectLogic,
+)
 
 
 class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
@@ -33,14 +35,15 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
         super().__init__(server=server, slicer_app=slicer_app, state_type=SegmentEditorState)
 
         effect_logic = [
+            DrawEffectLogic,
+            EraseEffectLogic,
             IslandsEffectLogic,
             LogicalOperatorsEffectLogic,
-            ThresholdEffectLogic,
             PaintEffectLogic,
-            EraseEffectLogic,
-            DrawEffectLogic,
             ScissorsEffectLogic,
             SmoothingEffectLogic,
+            ThresholdEffectLogic,
+            VolumeIntensityRangeMaskEffectLogic,
         ]
         self._effect_logic: list[BaseEffectLogic] = [logic(server, slicer_app) for logic in effect_logic]
         self._edit_segment_logic = SegmentEditLogic(server, slicer_app)
@@ -121,20 +124,12 @@ class SegmentEditorLogic(BaseSegmentationLogic[SegmentEditorState]):
     def _on_redo_clicked(self):
         self._undo_stack.redo()
 
-    def _on_apply_threshold_clicked(self):
-        effect = self.segmentation_editor.active_effect
-        if not isinstance(effect, SegmentationEffectThreshold):
-            return
-        effect.apply()
-        self.segmentation_editor.deactivate_effect()
-
     def _on_segment_editor_changed(self, *_):
         self.data.segment_list.active_segment_id = self.segmentation_editor.get_active_segment_id()
         self.data.segment_display.show_3d = self.segmentation_editor.is_surface_representation_enabled()
         self.data.active_effect_name = self.segmentation_editor.get_active_effect_name()
         self.data.segment_edit_area.overwrite_mode = self.segmentation_editor.get_overwrite_mode()
         self._update_segment_list()
-        self._mask_logic.update_ui_from_slicer()
 
     def _on_undo_changed(self, *_):
         self.data.can_undo = self._undo_stack.can_undo()
