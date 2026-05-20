@@ -11,11 +11,13 @@ from slicer import (
     vtkMRMLScene,
     vtkMRMLScriptedModuleNode,
 )
+from slicer_core import vtkMRMLSegmentEditorNode
 from undo_stack import Signal
 
 from .segment_modifier import ModificationMode, SegmentModifier
 
 if TYPE_CHECKING:
+    from ..core import SegmentationEditor
     from .segmentation_effect_pipeline import SegmentationEffectPipeline
 
 
@@ -24,7 +26,6 @@ class SegmentationEffect(ABC):
     parameters_changed = Signal()
 
     def __init__(self) -> None:
-        self._modifier: SegmentModifier | None = None
         self._modification_mode: ModificationMode = ModificationMode.Add
         self._pipelines: list[ref[SegmentationEffectPipeline]] = []
         self._is_active = False
@@ -32,10 +33,22 @@ class SegmentationEffect(ABC):
         self._param_node: vtkMRMLScriptedModuleNode | None = None
         self._obs = vtkMRMLLayerDMObjectEventObserverScripted()
         self._obs.SetPythonCallback(self._on_object_event)
+        self._editor: SegmentationEditor | None = None
 
     @property
-    def modifier(self) -> SegmentModifier:
-        return self._modifier
+    def editor(self) -> SegmentationEditor | None:
+        return self._editor
+
+    def set_editor(self, editor: SegmentationEditor) -> None:
+        self._editor = editor
+
+    @property
+    def editor_node(self) -> vtkMRMLSegmentEditorNode | None:
+        return self._editor.editor_node if self._editor else None
+
+    @property
+    def modifier(self) -> SegmentModifier | None:
+        return self._editor.active_segment_modifier if self._editor else None
 
     @property
     def pipelines(self) -> list[ref[SegmentationEffectPipeline]]:
@@ -49,20 +62,13 @@ class SegmentationEffect(ABC):
         self._obs.UpdateObserver(self._scene, scene, vtkMRMLScene.EndCloseEvent)
         self._scene = scene
 
-    def set_modifier(self, modifier: SegmentModifier | None) -> None:
-        """
-        Set the segment modifier of the current pipeline.
-        """
-        self._modifier = modifier
-        self._synchronize_pipelines_modifiers()
-
     def set_mode(self, mode: ModificationMode):
         self._modification_mode = mode
-        self._synchronize_pipelines_modifiers()
+        self._synchronize_modifier_mode()
 
-    def _synchronize_pipelines_modifiers(self):
-        if self._modifier:
-            self._modifier.modification_mode = self._modification_mode
+    def _synchronize_modifier_mode(self):
+        if self.is_active and self.modifier:
+            self.modifier.modification_mode = self._modification_mode
 
     @classmethod
     def get_effect_name(cls):
@@ -111,6 +117,7 @@ class SegmentationEffect(ABC):
         self._is_active = is_active
         self._synchronize_pipeline_active()
         self._remove_outdated_pipelines()
+        self._synchronize_modifier_mode()
 
     def _synchronize_pipeline_active(self):
         for weak_pipeline in self._pipelines:
@@ -149,5 +156,8 @@ class SegmentationEffect(ABC):
         self.set_active(False)
         self._pipelines.clear()
         self._param_node = None
-        self._modifier = None
         self._is_active = False
+
+    def trigger_pipeline_parameter_change(self, *_):
+        with self.parameters_changed.emit_blocked():
+            self.get_parameter_node().Modified()

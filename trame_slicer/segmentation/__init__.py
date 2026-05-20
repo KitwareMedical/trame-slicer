@@ -39,7 +39,11 @@ from .segmentation_effect_threshold import (
     AutoThresholdMode,
     SegmentationEffectThreshold,
     SegmentationThresholdPipeline2D,
+    ThresholdOpacityBlinker,
     ThresholdParameters,
+)
+from .segmentation_effect_volume_intensity_mask import (
+    SegmentationEffectVolumeIntensityMask,
 )
 from .segmentation_islands_pipeline import SegmentationIslandsPipeline
 from .segmentation_overwrite_mode import SegmentationOverwriteMode
@@ -82,6 +86,7 @@ __all__ = [
     "SegmentationEffectScissors",
     "SegmentationEffectSmoothing",
     "SegmentationEffectThreshold",
+    "SegmentationEffectVolumeIntensityMask",
     "SegmentationIslandsMode",
     "SegmentationIslandsPipeline",
     "SegmentationOpacityEnum",
@@ -94,5 +99,6 @@ __all__ = [
     "SegmentationScissorsPipeline",
     "SegmentationScissorsWidget",
     "SegmentationThresholdPipeline2D",
+    "ThresholdOpacityBlinker",
     "ThresholdParameters",
 ]

@@ -39,6 +39,8 @@ from .segmentation import (
     SmoothingState,
     ThresholdEffectUI,
     ThresholdState,
+    VolumeIntensityRangeMaskState,
+    VolumeIntensityRangeMaskUI,
 )
 from .segmentation_app_ui import SegmentationAppUI
 from .slab_button import SlabState, SlabType
@@ -98,6 +100,8 @@ __all__ = [
     "ThresholdState",
     "ViewerLayout",
     "ViewerLayoutState",
+    "VolumeIntensityRangeMaskState",
+    "VolumeIntensityRangeMaskUI",
     "VolumePropertyState",
     "VolumePropertyUI",
     "enum_to_radio_buttons",

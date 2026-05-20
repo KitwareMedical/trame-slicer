@@ -112,6 +112,8 @@ def test_set_segment_edit_options(a_state, editor_logic, editor_ui):
     assert mask_items[-1]["title"] == segments[-1].name
 
     editor_logic.data.segment_edit_area.mask_select.current_id = len(SegmentationEditableAreaMode)
+    a_state.flush()
+
     editor_logic.data.segment_edit_area.overwrite_mode = SegmentationOverwriteMode.OVERWRITE_ALL_VISIBLE_SEGMENTS
     a_state.flush()
 

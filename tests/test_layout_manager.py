@@ -61,9 +61,12 @@ def a_slicer_scene() -> vtkMRMLScene:
 
 @pytest.fixture
 def a_layout_manager(a_mock_ui, a_mock_view_manager, a_slicer_scene, a_server):
-    return LayoutManager(
+    layout_manager = LayoutManager(
         a_slicer_scene, a_mock_view_manager, a_server, virtual_node=a_mock_ui, is_virtual_node_initialized=True
     )
+    with SinglePageLayout(a_server) as ui:
+        layout_manager.initialize_layout_grid(ui)
+    return layout_manager
 
 
 @pytest.fixture

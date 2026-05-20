@@ -143,7 +143,7 @@ class SegmentationEffectScissors(SegmentationEffect):
     ) -> tuple[list[float], list[float]]:
         xy_to_slice: vtkMatrix4x4 = slice_node.GetXYToRAS()
 
-        max_dim = max(self._modifier.volume_node.GetImageData().GetBounds())
+        max_dim = max(self.modifier.volume_node.GetImageData().GetBounds())
 
         # Default: ScissorsSegmentationSliceCut.UNLIMITED
         near = xy_to_slice.MultiplyPoint([display_coords[0], display_coords[1], -max_dim, 1.0])
