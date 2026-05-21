@@ -16,11 +16,6 @@ from vtkmodules.util.numpy_support import vtk_to_numpy
 from vtkmodules.vtkCommonCore import vtkCommand
 from vtkmodules.vtkCommonDataModel import vtkImageData
 
-from trame_slicer.app.logic import get_view_trame_id
-from trame_slicer.app.ui import (
-    create_vertical_slice_view_gutter_ui,
-    create_vertical_view_gutter_ui,
-)
 from trame_slicer.core import ViewManager
 from trame_slicer.views import (
     AbstractView,
@@ -57,6 +52,11 @@ def register_rca_factories(
     """
     Helper function to register all RCA factories to a view manager.
     """
+    from trame_slicer.app.ui import (
+        create_vertical_slice_view_gutter_ui,
+        create_vertical_view_gutter_ui,
+    )
+
     slice_view_ui_f = slice_view_ui_f or create_vertical_slice_view_gutter_ui
     three_d_view_ui_f = three_d_view_ui_f or create_vertical_view_gutter_ui
 
@@ -190,6 +190,8 @@ class RemoteViewFactory(IViewFactory):
         scene: vtkMRMLScene,
         app_logic: vtkMRMLApplicationLogic,
     ) -> RcaView:
+        from trame_slicer.app.logic import get_view_trame_id
+
         view_id = view.singleton_tag
         slicer_view: AbstractView = self._view_ctor(
             scene=scene,

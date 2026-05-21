@@ -1,0 +1,11 @@
+[run]
+omit = *docs*, *tests*
+source = trame_slicer
+
+[paths]
+source =
+    src/trame_slicer
+    */site-packages/trame_slicer
+
+[report]
+show_missing = True

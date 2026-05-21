@@ -52,7 +52,6 @@ classifiers = [
 [project.optional-dependencies]
 dev = [
     "async-timeout",
-    "nox",
     "pandas",
     "pixelmatch",
     "pytest",
@@ -94,7 +93,7 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = [
-    "/trame_slicer",
+    "src/trame_slicer",
 ]
 
 [tool.hatch.metadata]
@@ -135,14 +134,13 @@ isort.required-imports = []
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["T20"]
-"noxfile.py" = ["T20"]
 
 [tool.semantic_release]
 version_toml = [
     "pyproject.toml:project.version",
 ]
 version_variables = [
-    "trame_slicer/__init__.py:__version__",
+    "src/trame_slicer/__init__.py:__version__",
 ]
 
 build_command = """
