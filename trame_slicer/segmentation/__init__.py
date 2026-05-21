@@ -38,9 +38,6 @@ from .segmentation_effect_threshold import (
     AutoThresholdMethod,
     AutoThresholdMode,
     SegmentationEffectThreshold,
-    SegmentationThresholdPipeline2D,
-    ThresholdOpacityBlinker,
-    ThresholdParameters,
 )
 from .segmentation_effect_volume_intensity_mask import (
     SegmentationEffectVolumeIntensityMask,
@@ -56,6 +53,11 @@ from .segmentation_paint_widget import (
     SegmentationPaintWidget2D,
     SegmentationPaintWidget3D,
 )
+from .segmentation_threshold_pipeline import (
+    SegmentationThresholdPipeline2D,
+    ThresholdParameters,
+)
+from .threshold_opacity_blinker import ThresholdOpacityBlinker
 
 __all__ = [
     "AbstractSegmentationEffectBrush",

@@ -46,7 +46,6 @@ def test_threshold_use_for_volume_intensity_masking(
 def test_mask_effect_initialization(editor):
     effect = SegmentationEffectVolumeIntensityMask()
     effect.set_editor(editor)
-    # Mask is initially disabled, so is_visible should be False
     assert not effect.is_visible
 
 
@@ -54,22 +53,18 @@ def test_mask_effect_parameters(editor, active_segmentation_node):
     assert active_segmentation_node
     effect = editor.get_effect(SegmentationEffectVolumeIntensityMask)
 
-    # Test mask range
     effect.set_mask_range(10.0, 20.0)
     assert effect.get_mask_range() == (10.0, 20.0)
 
-    # Test mask enabled
     effect.set_mask_enabled(True)
     assert effect.is_mask_enabled() is True
 
-    # Test mask visible
     effect.set_mask_visible(True)
     assert effect.is_visible
 
-    # Verify parameter update (hatch should be True)
     param_node = effect.get_parameter_node()
     proxy = create_scripted_module_dataclass_proxy(ThresholdParameters, param_node, effect._scene)
-    assert proxy.hatch is True
+    assert proxy.is_hatched is True
     assert proxy.min_value == 10.0
     assert proxy.max_value == 20.0
 
