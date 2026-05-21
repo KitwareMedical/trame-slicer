@@ -84,6 +84,10 @@ download = "https://pypi.org/project/trame-slicer/#files"
 tracker = "https://github.com/KitwareMedical/trame-slicer/issues"
 "release notes" = "https://trame-slicer.readthedocs.io/en/latest/changelog.html"
 
+[project.scripts]
+medical-viewer = "trame_slicer.app.medical_viewer_app:main"
+segmentation-app = "trame_slicer.app.segmentation_app:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

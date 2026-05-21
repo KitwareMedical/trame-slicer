@@ -16,6 +16,11 @@ from vtkmodules.util.numpy_support import vtk_to_numpy
 from vtkmodules.vtkCommonCore import vtkCommand
 from vtkmodules.vtkCommonDataModel import vtkImageData
 
+from trame_slicer.app.logic import get_view_trame_id
+from trame_slicer.app.ui import (
+    create_vertical_slice_view_gutter_ui,
+    create_vertical_view_gutter_ui,
+)
 from trame_slicer.core import ViewManager
 from trame_slicer.views import (
     AbstractView,
@@ -28,9 +33,6 @@ from trame_slicer.views import (
     ViewLayout,
     ViewLayoutDefinition,
     ViewType,
-    create_vertical_slice_view_gutter_ui,
-    create_vertical_view_gutter_ui,
-    get_view_trame_id,
 )
 
 
