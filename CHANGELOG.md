@@ -2,6 +2,56 @@
 
 <!-- version list -->
 
+## v1.11.0 (2026-05-21)
+
+### Bug Fixes
+
+- **imports**: Remove imports to slicer_core
+  ([`b0dc0eb`](https://github.com/KitwareMedical/trame-slicer/commit/b0dc0ebd897790ff6ee6997cf2dab9141af92311))
+
+- **segmentation**: Fix bug where effect parameter node could be None
+  ([`da9cdcf`](https://github.com/KitwareMedical/trame-slicer/commit/da9cdcfa545ba58b2fc059847d89dbda567335c9))
+
+### Documentation
+
+- Update documentation
+  ([`0e825b2`](https://github.com/KitwareMedical/trame-slicer/commit/0e825b236cecdb0a98998bcc14957ebb7b337c74))
+
+- **medical example**: Change segment editor scroll style
+  ([`68356ad`](https://github.com/KitwareMedical/trame-slicer/commit/68356adef233e85709c3bec1330a77265cea9a8b))
+
+### Features
+
+- **apps**: Add download scene button
+  ([`de02bea`](https://github.com/KitwareMedical/trame-slicer/commit/de02bea4849cd1dfa43b502fd2058c243f57e227))
+
+- **apps**: Promote examples to first class applications
+  ([`8ecc4a4`](https://github.com/KitwareMedical/trame-slicer/commit/8ecc4a457a18ee0df86b3256817fae9ac2f71159))
+
+- **segmentation**: Add possibility to delete point from ongoing segment polygon draw
+  ([`c7ff879`](https://github.com/KitwareMedical/trame-slicer/commit/c7ff8798ad822361c4cedcd401ec654a92398039))
+
+- **segmentation**: Add volume intensity mask effect
+  ([`ef17dbd`](https://github.com/KitwareMedical/trame-slicer/commit/ef17dbd757657d4e25123a2a1fc5ce7b48d3f310))
+
+- **segmentation**: Improve draw segmentation effect
+  ([`ea593c7`](https://github.com/KitwareMedical/trame-slicer/commit/ea593c7d31b8807bd24572bba9e166a01e9835c5))
+
+- **threshold**: Synchronize blink state for all views
+  ([`268532f`](https://github.com/KitwareMedical/trame-slicer/commit/268532f34e38179102a12258f1a9b621829ff96e))
+
+### Refactoring
+
+- Move sources to src folder
+  ([`83c2bfb`](https://github.com/KitwareMedical/trame-slicer/commit/83c2bfb852d012854752fa258851222753705bc4))
+
+- **apps**: Cleanup the medical viewer app
+  ([`85c9a39`](https://github.com/KitwareMedical/trame-slicer/commit/85c9a3989f77a3ebba6947e652708f5999a956e8))
+
+- **segmentation**: Split segmentation threshold effect file
+  ([`9df1bc4`](https://github.com/KitwareMedical/trame-slicer/commit/9df1bc4ceaa8de53b975f2e081b40f7495f946c8))
+
+
 ## v1.10.0 (2026-04-15)
 
 ### Bug Fixes
