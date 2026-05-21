@@ -49,6 +49,8 @@ trame-slicer provides several built-in segmentation effects:
   largest, Remove small, Split to segments, etc.).
 - **Logical Operators**: Perform boolean operations between segments (Add,
   Subtract, Intersect, etc.).
+- **Volume Intensity Range Mask**: Mask segmentation based on an intensity
+  range.
 
 ## Draw and Scissors Effects
 
@@ -72,6 +74,19 @@ The Draw and Scissors effects support different interaction modes via the
 - **POINT_BY_POINT**: The segmentation is created by clicking individual points.
   A preview line connects the last point to the current mouse position. The
   contour is closed by right-clicking.
+
+## Threshold Effect
+
+The Threshold effect allows for real-time segmentation based on intensity values
+of the reference volume.
+
+- **Manual Threshold**: Users can define the lower and upper intensity bounds
+  manually to segment specific structures.
+- **Automatic Threshold**: Supports automatic computation of thresholds using
+  various algorithms such as Otsu, Huang, Triangle, and others, making it easier
+  to segment structures without manual tuning.
+- **Use as Mask**: The selected threshold can be used as mask which will enable
+  the Volume Intensity Range Mask Effect.
 
 ## Smoothing Effect
 
@@ -111,3 +126,13 @@ be activated.
   become filled).
 - **Clear / Fill**: Completely empties or fills the active segment within the
   reference volume extent.
+
+## Volume Intensity Range Mask Effect
+
+The Volume Intensity Range Mask effect allows masking the segmentation based on
+the intensity range of the reference volume.
+
+This effect is passive and doesn't need to be activated to be enabled.
+
+- **Threshold range**: Defines the intensity range within which the segmentation
+  is preserved. Values outside this range are masked out (set to empty).

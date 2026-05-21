@@ -9,6 +9,11 @@ from trame_client.widgets.html import Div
 from trame_vuetify.ui.vuetify3 import SinglePageLayout, VAppLayout
 from vtkmodules.vtkCommonCore import vtkCollection
 
+from trame_slicer.app.logic.slice_view_logic import get_view_slider_typed_state
+from trame_slicer.app.ui.view_gutter import (
+    create_vertical_slice_view_gutter_ui,
+    create_vertical_view_gutter_ui,
+)
 from trame_slicer.core import DisplayManager, LayoutManager, SlicerApp, ViewManager
 from trame_slicer.rca_view import RemoteSliceViewFactory, RemoteThreeDViewFactory
 from trame_slicer.views import (
@@ -22,9 +27,6 @@ from trame_slicer.views import (
     ViewLayoutDefinition,
     ViewProps,
     ViewType,
-    create_vertical_slice_view_gutter_ui,
-    create_vertical_view_gutter_ui,
-    get_view_slider_typed_state,
 )
 
 

@@ -52,7 +52,6 @@ classifiers = [
 [project.optional-dependencies]
 dev = [
     "async-timeout",
-    "nox",
     "pandas",
     "pixelmatch",
     "pytest",
@@ -84,13 +83,17 @@ download = "https://pypi.org/project/trame-slicer/#files"
 tracker = "https://github.com/KitwareMedical/trame-slicer/issues"
 "release notes" = "https://trame-slicer.readthedocs.io/en/latest/changelog.html"
 
+[project.scripts]
+medical-viewer = "trame_slicer.app.medical_viewer_app:main"
+segmentation-app = "trame_slicer.app.segmentation_app:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = [
-    "/trame_slicer",
+    "src/trame_slicer",
 ]
 
 [tool.hatch.metadata]
@@ -131,14 +134,13 @@ isort.required-imports = []
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["T20"]
-"noxfile.py" = ["T20"]
 
 [tool.semantic_release]
 version_toml = [
     "pyproject.toml:project.version",
 ]
 version_variables = [
-    "trame_slicer/__init__.py:__version__",
+    "src/trame_slicer/__init__.py:__version__",
 ]
 
 build_command = """

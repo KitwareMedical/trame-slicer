@@ -1,4 +1,4 @@
-recursive-include trame_slicer/resources *
+recursive-include src/trame_slicer/resources *
 recursive-exclude tests *
 recursive-exclude examples *
 recursive-exclude */__pycache__ *

@@ -47,10 +47,10 @@ To get started using trame, please have a look at the
 [introductory trame course](https://kitware.github.io/trame/guide/intro/course.html).
 
 To start using the trame-slicer library, have a look and run the
-[medical viewer app](https://github.com/KitwareMedical/trame-slicer/blob/main/examples/medical_viewer_app.py):
+[medical viewer app](https://github.com/KitwareMedical/trame-slicer/blob/main/src/trame_slicer/app/medical_viewer_app.py):
 
 ```bash
-python examples/medical_viewer_app.py
+python -m trame_slicer.app.medical_viewer_app
 ```
 
 ## Features

@@ -25,7 +25,7 @@ repos:
         exclude: "^\\.git/"
       - id: name-tests-test
         args: ["--pytest-test-first"]
-        exclude: "direct_view_factory.py|view_events.py"
+        exclude: "_.*"
       - id: requirements-txt-fixer
       - id: trailing-whitespace
 

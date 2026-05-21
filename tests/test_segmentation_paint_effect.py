@@ -1,7 +1,7 @@
 import pytest
 
+from tests import ViewEvents
 from tests.conftest import a_threed_view
-from tests.view_events import ViewEvents
 from trame_slicer.segmentation import (
     SegmentationEffectErase,
     SegmentationEffectNoTool,

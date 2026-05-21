@@ -1,8 +1,8 @@
 import pytest
 from undo_stack import UndoStack
 
+from tests import MouseButton, ViewEvents
 from tests.conftest import a_slice_view, a_threed_view
-from tests.view_events import MouseButton, ViewEvents
 from trame_slicer.segmentation import (
     BrushInteractionMode,
     ScissorsEffectFillMode,

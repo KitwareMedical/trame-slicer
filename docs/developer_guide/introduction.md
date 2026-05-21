@@ -47,6 +47,6 @@ applications on the Web. As such, the library should not be forked when creating
 applications but should be pip installed instead. The components can be
 specialized and assembled as needed.
 
-The examples folder provides an example of a medical viewer application. It will
-be further refined in the future to provide more diverse examples and code
-snippets on how to use the library for different use cases.
+The `examples` folder provides minimal examples on how to use the library for
+different use cases. For more complex and fully-featured applications, please
+refer to the `apps` section.

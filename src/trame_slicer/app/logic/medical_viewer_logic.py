@@ -1,0 +1,61 @@
+from trame_server import Server
+
+from trame_slicer.core import LayoutManager, SlicerApp
+from trame_slicer.rca_view import register_rca_factories
+
+from ..ui import MedicalViewerUI, SegmentEditorUI, ViewerLayoutState, VolumePropertyUI
+from .base_logic import BaseLogic
+from .download_scene_logic import DownloadSceneLogic
+from .layout_button_logic import LayoutButtonLogic
+from .load_volume_logic import LoadVolumeLogic
+from .markups_button_logic import MarkupsButtonLogic
+from .mpr_interaction_button_logic import MprInteractionButtonLogic
+from .segmentation import SegmentEditorLogic
+from .slab_logic import SlabLogic
+from .volume_property_logic import VolumePropertyLogic
+
+
+class MedicalViewerLogic(BaseLogic[ViewerLayoutState]):
+    def __init__(self, server: Server, slicer_app: SlicerApp):
+        super().__init__(server, slicer_app, ViewerLayoutState)
+
+        # Register the RCA view creation
+        register_rca_factories(self._slicer_app.view_manager, self._server)
+
+        # Create the application logic
+        self._segment_editor_logic = SegmentEditorLogic(server, slicer_app)
+        self._volume_properties_logic = VolumePropertyLogic(server, slicer_app)
+        self._layout_button_logic = LayoutButtonLogic(server, slicer_app)
+        self._markups_logic = MarkupsButtonLogic(server, slicer_app)
+        self._load_files_logic = LoadVolumeLogic(server, slicer_app)
+        self._download_scene_logic = DownloadSceneLogic(server, slicer_app)
+        self._slab_logic = SlabLogic(server, slicer_app)
+        self._mpr_logic = MprInteractionButtonLogic(server, slicer_app)
+
+        # Connect signals
+        self._load_files_logic.volume_loaded.connect(self._on_volume_changed)
+        self._load_files_logic.volume_loaded.connect(self._volume_properties_logic.on_volume_changed)
+        self._load_files_logic.volume_loaded.connect(self._segment_editor_logic.on_volume_changed)
+
+        # Initialize the state defaults
+        self.server.state["trame__title"] = "trame Slicer"
+        self.server.state["trame__favicon"] = (
+            "https://raw.githubusercontent.com/Slicer/Slicer/main/Applications/SlicerApp/Resources/Icons/Medium/Slicer-DesktopIcon.png"
+        )
+
+    @property
+    def layout_manager(self) -> LayoutManager:
+        return self._layout_button_logic.layout_manager
+
+    def set_ui(self, ui: MedicalViewerUI):
+        self._segment_editor_logic.set_ui(ui.tool_registry[SegmentEditorUI])
+        self._volume_properties_logic.set_ui(ui.tool_registry[VolumePropertyUI])
+        self._layout_button_logic.set_ui(ui.layout_button)
+        self._markups_logic.set_ui(ui.markups_button)
+        self._load_files_logic.set_ui(ui.load_volume_items_buttons)
+        self._download_scene_logic.set_ui(ui.download_scene_button)
+        self._slab_logic.set_ui(ui.slab_button)
+        self._mpr_logic.set_ui(ui.mpr_interaction_button)
+
+    def _on_volume_changed(self, *_args):
+        self.data.is_volume_loaded = True

@@ -8,6 +8,7 @@ features
 design_recipes
 segmentation/index
 examples
+apps
 ```
 
 # Trame Slicer API

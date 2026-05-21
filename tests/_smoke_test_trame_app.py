@@ -1,0 +1,19 @@
+import asyncio
+
+from async_timeout import timeout
+from playwright.async_api import async_playwright
+
+
+async def smoke_test_trame_app(async_server, a_server_port, app_cls):
+    app_cls(async_server)
+    async_server.start(port=a_server_port, thread=True, exec_mode="task")
+
+    async with timeout(30), async_playwright() as p:
+        assert await async_server.ready
+        assert async_server.port
+        url = f"http://127.0.0.1:{async_server.port}/"
+        browser = await p.chromium.launch()
+        page = await browser.new_page()
+        await page.goto(url)
+        await asyncio.sleep(1.0)
+        await browser.close()
