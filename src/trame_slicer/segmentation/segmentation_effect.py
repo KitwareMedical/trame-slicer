@@ -10,8 +10,8 @@ from slicer import (
     vtkMRMLNode,
     vtkMRMLScene,
     vtkMRMLScriptedModuleNode,
+    vtkMRMLSegmentEditorNode,
 )
-from slicer_core import vtkMRMLSegmentEditorNode
 from undo_stack import Signal
 
 from .segment_modifier import ModificationMode, SegmentModifier

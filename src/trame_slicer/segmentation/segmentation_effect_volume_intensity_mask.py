@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from slicer import vtkMRMLAbstractViewNode, vtkMRMLNode
-from slicer_core.MRMLCore import vtkMRMLSliceNode
+from slicer import vtkMRMLAbstractViewNode, vtkMRMLNode, vtkMRMLSliceNode
 
 from .segmentation_effect import SegmentationEffect
 from .segmentation_effect_pipeline import SegmentationEffectPipeline

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 from numpy.lib.stride_tricks import sliding_window_view
 from numpy.typing import NDArray
-from slicer_core import vtkMRMLVolumeNode
+from slicer import vtkMRMLVolumeNode
 from vtkmodules.util import numpy_support
 from vtkmodules.vtkCommonCore import VTK_UNSIGNED_INT, vtkLookupTable
 from vtkmodules.vtkCommonDataModel import vtkImageData
