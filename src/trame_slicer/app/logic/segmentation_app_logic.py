@@ -5,6 +5,7 @@ from trame_slicer.rca_view import register_rca_factories
 
 from ..ui import SegmentationAppUI, SegmentEditorUI, ViewerLayoutState, VolumePropertyUI
 from .base_logic import BaseLogic
+from .download_scene_logic import DownloadSceneLogic
 from .layout_button_logic import LayoutButtonLogic
 from .load_volume_logic import LoadVolumeLogic
 from .mpr_interaction_button_logic import MprInteractionButtonLogic
@@ -24,6 +25,7 @@ class SegmentationAppLogic(BaseLogic[ViewerLayoutState]):
         self._volume_properties_logic = VolumePropertyLogic(server, slicer_app)
         self._layout_button_logic = LayoutButtonLogic(server, slicer_app)
         self._load_files_logic = LoadVolumeLogic(server, slicer_app)
+        self._download_scene_logic = DownloadSceneLogic(server, slicer_app)
         self._mpr_logic = MprInteractionButtonLogic(server, slicer_app)
 
         # Connect signals
@@ -46,6 +48,7 @@ class SegmentationAppLogic(BaseLogic[ViewerLayoutState]):
         self._volume_properties_logic.set_ui(ui.tool_registry[VolumePropertyUI])
         self._layout_button_logic.set_ui(ui.layout_button)
         self._load_files_logic.set_ui(ui.load_volume_items_buttons)
+        self._download_scene_logic.set_ui(ui.download_scene_button)
         self._mpr_logic.set_ui(ui.mpr_interaction_button)
 
     def _on_volume_changed(self, *_args):

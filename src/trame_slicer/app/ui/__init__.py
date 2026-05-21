@@ -1,4 +1,5 @@
 from .control_button import ControlButton
+from .download_scene_button import DownloadSceneButton
 from .dynamic_select import DynamicSelect, DynamicSelectState
 from .enum_to_title import enum_to_radio_buttons, enum_to_title
 from .flex_container import FlexContainer
@@ -58,6 +59,7 @@ __all__ = [
     "BrushParametersState",
     "BrushParametersUI",
     "ControlButton",
+    "DownloadSceneButton",
     "DrawEffectState",
     "DrawEffectUI",
     "DynamicSelect",
