@@ -7,11 +7,11 @@ from slicer_core.MRMLCore import vtkMRMLSliceNode
 
 from .segmentation_effect import SegmentationEffect
 from .segmentation_effect_pipeline import SegmentationEffectPipeline
-from .segmentation_effect_threshold import (
+from .segmentation_threshold_pipeline import (
     SegmentationThresholdPipeline2D,
-    ThresholdOpacityBlinker,
     ThresholdParameters,
 )
+from .threshold_opacity_blinker import ThresholdOpacityBlinker
 
 if TYPE_CHECKING:
     from ..core import SegmentationEditor
@@ -78,7 +78,7 @@ class SegmentationEffectVolumeIntensityMask(SegmentationEffect):
         param = self.get_param_proxy()
         param.min_value, param.max_value = self.get_mask_range()
         param.is_visible = self.is_visible
-        param.hatch = True
+        param.is_hatched = True
         self._opacity_blinker.set_active(self.is_visible)
 
     def get_param_proxy(self) -> ThresholdParameters:
