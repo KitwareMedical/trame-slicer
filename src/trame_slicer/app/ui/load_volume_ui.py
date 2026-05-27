@@ -21,7 +21,7 @@ class LoadVolumeState:
 
 
 class LoadVolumeUI(FlexContainer):
-    on_load_volume = Signal(list[dict], str)
+    on_load_volume = Signal(list[dict])
 
     def __init__(self, **kwargs):
         super().__init__(row=True, **kwargs)
@@ -48,7 +48,7 @@ class LoadVolumeUI(FlexContainer):
 
 
 class LoadVolumeButton(FlexContainer):
-    on_load_volume = Signal(list[dict], str)
+    on_load_volume = Signal(list[dict])
 
     def __init__(self, name: str, load_directory: bool, icon: str, typed_state: TypedState[LoadVolumeItemsState]):
         super().__init__(justify="center", row=True, style="width: 50px; height: 50px;")
@@ -67,8 +67,10 @@ class LoadVolumeButton(FlexContainer):
                     f"{typed_state.name.loading_busy} = true; {typed_state.name.button_tooltip} = false;"
                     "trigger('"
                     f"{self.server.controller.trigger_name(self.on_load_volume.async_emit)}"
-                    f"', [$event.target.files, '{typed_state.name.loading_busy}']"
-                    ")"
+                    f"', [$event.target.files]"
+                    ").finally(() => {"
+                    f"{typed_state.name.loading_busy} = false;"
+                    "})"
                 ),
                 prepend_icon=icon,
                 multiple=not load_directory,

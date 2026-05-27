@@ -231,6 +231,11 @@ def a_server_port():
 
 @pytest.fixture
 def a_server(render_interactive):
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        asyncio.set_event_loop(asyncio.new_event_loop())
+
     # Create a server with a unique ID to be sure that the created server is different for each run
     server = get_server(f"test_server_{uuid.uuid4()}", client_type="vue3")
 
