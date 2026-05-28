@@ -21,13 +21,7 @@ class LoadVolumeLogic(BaseLogic[LoadVolumeState]):
         super().__init__(server, slicer_app, LoadVolumeState)
 
     def set_ui(self, ui: LoadVolumeUI):
-        ui.on_load_volume.connect(self._on_load_volume)
-
-    def _on_load_volume(self, files: list[dict], is_loading_state_name: str) -> None:
-        try:
-            self._load_volume_files(files)
-        finally:
-            self.state[is_loading_state_name] = False
+        ui.on_load_volume.connect(self._load_volume_files)
 
     def _load_volume_files(self, files: list[dict]) -> None:
         if not files:
