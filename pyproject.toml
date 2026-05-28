@@ -55,7 +55,7 @@ dev = [
     "pandas",
     "pixelmatch",
     "pytest",
-    "pytest-asyncio",
+    "pytest-asyncio==1.3.0",
     "pytest-cov",
     "pytest-playwright",
     "pytest-repeat",
