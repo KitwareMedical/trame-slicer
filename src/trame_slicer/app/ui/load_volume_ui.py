@@ -24,7 +24,8 @@ class LoadVolumeUI(FlexContainer):
     on_load_volume = Signal(list[dict])
 
     def __init__(self, **kwargs):
-        super().__init__(row=True, **kwargs)
+        kwargs = {"row": True, **kwargs}
+        super().__init__(**kwargs)
 
         typed_state = TypedState(self.state, LoadVolumeState)
 
@@ -50,8 +51,16 @@ class LoadVolumeUI(FlexContainer):
 class LoadVolumeButton(FlexContainer):
     on_load_volume = Signal(list[dict])
 
-    def __init__(self, name: str, load_directory: bool, icon: str, typed_state: TypedState[LoadVolumeItemsState]):
-        super().__init__(justify="center", row=True, style="width: 50px; height: 50px;")
+    def __init__(
+        self,
+        name: str,
+        load_directory: bool,
+        icon: str,
+        typed_state: TypedState[LoadVolumeItemsState],
+        **kwargs,
+    ):
+        kwargs = {"justify": "center", "row": True, "style": "width: 50px; height: 50px;", **kwargs}
+        super().__init__(**kwargs)
 
         with self:
             VTooltip(
