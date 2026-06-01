@@ -166,7 +166,7 @@ class SegmentModifier:
         modifier_extent = [0, -1, 0, -1, 0, -1]
         oriented_brush_positioner_output = vtkOrientedImageData()
         for i in range(points_ijk.GetNumberOfPoints()):
-            brush_positioner.SetExtentTranslation([int(p) for p in points_ijk.GetPoint(i)])
+            brush_positioner.SetExtentTranslation([round(p) for p in points_ijk.GetPoint(i)])
             brush_positioner.Update()
 
             oriented_brush_positioner_output.ShallowCopy(brush_positioner.GetOutput())
