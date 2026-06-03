@@ -6,6 +6,7 @@ from tempfile import TemporaryDirectory
 from typing import Any
 
 from trame.app import TrameApp
+from trame.widgets import client
 from trame_client.widgets.html import Div
 from trame_vuetify.ui.vuetify3 import SinglePageLayout
 from trame_vuetify.widgets.vuetify3 import VBtn, VFileInput
@@ -68,6 +69,7 @@ class SegmentationEffectTrameSlicerApp(TrameApp):
 
     def _build_ui(self):
         with SinglePageLayout(self._server) as self.ui:
+            client.Style("html { overflow-y: auto; }")
             self.ui.root.theme = "dark"
 
             with self.ui.toolbar:

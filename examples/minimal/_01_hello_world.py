@@ -4,6 +4,7 @@ Creates the minimal trame-slicer classes and starts the server.
 """
 
 from trame.app import TrameApp
+from trame.widgets import client
 from trame_vuetify.ui.vuetify3 import SinglePageLayout
 
 from trame_slicer.core import LayoutManager, SlicerApp
@@ -29,6 +30,7 @@ class MinimalTrameSlicerApp(TrameApp):
 
         # Build the trame UI and populate the layout place-holder
         with SinglePageLayout(self._server) as self.ui, self.ui.content:
+            client.Style("html { overflow-y: auto; }")
             self._layout_manager.initialize_layout_grid(self.ui)
 
 

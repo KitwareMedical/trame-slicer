@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from trame.ui.vuetify3 import VAppLayout
+from trame.widgets import client
 from trame.widgets.vuetify3 import (
     VAppBar,
     VBtn,
@@ -42,6 +43,7 @@ class ViewerLayout(VAppLayout):
         self.root.theme = theme
 
         with self:
+            client.Style("html { overflow-y: auto; }")
             with VAppBar() as self.appbar:
                 self.title = VToolbarTitle(title, style="user-select: none;")
 
