@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
 from trame_server.utils.typed_state import TypedState
-from trame_vuetify.widgets.vuetify3 import VCheckbox, VIcon, VSpacer
+from trame_vuetify.widgets.vuetify3 import Template, VIcon, VSwitch, VTooltip
 
 from ..flex_container import FlexContainer
 from ..slider import RangeSlider, RangeSliderState
@@ -21,25 +21,28 @@ class VolumeIntensityRangeMaskUI(FlexContainer):
         self._typed_state = TypedState(self.state, VolumeIntensityRangeMaskState)
 
         with self:
-            Text("Volume intensity range mask")
+            with FlexContainer(row=True, justify="space-between"):
+                Text("Volume intensity range mask")
+                with FlexContainer():
+                    VTooltip(
+                        activator="parent",
+                        text=(f"{self._typed_state.name.is_enabled} ? 'Disable mask' : 'Enable mask'",),
+                    )
+                    VSwitch(
+                        v_model=(self._typed_state.name.is_enabled,),
+                        hide_details=True,
+                        density="compact",
+                    )
 
-            with FlexContainer(row=True):
-                VCheckbox(
-                    v_model=(self._typed_state.name.is_enabled,),
-                    label="Enable mask",
-                    hide_details=True,
-                    density="compact",
-                )
-                VSpacer()
-
+            with (
+                RangeSlider(
+                    typed_state=self._typed_state.get_sub_state(self._typed_state.name.threshold_slider),
+                ),
+                Template(v_slot_append=True),
+            ):
                 VIcon(
-                    classes="mr-3",
-                    name="Toggle visibility",
+                    disabled=(f"!{self._typed_state.name.is_enabled}",),
+                    name="Toggle mask visibility",
                     icon=(f"{self._typed_state.name.is_visible} ? 'mdi-eye-outline' : 'mdi-eye-off-outline'",),
                     click=f"{self._typed_state.name.is_visible} = !{self._typed_state.name.is_visible}",
                 )
-
-            RangeSlider(
-                classes="mx-3",
-                typed_state=self._typed_state.get_sub_state(self._typed_state.name.threshold_slider),
-            )
