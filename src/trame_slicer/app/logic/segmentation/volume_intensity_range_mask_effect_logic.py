@@ -40,7 +40,9 @@ class VolumeIntensityRangeMaskEffectLogic(
 
     def _refresh_trame_state(self, *_):
         self.data.threshold_slider.value = list(self.effect.get_mask_range())
-        self.data.is_enabled = self.effect.is_mask_enabled()
+        is_mask_enabled = self.effect.is_mask_enabled()
+        self.data.is_enabled = is_mask_enabled
+        self.data.threshold_slider.is_disabled = not is_mask_enabled
         self.data.is_visible = self.effect.is_visible
 
     def _on_threshold_range_changed(self, *_):
