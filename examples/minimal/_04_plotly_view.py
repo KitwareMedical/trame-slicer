@@ -11,7 +11,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from slicer import vtkMRMLApplicationLogic, vtkMRMLScene
 from trame.app import TrameApp
-from trame.widgets import plotly
+from trame.widgets import client, plotly
 from trame_client.widgets.core import AbstractElement
 from trame_client.widgets.trame import SizeObserver
 from trame_vuetify.ui.vuetify3 import SinglePageLayout
@@ -147,6 +147,7 @@ class PlotlyTrameSlicerApp(TrameApp):
         self._layout_manager.set_layout("default")
 
         with SinglePageLayout(self._server) as self.ui, self.ui.content:
+            client.Style("html { overflow-y: auto; }")
             self._layout_manager.initialize_layout_grid(self.ui)
 
 
