@@ -23,9 +23,9 @@ def view_def(group: int, i_view: int, view_type: ViewType):
     )
 
 
-@pytest.fixture
-def a_slicer_app_with_two_groups(a_slicer_app, a_server):
-    register_rca_factories(a_slicer_app.view_manager, a_server)
+@pytest.fixture(params=["jpeg", None])
+def a_slicer_app_with_two_groups(a_slicer_app, a_server, request):
+    register_rca_factories(a_slicer_app.view_manager, a_server, rca_encoder=request.param)
 
     i_view = 0
 

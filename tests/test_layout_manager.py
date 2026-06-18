@@ -264,7 +264,7 @@ def server_with_child(parent_server: Server):
             [view],
         )
 
-        register_rca_factories(app.view_manager, server)
+        register_rca_factories(app.view_manager, server, rca_encoder="jpeg")
         layout_manager = LayoutManager(app.scene, app.view_manager, server)
 
         layout_manager.register_layout("sag_view", layout)
