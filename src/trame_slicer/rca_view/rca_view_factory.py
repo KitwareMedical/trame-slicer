@@ -7,7 +7,14 @@ from typing import Generic
 
 from slicer import vtkMRMLApplicationLogic, vtkMRMLLayerDisplayableManager, vtkMRMLScene
 from trame_client.widgets.html import Div
-from trame_rca.utils import RcaEncoder, RcaRenderScheduler, RcaViewAdapter, VtkWindow
+from trame_rca.encoders import RcaImageEncoder
+from trame_rca.rca import VtkRemoteControlledArea
+from trame_rca.schedulers import (
+    RcaImageRenderScheduler,
+    RcaRenderSchedulerProtocol,
+    RcaVideoRenderScheduler,
+)
+from trame_rca.utils import RcaViewAdapter
 from trame_rca.widgets.rca import RemoteControlledArea
 from trame_server import Server
 from trame_server.state import State
@@ -43,7 +50,7 @@ def register_rca_factories(
     server: Server,
     slice_view_ui_f: Callable[[Server, str, AbstractViewChild], None] | None = None,
     three_d_view_ui_f: Callable[[Server, str, AbstractViewChild], None] | None = None,
-    rca_encoder: RcaEncoder = RcaEncoder.TURBO_JPEG,
+    rca_encoder: RcaImageEncoder | str | None = None,
     target_fps: float = 30.0,
     blur_fps: float = 10.0,
     interactive_quality: int = 50,
@@ -78,7 +85,7 @@ def register_rca_factories(
 
 
 class RcaRenderStrategy(ScheduledRenderStrategy):
-    def __init__(self, rca_scheduler: RcaRenderScheduler):
+    def __init__(self, rca_scheduler: RcaRenderSchedulerProtocol):
         super().__init__()
         self._scheduler = rca_scheduler
 
@@ -87,7 +94,7 @@ class RcaRenderStrategy(ScheduledRenderStrategy):
         self._scheduler.schedule_render()
 
 
-class RcaWindow(VtkWindow):
+class RcaWindow(VtkRemoteControlledArea):
     """
     RCA Window wrapper fixing resize event for 2D views.
     Uses the vtkMRMLLayerDisplayableManager::RenderWindowBufferToImage method for RenderWindow to image
@@ -149,7 +156,7 @@ class RemoteViewFactory(IViewFactory):
         target_fps: float | None = None,
         blur_fps: float | None = None,
         interactive_quality: int | None = None,
-        rca_encoder: RcaEncoder | str | None = None,
+        rca_encoder: RcaImageEncoder | str | None = None,
         rca_event_throttle_s: str | float | None = None,
     ):
         """
@@ -160,7 +167,7 @@ class RemoteViewFactory(IViewFactory):
         :param target_fps: Focused rendering speed.
         :param blur_fps: Out of focus rendering speed.
         :param interactive_quality: Interactive RCA image encoding quality.
-        :param rca_encoder: Encoder type to use for RCA image encoding.
+        :param rca_encoder: Encoder type to use for RCA encoding. When None, uses a video encoder.
         :param rca_event_throttle_s: Number of wait seconds in between two process events. (default = 10ms / 100FPS)
             The rca_event_throttle_s can be made reactive on a trame state to vary throttle depending on the application
             use case. For instance, for segmentation effects, the throttle should be 10ms but for interactions blocking
@@ -171,9 +178,9 @@ class RemoteViewFactory(IViewFactory):
         self._view_ctor = view_ctor
         self._view_type = view_type
 
-        self._target_fps = target_fps
+        self._target_fps = target_fps or 30
         self._blur_fps = blur_fps
-        self._interactive_quality = interactive_quality
+        self._interactive_quality = interactive_quality or 50
         self._rca_encoder = rca_encoder
         self._populate_view_ui_f = populate_view_ui_f
         self._rca_event_throttle_s = rca_event_throttle_s if rca_event_throttle_s is not None else 0.01
@@ -206,12 +213,19 @@ class RemoteViewFactory(IViewFactory):
         rca_window = RcaWindow(
             slicer_view.render_window(), state=self._server.state, active_view_cursor=active_view_cursor
         )
-        rca_scheduler = RcaRenderScheduler(
-            window=rca_window,
-            interactive_quality=self._interactive_quality,
-            rca_encoder=self._rca_encoder,
-            target_fps=self._target_fps,
-        )
+
+        if self._rca_encoder is not None:
+            rca_scheduler = RcaImageRenderScheduler(
+                window=rca_window,
+                interactive_quality=self._interactive_quality,
+                rca_encoder=self._rca_encoder,
+                target_fps=self._target_fps,
+            )
+        else:
+            rca_scheduler = RcaVideoRenderScheduler(
+                window=rca_window,
+                target_fps=self._target_fps,
+            )
 
         trame_view_id = get_view_trame_id(self._server, slicer_view)
         with ViewLayout(self._server, template_name=trame_view_id) as vuetify_view:
@@ -234,7 +248,12 @@ class RemoteViewFactory(IViewFactory):
         return RcaView(vuetify_view, slicer_view, rca_view_adapter)
 
     def _create_vuetify_ui(
-        self, view_id: str, slicer_view: AbstractView, rca_scheduler: RcaRenderScheduler, *, active_view_cursor: str
+        self,
+        view_id: str,
+        slicer_view: AbstractView,
+        rca_scheduler: RcaRenderSchedulerProtocol,
+        *,
+        active_view_cursor: str,
     ):
         def set_scheduler_fps(fps: float | None) -> None:
             """
@@ -242,7 +261,7 @@ class RemoteViewFactory(IViewFactory):
             """
             if fps is None:
                 return
-            rca_scheduler._target_fps = fps
+            rca_scheduler.target_fps = fps
 
         def set_focus_fps(*_):
             set_scheduler_fps(self._target_fps)
@@ -262,7 +281,7 @@ class RemoteViewFactory(IViewFactory):
         ):
             RemoteControlledArea(
                 name=view_id,
-                display="image",
+                display="video-decoder" if isinstance(rca_scheduler, RcaVideoRenderScheduler) else "image",
                 style="position: relative; width: 100%; height: 100%;",
                 send_mouse_move=True,
                 mouseenter=set_focus_fps,
