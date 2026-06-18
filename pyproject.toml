@@ -11,10 +11,10 @@ authors = [
 dependencies = [
     "trame",
     "trame-client >= 3.12.0",
-    "trame-server >= 3.12.4",
+    "trame-server >= 3.14.1",
     "trame-vuetify",
     "trame-vtk",
-    "trame-rca >= 2.2.1",
+    "trame-rca[vtkstreaming] >= 2.9.1",
     "itk",
     "lxml",
     "pydicom",
@@ -22,6 +22,7 @@ dependencies = [
     "pillow",
     "pillow-avif-plugin",
     "py-undo-stack",
+    "fire",
 ]
 
 requires-python = ">=3.10"

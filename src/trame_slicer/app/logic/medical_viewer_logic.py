@@ -16,11 +16,11 @@ from .volume_property_logic import VolumePropertyLogic
 
 
 class MedicalViewerLogic(BaseLogic[ViewerLayoutState]):
-    def __init__(self, server: Server, slicer_app: SlicerApp):
+    def __init__(self, server: Server, slicer_app: SlicerApp, rca_encoder=None):
         super().__init__(server, slicer_app, ViewerLayoutState)
 
         # Register the RCA view creation
-        register_rca_factories(self._slicer_app.view_manager, self._server)
+        register_rca_factories(self._slicer_app.view_manager, self._server, rca_encoder=rca_encoder)
 
         # Create the application logic
         self._segment_editor_logic = SegmentEditorLogic(server, slicer_app)

@@ -10,6 +10,7 @@ from .convert_colors import (
 )
 from .ensure_node_in_scene import ensure_node_in_scene
 from .file_access import write_client_files_to_dir
+from .get_nodes_by_class import get_nodes_by_class
 from .scripted_module_node_dataclass_proxy import (
     create_scripted_module_dataclass_proxy,
     create_scripted_module_dataclass_proxy_name,
@@ -28,6 +29,7 @@ __all__ = [
     "create_scripted_module_dataclass_proxy_name",
     "ensure_node_in_scene",
     "float_channels_to_hex",
+    "get_nodes_by_class",
     "hex_to_float_channels",
     "hex_to_rgb_float",
     "is_scripted_module_dataclass",

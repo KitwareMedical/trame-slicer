@@ -1,17 +1,17 @@
 import asyncio
 import os
+from pathlib import Path
 
 import pytest
+import yappi
 from playwright.sync_api import sync_playwright
 
 from trame_slicer.app.medical_viewer_app import MedicalViewerApp
-import yappi
 
 
-def run_slice_slider_benchmark(benchmark, port):
+def run_slice_slider_benchmark(benchmark, port, benchmark_path):
     with sync_playwright() as playwright:
-        headless = os.environ.get("TRAME_SLICER_BENCHMARK_HEADLESS", "0") != "0"
-        browser = playwright.chromium.launch(headless=headless)
+        browser = playwright.chromium.launch(headless=True)
         page = browser.new_page(viewport={"width": 1600, "height": 1200})
         page.goto(f"http://127.0.0.1:{port}/")
         sliders = page.locator(".slice-slider .v-slider-thumb")
@@ -50,7 +50,7 @@ def run_slice_slider_benchmark(benchmark, port):
                 iterations=1,
             )
         info = yappi.get_func_stats()
-        info.save("slider_benchmar_3.ystat", type="ystat")
+        info.save(benchmark_path, type="ystat")
         browser.close()
 
 
@@ -60,6 +60,8 @@ async def test_medical_viewer_slice_slider_benchmark(
     async_server,
     a_server_port,
     a_nrrd_volume_file_path,
+    tmpdir,
+    capsys,
 ):
     app = MedicalViewerApp(async_server)
     app._logic._load_files_logic._on_load_volume_files([a_nrrd_volume_file_path.as_posix()])
@@ -67,4 +69,8 @@ async def test_medical_viewer_slice_slider_benchmark(
     async_server.start(port=a_server_port, thread=True, exec_mode="task")
     await async_server.ready
 
-    await asyncio.to_thread(run_slice_slider_benchmark, benchmark, async_server.port)
+    yappi_path = Path(tmpdir) / "slider_benchmark.ystat"
+    await asyncio.to_thread(run_slice_slider_benchmark, benchmark, async_server.port, yappi_path.as_posix())
+
+    with capsys.disabled():
+        print(f"Yappi profile written to: {yappi_path.resolve()}")
