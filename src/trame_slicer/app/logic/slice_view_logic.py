@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import defaultdict
 from typing import TYPE_CHECKING
 
 from trame_server.utils.typed_state import TypedState
@@ -35,28 +34,15 @@ def connect_slice_view_slider_to_state(
 ) -> TypedState[SliderState]:
     slider_state = get_view_slider_typed_state(server, view)
 
-    _is_updating_from_trame = defaultdict(bool)
-    _is_updating_from_slicer = defaultdict(bool)
-
     def _on_view_slider_value_changed(slider_value: float):
-        if _is_updating_from_slicer[slider_state.name.value]:
-            return
-
-        _is_updating_from_trame[slider_state.name.value] = True
-        view.set_slice_value(slider_value)
-        _is_updating_from_trame[slider_state.name.value] = False
+        with slider_state.suppress_change_listeners():
+            view.set_slice_value(slider_value)
 
     def _on_slice_view_modified(_view: SliceView):
-        if _is_updating_from_trame[slider_state.name.value]:
-            return
-
-        _is_updating_from_slicer[slider_state.name.value] = True
-        with server.state:
+        with slider_state.suppress_change_listeners():
             slider_state.data.min_value, slider_state.data.max_value = _view.get_slice_range()
             slider_state.data.step = _view.get_slice_step()
             slider_state.data.value = _view.get_slice_value()
-        server.state.flush()
-        _is_updating_from_slicer[slider_state.name.value] = False
 
     slider_state.bind_changes({slider_state.name.value: _on_view_slider_value_changed})
 
