@@ -14,7 +14,7 @@ dependencies = [
     "trame-server >= 3.6.3",
     "trame-vuetify",
     "trame-vtk",
-    "trame-rca >= 2.2.1",
+    "trame-rca[vtkstreaming] >= 2.6.0",
     "itk",
     "lxml",
     "pydicom",
@@ -22,6 +22,7 @@ dependencies = [
     "pillow",
     "pillow-avif-plugin",
     "py-undo-stack",
+    "fire",
 ]
 
 requires-python = ">=3.10"
