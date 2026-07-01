@@ -24,7 +24,7 @@ def create_vertical_view_gutter_ui(
     with (
         Div(
             classes="view-gutter",
-            style="position: absolute;top: 0;left: 0;background-color: transparent;height: 100%;",
+            style="position: absolute;top: 0;left: 0;background-color: transparent;",
         ),
         Div(classes="view-gutter-content d-flex flex-column fill-height pa-2"),
     ):
