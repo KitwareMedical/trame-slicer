@@ -1,7 +1,8 @@
-from slicer import vtkMRMLApplicationLogic, vtkMRMLScene
+from slicer import vtkMRMLApplicationLogic, vtkMRMLScene, vtkMRMLSliceDisplayNode
 from trame_server import Server
 
 from trame_slicer.core import SlicerApp
+from trame_slicer.utils import get_nodes_by_class
 
 from ..ui import MprInteractionButton, MprInteractionButtonState
 from .base_logic import BaseLogic
@@ -31,3 +32,9 @@ class MprInteractionButtonLogic(BaseLogic[MprInteractionButtonState]):
         app_logic.SetIntersectingSlicesEnabled(
             vtkMRMLApplicationLogic.IntersectingSlicesThickSlabInteractive, is_interactive
         )
+
+        # Increase the size of the interactive slices to medium lines to improve rendering with vtk-streaming
+        slice_display_nodes = get_nodes_by_class("vtkMRMLSliceDisplayNode", self._slicer_app.scene)
+        for slice_display_node in slice_display_nodes:
+            slice_display_node.SetIntersectingSlicesVisibility(is_interactive)
+            slice_display_node.SetIntersectingSlicesLineThicknessMode(vtkMRMLSliceDisplayNode.MediumLines)
