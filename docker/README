@@ -1,0 +1,45 @@
+# trame-slicer Docker
+
+This builds an image launching the medical_viewer_app example in a container with GPU capacities, on 127.0.0.1:8080.
+
+You need nvidia-container-toolkit and up to date NVIDIA drivers to run it.
+
+## Build instructions
+
+To build it, use `docker build . -t trame-slicer`
+
+The command to run it depends on the platform and the rendering backend used.
+
+### WSL
+
+For EGL:
+
+    docker run -it -p 8080:8080 --init -v /usr/lib/wsl:/usr/lib/wsl:ro -e MESA_D3D12_DEFAULT_ADAPTER_NAME="NVIDIA" -e VTK_DEFAULT_OPENGL_WINDOW=vtkEGLRenderWindow -e GALLIUM_DRIVER=d3d12 trame-slicer
+
+For X:
+
+    docker run -it -p 8080:8080 --init -v /tmp/.X11-unix:/tmp/.X11-unix -v /usr/lib/wsl:/usr/lib/wsl:ro -e DISPLAY=$DISPLAY -e MESA_D3D12_DEFAULT_ADAPTER_NAME="NVIDIA" -e VTK_DEFAULT_OPENGL_WINDOW=vtkXOpenGLRenderWindow -e GALLIUM_DRIVER=d3d12 trame-slicer
+
+For CPU:
+
+    docker run -it -p 8080:8080 --init -e VTK_DEFAULT_OPENGL_WINDOW=vtkOSOpenGLRenderWindow trame-slicer
+
+### Linux
+
+For EGL:
+
+    docker run -it -p 8080:8080 --init -e VTK_DEFAULT_OPENGL_WINDOW=vtkEGLRenderWindow trame-slicer
+
+For X:
+
+    docker run -it -p 8080:8080 --init -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -e VTK_DEFAULT_OPENGL_WINDOW=vtkXOpenGLRenderWindow trame-slicer
+
+For CPU:
+
+    docker run -it -p 8080:8080 --init -e VTK_DEFAULT_OPENGL_WINDOW=vtkOSOpenGLRenderWindow trame-slicer
+
+To check whether the correct backend and GPU are used, you can execute "ReportCapabilities()" on your vtkRenderWindow and look for a line containing "renderer string" for the GPU ('llvmpipe' indicates the CPU is used) and "vendor string" for the backend.
+
+You can also print `type(render_window)` and ensure the correct vtk___RenderWindow class is returned.
+
+X may fail due to authorization, in such a case, try executing `xhost +local:docker` on the host machine.
