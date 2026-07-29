@@ -1,4 +1,6 @@
+import logging
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from trame.widgets import client
 from trame_server.utils.typed_state import TypedState
@@ -6,6 +8,8 @@ from trame_vuetify.widgets.vuetify3 import VFileInput, VProgressCircular, VToolt
 from undo_stack import Signal
 
 from .flex_container import FlexContainer
+
+CHUNK_LOADER_SCRIPT = Path(__file__).with_name("chunk_loader.js")
 
 
 @dataclass
@@ -61,8 +65,25 @@ class LoadVolumeButton(FlexContainer):
     ):
         kwargs = {"justify": "center", "row": True, "style": "width: 50px; height: 50px;", **kwargs}
         super().__init__(**kwargs)
+        client.register_external_script(
+            name="load_files_by_chunks",
+            script_file_path=CHUNK_LOADER_SCRIPT,
+            function_names=["load_files_by_chunks"],
+        )
 
-        with self:
+        self.files = []
+
+        with (
+            self,
+            client.Handler(
+                function="load_files_by_chunks",
+                inputs=(f"{{ trigger_name: '{self.server.trigger_name(self.load_chunk)}' }}",),
+                completed=(
+                    self.on_load_end,
+                    "[$event.type, $event.outputs.errorMsg]",
+                ),
+            ) as client_handler,
+        ):
             VTooltip(
                 v_model=(typed_state.name.button_tooltip,),
                 text=name,
@@ -73,13 +94,12 @@ class LoadVolumeButton(FlexContainer):
             VFileInput(
                 v_if=(f"!{typed_state.name.loading_busy}",),
                 change=(
-                    f"{typed_state.name.loading_busy} = true; {typed_state.name.button_tooltip} = false;"
-                    "trigger('"
-                    f"{self.server.controller.trigger_name(self.on_load_volume.async_emit)}"
-                    f"', [$event.target.files]"
-                    ").finally(() => {"
+                    f"{typed_state.name.loading_busy} = true;"
+                    f"{typed_state.name.button_tooltip} = false;"
+                    f"{client_handler.run('$event.target.files')}"
+                    ".finally(() => {"
                     f"{typed_state.name.loading_busy} = false;"
-                    "})"
+                    "});"
                 ),
                 prepend_icon=icon,
                 multiple=not load_directory,
@@ -87,3 +107,18 @@ class LoadVolumeButton(FlexContainer):
                 raw_attrs=["webkitdirectory"] if load_directory else [],
             )
             VProgressCircular(v_else=True, indeterminate=True, size=24)
+
+    async def load_chunk(self, files: list[dict]) -> None:
+        if files:
+            self.files.extend(files)
+        elif self.files:
+            # Empty sent files list marks end of upload
+            # Emit on_load_volume if any file has been loaded
+            await self.on_load_volume.async_emit(self.files)
+            self.files = []
+
+    def on_load_end(self, type: str, error_message: str) -> None:
+        if type == "success":
+            logging.info("Succeeded to load files")
+        else:
+            logging.error("Failed to load files: %s", error_message)
