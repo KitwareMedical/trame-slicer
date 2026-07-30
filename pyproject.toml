@@ -15,6 +15,7 @@ dependencies = [
     "trame-vuetify",
     "trame-vtk",
     "trame-rca >= 2.2.1",
+    "trame-alerts",
     "itk",
     "lxml",
     "pydicom",

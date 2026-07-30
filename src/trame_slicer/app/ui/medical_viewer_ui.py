@@ -1,3 +1,4 @@
+from trame.widgets import alerts, alerts_vuetify
 from trame.widgets.vuetify3 import Template
 from trame_server import Server
 
@@ -22,7 +23,13 @@ from .volume_property_ui import VolumePropertyUI
 class MedicalViewerUI:
     def __init__(self, server: Server, layout_manager: LayoutManager):
         self.tool_registry = {}
+        alerts_provider = alerts.AlertsProvider(trame_server=server)
+        server.controller.create_warning_alert = alerts_provider.create_warning_alert
+        server.controller.create_error_alert = alerts_provider.create_error_alert
+        server.controller.create_info_alert = alerts_provider.create_info_alert
+        server.controller.create_success_alert = alerts_provider.create_success_alert
         with ViewerLayout(server) as self.layout:
+            self.layout.root = alerts_provider
             self.layout.title.set_text("Medical Viewer")
             with self.layout.appbar, Template(v_slot_prepend=True):
                 self.load_volume_items_buttons = LoadVolumeUI()
@@ -53,6 +60,10 @@ class MedicalViewerUI:
 
             with self.layout.content:
                 layout_manager.initialize_layout_grid(self.layout)
+
+            alerts_vuetify.AlertsPopup(
+                style="margin-bottom:20px; transform: none; left: auto; right: 0; max-width: 25rem;"
+            )
 
     @property
     def data(self):
