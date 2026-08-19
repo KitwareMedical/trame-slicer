@@ -134,8 +134,7 @@ class RcaWindow(VtkWindow):
         scalars = self.image_data.GetPointData().GetScalars()
         np_image = vtk_to_numpy(scalars)
         np_image = np_image.reshape((cols, rows, -1))
-        np_image[:] = np_image[::-1, :, :]
-        return np_image, cols, rows
+        return np_image[::-1, :, :].copy(), cols, rows
 
 
 class RemoteViewFactory(IViewFactory):

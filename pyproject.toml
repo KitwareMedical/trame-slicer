@@ -56,12 +56,14 @@ dev = [
     "pixelmatch",
     "pytest",
     "pytest-asyncio",
+    "pytest-benchmark",
     "pytest-cov",
     "pytest-playwright",
     "pytest-repeat",
     "pytest-xdist",
     "pytest-xprocess",
     "trame-plotly",
+    "yappi",
 ]
 docs = [
     "sphinx>=8,<9",

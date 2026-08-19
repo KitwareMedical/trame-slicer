@@ -29,8 +29,6 @@ from trame_slicer.views import (
 )
 from trame_slicer.views.view_factory import V
 
-polar_data = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/polar_dataset.csv")
-
 
 @dataclass
 class PlotlyView(Generic[AbstractViewChild]):
@@ -42,6 +40,8 @@ class CustomViews(Enum):
 
 
 def create_polar_fig(width=300, height=300, **_):
+    polar_data = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/polar_dataset.csv")
+
     fig = go.Figure()
     fig.add_trace(
         go.Scatterpolar(
