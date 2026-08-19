@@ -1,0 +1,3 @@
+trame>=3.12
+trame-slicer[standalone] >= 1.11.0
+trame-vuetify
