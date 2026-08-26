@@ -57,15 +57,68 @@ python -m trame_slicer.app.medical_viewer_app
 
 The following subset of 3D Slicer features are currently supported :
 
-- (limited) file loading
-- Volume files (DCM, NRRD, NIFTI, \...)
-- Model files (STL, OBJ)
-- MRML / MRB files
-- Segmentations (NRRD, NIFTI, \...)
-- **Display**
-  - 2D/3D with 3D Slicer UI manipulation
-  - Volume Rendering preset / shift
-- Bare bone access to 3D Slicer MRML scene and Core logic components
+### Views
+
+- 3D view
+  - Volume rendering
+  - Color presets / shift
+- 2D/slice view
+  - Scroll/Zoom/Pan
+  - Window Leveling (W/L)
+  - Multiplanar Reformation (MPR)
+  - Slice/slab thickness (MIP, MinIP, AvergageIP)
+- Any other view types (e.g. plotly)
+
+### Layouts
+
+- Conventional, four-up, side-by-side
+- Fullscreen mode
+- Custom layouts
+
+### I/O
+
+- DICOM
+  - MRI, CT, US, XR, PET, DWI…
+- Scalar volumes
+  - NRRD, NII, TIFF, HDR, IMG, MHA…
+- Segmentation
+  - SEG.NRRD, NRRD, SEG.NHDR, NHDR, NII, NII.GZ, HDR…
+- Models/Meshes
+  - OBJ, STL, VTK, VTP…
+- 3D Slicer scene
+  - MRML, MRB
+
+### Segmentation tools
+
+<p align="center">
+    <img src="docs/assets/segmentation-effects.png" alt="Segmentation effects" width="300">
+</p>
+
+- Paint: free-hand brush, 2D or 3D, varying radius
+- Erase: invert paint
+- Scissors: 2D or 3D sculpting
+- Draw: fill the area of a drawn contour
+- LogicalOperators: binary combination of segments
+- Threshold: create segment based on intensity values
+- Islands: keep largest, smallest… connected-components
+- Smoothing: apply gaussian blur on existing segments
+- Volume Intensity Masking: define a ROI with threshold where other segmentation
+  tools work into
+- Undo/Redo
+
+### Markups
+
+<p align="center">
+    <img src="docs/assets/markups.png" alt="Description" width="300">
+</p>
+
+- Fiducials/points
+- Ruler/lines
+- Angle
+- Open curve/spline
+- Close curve
+- Plane
+- ROI/box
 
 ## Work in progress
 
