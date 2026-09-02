@@ -3,7 +3,6 @@ const EXIT_FAILURE = false;
 
 export async function load_files_by_chunks(files, inputs) {
   const trigger_name = inputs.trigger_name;
-  const files_array = Array.from(files);
   if (files === undefined) {
     return {
       status: EXIT_FAILURE,
@@ -27,6 +26,9 @@ export async function load_files_by_chunks(files, inputs) {
         chunk = null;
         size = 0;
       }
+    }
+    if (chunk !== null) {
+      await trame.trigger(trigger_name, [chunk.files]);
     }
   } catch (error) {
     errorMsg = error.toLocaleString();
