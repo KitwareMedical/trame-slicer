@@ -2,6 +2,86 @@
 
 <!-- version list -->
 
+## v1.12.0 (2026-09-02)
+
+### Bug Fixes
+
+- Do not pass state var as trigger arguments
+  ([`38ee532`](https://github.com/KitwareMedical/trame-slicer/commit/38ee53274192fc5e93d983b34dcd7793acc8afa6))
+
+- Expose missing classes
+  ([`6c2433e`](https://github.com/KitwareMedical/trame-slicer/commit/6c2433e17b4e9834355ae198737b2c03a3c20881))
+
+- **app**: Fix file chunking
+  ([`8da763c`](https://github.com/KitwareMedical/trame-slicer/commit/8da763c3294b35e725d1b3c9e3a28d4b9dbfdb82))
+
+- **brush**: Refresh brush parameters only when needed
+  ([`660e68d`](https://github.com/KitwareMedical/trame-slicer/commit/660e68da40b6c081ee11321ff09b561756183795))
+
+- **mpr**: Fix occasional mpr handles occulting
+  ([`4938ea5`](https://github.com/KitwareMedical/trame-slicer/commit/4938ea5f8f68f04b9865e39050591d26ea67708b))
+
+- **seg**: Prevent occasional layer offset issues when using the brush tool
+  ([`87556e4`](https://github.com/KitwareMedical/trame-slicer/commit/87556e49ff683a1e5f190066b520c001c40c6771))
+
+- **slice_view**: Fix slice view synchronization logic
+  ([`a869951`](https://github.com/KitwareMedical/trame-slicer/commit/a8699517a43852fd44593f651611d761b98f39f9))
+
+- **ui**: Make load volume buttons customizable
+  ([`1b414d8`](https://github.com/KitwareMedical/trame-slicer/commit/1b414d80ad5b4cf954194227482ea1bfef6b6826))
+
+- **volume intensity range mask**: Better ui and disable settings when mask is disabled
+  ([`75b82ee`](https://github.com/KitwareMedical/trame-slicer/commit/75b82ee0f11e703bf9ca8382f7d936aa24a2b00b))
+
+- **volumes_reader**: Fix loading of non regular DICOM
+  ([`0eaf56f`](https://github.com/KitwareMedical/trame-slicer/commit/0eaf56f092a69b8f1d50889e8116a2d9196e64ca))
+
+### Chores
+
+- **deps**: Bump actions/checkout from 6 to 7 in the actions group
+  ([`656837b`](https://github.com/KitwareMedical/trame-slicer/commit/656837badcc033fd82727d793587010f09f73d36))
+
+- **deps**: Bump actions/setup-python from 6 to 7 in the actions group
+  ([`33608b0`](https://github.com/KitwareMedical/trame-slicer/commit/33608b05851389cb86b6bd44769fa60db052f3ef))
+
+- **deps**: Bump codecov/codecov-action in the actions group
+  ([`fd04889`](https://github.com/KitwareMedical/trame-slicer/commit/fd048899d1fc9be8f2adef55d3a9c4eed841a9d3))
+
+- **deps**: Bump python-semantic-release/python-semantic-release
+  ([`7cdc89e`](https://github.com/KitwareMedical/trame-slicer/commit/7cdc89efcaa82d43bfe0ab2ec1754728fb0345d7))
+
+### Code Style
+
+- Remove useless scrollbar
+  ([`96722f1`](https://github.com/KitwareMedical/trame-slicer/commit/96722f1ca9e1c02f6c55762cd2bbcdc1365c4c5e))
+
+### Continuous Integration
+
+- Add dependabot file
+  ([`086fef2`](https://github.com/KitwareMedical/trame-slicer/commit/086fef238d197e916ecc56fb7ea3b66017933b7a))
+
+### Documentation
+
+- Add a Dockerfile
+  ([`c2e3640`](https://github.com/KitwareMedical/trame-slicer/commit/c2e3640f0a4e6cd77fe08cf46861dec8329e07a7))
+
+- **README**: Update features section
+  ([`6f00f7d`](https://github.com/KitwareMedical/trame-slicer/commit/6f00f7da484a3f9f01e58ae7a646a13ef239648e))
+
+### Features
+
+- Load files in chunks
+  ([`456c32b`](https://github.com/KitwareMedical/trame-slicer/commit/456c32ba6fb338feee0b36f38beebf622bef9840))
+
+- **trame-rca**: Update to vtk-streaming
+  ([`f5d6dc9`](https://github.com/KitwareMedical/trame-slicer/commit/f5d6dc94346dd18c3f55a11d4b07c66b72f742a2))
+
+### Testing
+
+- Investigate performances
+  ([`9974e56`](https://github.com/KitwareMedical/trame-slicer/commit/9974e56c0917886f88c531f8b71c91975dacae7a))
+
+
 ## v1.11.0 (2026-05-21)
 
 ### Bug Fixes
