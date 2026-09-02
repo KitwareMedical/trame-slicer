@@ -1,3 +1,4 @@
+import logging
 from itertools import chain
 from pathlib import Path
 
@@ -51,11 +52,26 @@ def test_an_io_manager_can_load_a_volume_in_dcm_format(
     an_io_manager,
     a_slicer_app,
     mr_head_dcm_volume_file_paths,
+    caplog,
 ):
-    volumes = an_io_manager.load_volumes([p.as_posix() for p in mr_head_dcm_volume_file_paths])
+    with caplog.at_level(logging.WARNING):
+        volumes = an_io_manager.load_volumes([p.as_posix() for p in mr_head_dcm_volume_file_paths])
+
+    assert "Irregular DICOM volume geometry" not in caplog.text
     assert volumes
     assert isinstance(volumes[0], vtkMRMLVolumeNode)
     assert a_slicer_app.scene.GetNodeByID(volumes[0].GetID()) is not None
+
+
+def test_an_io_manager_regularizes_non_uniform_dicom_spacing(an_io_manager, a_data_folder, caplog):
+    dicom_folder = a_data_folder / "non_linear_dcm"
+    volume_files = [path.as_posix() for path in dicom_folder.glob("*.dcm")]
+    with caplog.at_level(logging.WARNING):
+        volumes = an_io_manager.load_volumes(volume_files)
+
+    assert volumes
+    assert volumes[0].GetParentTransformNode() is None
+    assert "Irregular DICOM volume geometry" in caplog.text
 
 
 def test_can_split_multiple_dcm_volumes(

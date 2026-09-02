@@ -75,7 +75,7 @@ docs = [
     "vtk==9.6.0",
 ]
 standalone = [
-    "slicer-core>=5.11.0",
+    "slicer-core>=5.11.0.6",
     "slicer-layer-dm>=1.2.0"
 ]
 

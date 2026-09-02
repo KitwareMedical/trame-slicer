@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections import defaultdict
 from functools import lru_cache
 from pathlib import Path
@@ -14,9 +15,12 @@ from slicer import (
     vtkMRMLScene,
     vtkMRMLVolumeArchetypeStorageNode,
     vtkMRMLVolumeNode,
+    vtkOrientedGridTransform,
     vtkSlicerVolumesLogic,
 )
-from vtkmodules.vtkCommonCore import vtkStringArray
+from vtkmodules.vtkCommonCore import VTK_DOUBLE, vtkStringArray
+from vtkmodules.vtkCommonDataModel import vtkImageData
+from vtkmodules.vtkCommonMath import vtkMatrix4x4
 from vtkmodules.vtkCommonMisc import vtkErrorCode
 from vtkmodules.vtkImagingCore import vtkImageChangeInformation
 
@@ -65,6 +69,8 @@ class VolumesReader:
 
     _dcm_io_backend = Literal["GDCM", "DCMTK"]
     dcm_read_lru_cache_size = 5000
+    dcm_spacing_epsilon = 1e-2
+    acquisition_corner_epsilon = 1e-3
 
     @classmethod
     def load_volumes(
@@ -248,8 +254,17 @@ class VolumesReader:
 
         for backend in get_args(VolumesReader._dcm_io_backend):
             volume = cls._load_dcm_volume_with_backend(scene, volume_files, name, backend, is_gray_scale)
-            if volume is not None:
-                return volume
+            if volume is None:
+                continue
+
+            ijk_to_ras = vtkMatrix4x4()
+            volume.GetIJKToRASMatrix(ijk_to_ras)
+            if not vtkMRMLVolumeNode.IsIJKCoordinateSystemRightHanded(ijk_to_ras):
+                vtkMRMLVolumeNode.ReverseSliceOrder(volume.GetImageData(), ijk_to_ras)
+                volume.SetIJKToRASMatrix(ijk_to_ras)
+                volume_files = list(reversed(volume_files))
+            cls._apply_acquisition_transform(volume, volume_files)
+            return volume
         return None
 
     @classmethod
@@ -324,6 +339,90 @@ class VolumesReader:
         volume_node.SetRASToIJKMatrix(reader.GetRasToIjkMatrix())
         volume_node.CreateDefaultDisplayNodes()
         return volume_node
+
+    @classmethod
+    def _apply_acquisition_transform(cls, volume_node: vtkMRMLVolumeNode, volume_files: list[str]) -> None:
+        """Regularizes the input volume node if its DICOM slice geometry is not rectilinear."""
+        source_corners = cls._slice_corners_from_ijk_to_ras(volume_node)
+        target_corners = cls._slice_corners_from_dicom(volume_node, volume_files)
+        if source_corners is None or target_corners is None:
+            return
+
+        max_error = float(np.max(np.abs(source_corners - target_corners)))
+        if max_error <= cls.acquisition_corner_epsilon:
+            return
+
+        _warn_msg = (
+            f"Irregular DICOM volume geometry detected (maximum error of {max_error:g} mm).\n"
+            "Applying a transform regularization to the input volume."
+        )
+        logging.warning(_warn_msg)
+
+        columns, rows, slices = volume_node.GetImageData().GetDimensions()
+        grid_image = vtkImageData()
+        grid_image.SetOrigin(*volume_node.GetOrigin())
+        grid_image.SetDimensions(2, 2, slices)
+        source_spacing = volume_node.GetSpacing()
+        grid_image.SetSpacing(source_spacing[0] * columns, source_spacing[1] * rows, source_spacing[2])
+        grid_image.AllocateScalars(VTK_DOUBLE, 3)
+        transform = vtkOrientedGridTransform()
+        direction_matrix = vtkMatrix4x4()
+        volume_node.GetIJKToRASDirectionMatrix(direction_matrix)
+        transform.SetGridDirectionMatrix(direction_matrix)
+        transform.SetDisplacementGridData(grid_image)
+
+        # Due to a bug present in slicer-core 5.11.0.x (git rev 55f38b57fc9d9a80da0fce51aa12d82064c101cc) apply the
+        # transform directly instead of just creating and attaching a transform node to the volume.
+        scalars = grid_image.GetPointData().GetScalars()
+        for slice_index in range(slices):
+            for row in range(2):
+                for column in range(2):
+                    displacement = target_corners[slice_index, row, column] - source_corners[slice_index, row, column]
+                    point_id = grid_image.ComputePointId((column, row, slice_index))
+                    scalars.SetTuple3(point_id, *displacement)
+        scalars.Modified()
+        volume_node.ApplyTransform(transform)
+
+    @classmethod
+    def _slice_corners_from_ijk_to_ras(cls, volume_node: vtkMRMLVolumeNode) -> np.ndarray:
+        matrix = vtkMatrix4x4()
+        volume_node.GetIJKToRASMatrix(matrix)
+        columns, rows, slices = volume_node.GetImageData().GetDimensions()
+        corners = np.zeros((slices, 2, 2, 3))
+        for slice_index in range(slices):
+            for row in range(2):
+                for column in range(2):
+                    point = matrix.MultiplyPoint((column * columns, row * rows, slice_index, 1))
+                    corners[slice_index, row, column] = point[:3]
+        return corners
+
+    @classmethod
+    def _slice_corners_from_dicom(cls, volume_node, volume_files: list[str]) -> np.ndarray | None:
+        columns, rows, slices = volume_node.GetImageData().GetDimensions()
+        if len(volume_files) != slices:
+            _warn_msg = f"Cannot get DICOM slice positions for volume {volume_node.GetName()}"
+            logging.warning(_warn_msg)
+            return None
+
+        corners = np.zeros((slices, 2, 2, 3))
+        for slice_index, file_name in enumerate(volume_files):
+            dcm = cls._dcm_read_file(file_name)
+            position = dcm.get(_DCMTag.position)
+            orientation = dcm.get(_DCMTag.orientation)
+            pixel_spacing = dcm.get((0x0028, 0x0030))
+            if position is None or orientation is None or pixel_spacing is None:
+                _warn_msg = "No geometry information available for DICOM data, skipping corner calculations"
+                logging.warning(_warn_msg)
+                return None
+
+            position = np.asarray([float(value) for value in position.value]) * (-1, -1, 1)
+            orientation = np.asarray([float(value) for value in orientation.value]).reshape(2, 3) * (-1, -1, 1)
+            row_vector = columns * float(pixel_spacing.value[1]) * orientation[0]
+            column_vector = rows * float(pixel_spacing.value[0]) * orientation[1]
+            for column in range(2):
+                for row in range(2):
+                    corners[slice_index, row, column] = position + column * row_vector + row * column_vector
+        return corners
 
     @classmethod
     def _clean_name(cls, value: str) -> str:
