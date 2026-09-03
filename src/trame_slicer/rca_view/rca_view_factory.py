@@ -214,7 +214,7 @@ class RemoteViewFactory(IViewFactory):
             slicer_view.render_window(), state=self._server.state, active_view_cursor=active_view_cursor
         )
 
-        if self._rca_encoder in RcaImageEncoder:
+        if self._is_rca_image_encoder(self._rca_encoder):
             rca_scheduler = RcaImageRenderScheduler(
                 window=rca_window,
                 interactive_quality=self._interactive_quality,
@@ -246,6 +246,14 @@ class RemoteViewFactory(IViewFactory):
 
         create_task(init_rca())
         return RcaView(vuetify_view, slicer_view, rca_view_adapter)
+
+    @classmethod
+    def _is_rca_image_encoder(cls, rca_encoder):
+        try:
+            RcaImageEncoder(rca_encoder)
+            return True
+        except ValueError:
+            return False
 
     def _create_vuetify_ui(
         self,
