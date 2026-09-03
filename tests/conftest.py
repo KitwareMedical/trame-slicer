@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import socket
 import uuid
 from pathlib import Path
@@ -21,6 +22,21 @@ from trame_slicer.views import (
     ViewProps,
     ViewType,
 )
+
+
+@pytest.fixture(autouse=True)
+def sync_test_event_loop(request):
+    if inspect.iscoroutinefunction(request.node.obj):
+        yield
+        return
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        yield loop
+    finally:
+        asyncio.set_event_loop(None)
+        loop.close()
 
 
 @pytest.fixture
@@ -235,11 +251,8 @@ def a_server_port():
 
 
 @pytest.fixture
-def a_server(render_interactive):
-    try:
-        asyncio.get_running_loop()
-    except RuntimeError:
-        asyncio.set_event_loop(asyncio.new_event_loop())
+def a_server(render_interactive, sync_test_event_loop):
+    assert sync_test_event_loop
 
     # Create a server with a unique ID to be sure that the created server is different for each run
     server = get_server(f"test_server_{uuid.uuid4()}", client_type="vue3")
