@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.12.2 (2026-09-03)
+
+### Bug Fixes
+
+- **rca_view_factory**: Fix rca encoder detection
+  ([`bd67431`](https://github.com/KitwareMedical/trame-slicer/commit/bd674312ad8cf2b39cb28fd2b32a6e094dd11e75))
+
+
 ## v1.12.1 (2026-09-03)
 
 ### Bug Fixes
