@@ -130,6 +130,11 @@ def mr_head_dcm_volume_file_paths(a_data_folder) -> list[Path]:
 
 
 @pytest.fixture
+def ill_formed_mr_head_dcm_volume_file_paths(a_data_folder) -> list[Path]:
+    return list(a_data_folder.joinpath("mr_head_ill_formed_dcm").glob("*.dcm"))
+
+
+@pytest.fixture
 def a_model_file_path(a_data_folder) -> Path:
     return a_data_folder.joinpath("model.stl")
 

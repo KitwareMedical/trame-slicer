@@ -116,10 +116,10 @@ class VolumesReader:
     @classmethod
     def is_dcm_file(cls, file_name: str) -> bool:
         try:
-            dcmread(file_name, stop_before_pixels=True)
-            return True
+            dataset = dcmread(file_name, stop_before_pixels=True, force=True)
         except InvalidDicomError:
             return False
+        return dataset.get(_DCMTag.sopClassUID) is not None
 
     @classmethod
     def _is_grayscale(cls, volume_files: list[str]) -> bool:
@@ -236,7 +236,7 @@ class VolumesReader:
 
     @classmethod
     def _has_pixel_data(cls, volume_file: str) -> bool:
-        dcm = dcmread(volume_file)
+        dcm = dcmread(volume_file, force=True)
         return bool(dcm.get(_DCMTag.pixelData))
 
     @classmethod
@@ -441,7 +441,7 @@ class VolumesReader:
     @classmethod
     @lru_cache(dcm_read_lru_cache_size)
     def _dcm_read_file(cls, dcm_file):
-        return dcmread(dcm_file, stop_before_pixels=True)
+        return dcmread(dcm_file, stop_before_pixels=True, force=True)
 
     @classmethod
     @lru_cache(dcm_read_lru_cache_size)

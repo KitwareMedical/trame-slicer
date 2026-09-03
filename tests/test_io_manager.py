@@ -74,6 +74,21 @@ def test_an_io_manager_regularizes_non_uniform_dicom_spacing(an_io_manager, a_da
     assert "Irregular DICOM volume geometry" in caplog.text
 
 
+def test_an_io_manager_can_load_an_ill_formed_dcm_volume(
+    an_io_manager,
+    a_slicer_app,
+    ill_formed_mr_head_dcm_volume_file_paths,
+):
+    volume_files = [p.as_posix() for p in ill_formed_mr_head_dcm_volume_file_paths]
+
+    volumes = an_io_manager.load_volumes(volume_files)
+
+    assert len(volumes) == 1
+    assert isinstance(volumes[0], vtkMRMLVolumeNode)
+    assert volumes[0].GetImageData().GetDimensions() == (256, 256, 3)
+    assert a_slicer_app.scene.GetNodeByID(volumes[0].GetID()) is not None
+
+
 def test_can_split_multiple_dcm_volumes(
     ct_chest_dcm_volume_file_paths,
     mr_head_dcm_volume_file_paths,
@@ -256,3 +271,19 @@ def test_can_write_volume_files(a_slicer_app, a_volume_node, tmpdir):
     out_path = Path(tmpdir) / "out_file.nrrd"
     a_slicer_app.io_manager.write_volume(a_volume_node, out_path)
     assert out_path.is_file()
+
+
+@pytest.mark.parametrize(
+    ("file_path", "expected"),
+    [
+        ("ct_chest_dcm/IMG0001.dcm", True),
+        ("mr_head_ill_formed_dcm/IMG0001.dcm", True),
+        ("simple_volume.nii", False),
+        ("mr_head.nii.gz", False),
+        ("mr_head.nrrd", False),
+        ("model.stl", False),
+        ("markups_scene.mrb", False),
+    ],
+)
+def test_is_dcm_file(a_data_folder, file_path, expected):
+    assert VolumesReader.is_dcm_file(a_data_folder / file_path) == expected
