@@ -166,7 +166,8 @@ class RemoteViewFactory(IViewFactory):
         :param target_fps: Focused rendering speed.
         :param blur_fps: Out of focus rendering speed.
         :param interactive_quality: Interactive RCA image encoding quality.
-        :param rca_encoder: Encoder type to use for RCA encoding. When None, uses a video encoder.
+        :param rca_encoder: Encoder type to use for RCA encoding. When None, defaults to TurboJPEG. Values that are
+            not in the supported image encode list default to the auto video encoder.
         :param rca_event_throttle_s: Number of wait seconds in between two process events. (default = 10ms / 100FPS)
             The rca_event_throttle_s can be made reactive on a trame state to vary throttle depending on the application
             use case. For instance, for segmentation effects, the throttle should be 10ms but for interactions blocking
@@ -180,7 +181,7 @@ class RemoteViewFactory(IViewFactory):
         self._target_fps = target_fps or 30
         self._blur_fps = blur_fps
         self._interactive_quality = interactive_quality or 50
-        self._rca_encoder = rca_encoder
+        self._rca_encoder = rca_encoder or RcaImageEncoder.TURBO_JPEG
         self._populate_view_ui_f = populate_view_ui_f
         self._rca_event_throttle_s = rca_event_throttle_s if rca_event_throttle_s is not None else 0.01
 
@@ -213,7 +214,7 @@ class RemoteViewFactory(IViewFactory):
             slicer_view.render_window(), state=self._server.state, active_view_cursor=active_view_cursor
         )
 
-        if self._rca_encoder is not None:
+        if self._rca_encoder in RcaImageEncoder:
             rca_scheduler = RcaImageRenderScheduler(
                 window=rca_window,
                 interactive_quality=self._interactive_quality,
