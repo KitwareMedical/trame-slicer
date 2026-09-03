@@ -1,4 +1,5 @@
 import pytest
+from trame_rca.encoders import RcaImageEncoder
 
 from trame_slicer.core import DisplayManager
 from trame_slicer.rca_view.rca_view_factory import register_rca_factories
@@ -23,7 +24,7 @@ def view_def(group: int, i_view: int, view_type: ViewType):
     )
 
 
-@pytest.fixture(params=["jpeg", None])
+@pytest.fixture(params=["jpeg", "video", RcaImageEncoder.JPEG, None])
 def a_slicer_app_with_two_groups(a_slicer_app, a_server, request):
     register_rca_factories(a_slicer_app.view_manager, a_server, rca_encoder=request.param)
 
