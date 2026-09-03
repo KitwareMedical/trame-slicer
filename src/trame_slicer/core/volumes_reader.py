@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from collections import defaultdict
 from functools import lru_cache
+from itertools import pairwise
 from pathlib import Path
 from typing import Literal, get_args
 
@@ -116,10 +117,10 @@ class VolumesReader:
     @classmethod
     def is_dcm_file(cls, file_name: str) -> bool:
         try:
-            dcmread(file_name, stop_before_pixels=True)
-            return True
+            dataset = dcmread(file_name, stop_before_pixels=True, force=True)
         except InvalidDicomError:
             return False
+        return dataset.get(_DCMTag.sopClassUID) is not None
 
     @classmethod
     def _is_grayscale(cls, volume_files: list[str]) -> bool:
@@ -236,7 +237,7 @@ class VolumesReader:
 
     @classmethod
     def _has_pixel_data(cls, volume_file: str) -> bool:
-        dcm = dcmread(volume_file)
+        dcm = dcmread(volume_file, force=True)
         return bool(dcm.get(_DCMTag.pixelData))
 
     @classmethod
@@ -441,7 +442,7 @@ class VolumesReader:
     @classmethod
     @lru_cache(dcm_read_lru_cache_size)
     def _dcm_read_file(cls, dcm_file):
-        return dcmread(dcm_file, stop_before_pixels=True)
+        return dcmread(dcm_file, stop_before_pixels=True, force=True)
 
     @classmethod
     @lru_cache(dcm_read_lru_cache_size)
@@ -497,3 +498,42 @@ class VolumesReader:
             sort_list.append((file, dist))
 
         return [file for file, dist in sorted(sort_list, key=lambda x: x[1])]
+
+    @classmethod
+    def get_dicom_volume_slice_spacing(cls, volume_files: list[str]) -> list[float]:
+        """
+        Compute unique adjacent slice spacings.
+
+        Adapted from : Modules/Scripted/DICOMLib/DICOMUtils.py::getSortedImageFiles
+        """
+        files = cls._get_sorted_image_files(volume_files)
+        if len(files) < 2:
+            return []
+
+        orientation = cls._dcm_read_tag(files[0], _DCMTag.orientation)
+        position = cls._dcm_read_tag(files[0], _DCMTag.position)
+        if not orientation or not position:
+            return []
+
+        orientation_values = np.asarray([float(value) for value in orientation.split("\\")])
+        slice_normal = np.cross(orientation_values[:3], orientation_values[3:])
+        scan_origin = np.asarray([float(value) for value in position.split("\\")])
+        distances = []
+        for file in files:
+            orientation = cls._dcm_read_tag(file, _DCMTag.orientation)
+            position = cls._dcm_read_tag(file, _DCMTag.position)
+            if not orientation or not position:
+                return []
+            slice_position = np.asarray([float(value) for value in position.split("\\")])
+            distances.append(float(np.dot(slice_position - scan_origin, slice_normal)))
+
+        spacings = []
+        for previous, current in pairwise(distances):
+            spacing = current - previous
+            is_known_spacing = any(
+                np.isclose(spacing, known_spacing, rtol=0.0, atol=cls.dcm_spacing_epsilon) for known_spacing in spacings
+            )
+            if not is_known_spacing:
+                spacings.append(spacing)
+
+        return spacings
