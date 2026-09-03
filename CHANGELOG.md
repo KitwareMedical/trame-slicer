@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.12.1 (2026-09-03)
+
+### Bug Fixes
+
+- **rca_view_factory**: Restore default turbo jpeg encoder
+  ([`1b9091f`](https://github.com/KitwareMedical/trame-slicer/commit/1b9091f4dc5cbe13f0ad3c63f5e6af85450ebf0e))
+
+### Chores
+
+- **deps**: Bump python-semantic-release/python-semantic-release
+  ([`5ecd5f9`](https://github.com/KitwareMedical/trame-slicer/commit/5ecd5f91a0a274029ca0c62bf74bc4d904c0fabf))
+
+
 ## v1.12.0 (2026-09-02)
 
 ### Bug Fixes
