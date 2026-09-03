@@ -74,6 +74,19 @@ def test_an_io_manager_regularizes_non_uniform_dicom_spacing(an_io_manager, a_da
     assert "Irregular DICOM volume geometry" in caplog.text
 
 
+@pytest.mark.parametrize(
+    ("volume_folder", "expected_spacing"),
+    [
+        ("non_linear_dcm", [1.3, 2.6]),
+        ("mr_head_dcm", [1.3]),
+    ],
+)
+def test_volumes_reader_allows_to_get_dicom_volume_slice_spacing(a_data_folder, volume_folder, expected_spacing):
+    volume_files = [path.as_posix() for path in (a_data_folder / volume_folder).glob("*.dcm")]
+
+    assert VolumesReader.get_dicom_volume_slice_spacing(volume_files) == pytest.approx(expected_spacing)
+
+
 def test_an_io_manager_can_load_an_ill_formed_dcm_volume(
     an_io_manager,
     a_slicer_app,
