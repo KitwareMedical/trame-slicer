@@ -2,6 +2,22 @@
 
 <!-- version list -->
 
+## v1.12.3 (2026-09-03)
+
+### Bug Fixes
+
+- **volumes_reader**: Add method to check DCM spacing
+  ([`93786d2`](https://github.com/KitwareMedical/trame-slicer/commit/93786d2c9a33dbf34c37d488dacb9288869b5109))
+
+- **volumes_reader**: Allow reading ill formed DCM
+  ([`0c200cf`](https://github.com/KitwareMedical/trame-slicer/commit/0c200cfeee30015f4a79721a5c9ac934c2b8b29c))
+
+### Testing
+
+- Fix occasional sync test failures
+  ([`0f3d956`](https://github.com/KitwareMedical/trame-slicer/commit/0f3d9562413f94ddce59c2a341055d8d76fc1705))
+
+
 ## v1.12.2 (2026-09-03)
 
 ### Bug Fixes
