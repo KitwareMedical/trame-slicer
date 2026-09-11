@@ -1,0 +1,8 @@
+NAME
+  Slicer::ModelGlowModuleMRMLExport
+LIBRARY_NAME
+  vtkSlicerModelGlowModuleMRML
+DEPENDS
+  SlicerLayerDM::MRMLDisplayableManager
+DESCRIPTION
+  "vtkCustomMRMLLayerDMPipeline"

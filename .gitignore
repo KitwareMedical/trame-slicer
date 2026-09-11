@@ -1,6 +1,7 @@
 .DS_Store
 node_modules
 .venv
+venv*
 
 # local env files
 .env.local
@@ -28,3 +29,6 @@ __pycache__
 
 coverage.*
 /.coverage
+
+/examples/Cpp/ModelGlowDM/glow_layer_dm/build
+/examples/Cpp/ModelGlowDM/glow_layer_dm/wheel
