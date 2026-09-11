@@ -48,7 +48,7 @@ def editor_logic(a_server, a_slicer_app, editor_ui, an_active_segmentation, a_se
         SegmentationEffectPaint.get_effect_name(),
     ],
 )
-def test_can_be_displayed(a_server, a_server_port, active_effect_name, editor_state, editor_ui):
+def test_can_be_displayed(a_server, unused_tcp_port, active_effect_name, editor_state, editor_ui):
     assert editor_ui
     editor_state.data.segment_list.segments = [
         SegmentState(is_visible=True, name="heart", color="#FF0000", segment_id="1"),
@@ -56,7 +56,7 @@ def test_can_be_displayed(a_server, a_server_port, active_effect_name, editor_st
     ]
     editor_state.data.segment_list.active_segment_id = "2"
     editor_state.data.active_effect_name = active_effect_name
-    a_server.start(port=a_server_port)
+    a_server.start(port=unused_tcp_port)
 
 
 def test_can_undo_redo(a_segmentation_editor, a_state, editor_logic, editor_state, editor_ui):

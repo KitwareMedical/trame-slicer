@@ -4,9 +4,9 @@ from async_timeout import timeout
 from playwright.async_api import async_playwright
 
 
-async def smoke_test_trame_app(async_server, a_server_port, app_cls):
+async def smoke_test_trame_app(async_server, unused_tcp_port, app_cls):
     app_cls(async_server)
-    async_server.start(port=a_server_port, thread=True, exec_mode="task")
+    async_server.start(port=unused_tcp_port, exec_mode="task")
 
     async with timeout(30), async_playwright() as p:
         assert await async_server.ready

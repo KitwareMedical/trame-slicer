@@ -17,9 +17,9 @@ def effect_logic(a_server, a_slicer_app, effect_ui):
     return logic
 
 
-def test_can_be_displayed(a_server, a_server_port, effect_ui):
+def test_can_be_displayed(a_server, unused_tcp_port, effect_ui):
     assert effect_ui
-    a_server.start(port=a_server_port)
+    a_server.start(port=unused_tcp_port)
 
 
 def test_can_apply_threshold(effect_logic, effect_ui, a_segmentation_editor, a_segment_id):

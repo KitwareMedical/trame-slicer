@@ -3,11 +3,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum, auto
 from itertools import chain
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from trame.widgets import client, html
+from trame_server import Server
 
 from .view_layout_definition import ViewLayoutDefinition
+
+if TYPE_CHECKING:
+    from trame_client.widgets.adapter import ClientAdapter
 
 
 class LayoutDirection(Enum):
@@ -53,38 +57,53 @@ class LayoutGrid(html.Div):
         layout_items: list[Layout | View],
         layout_direction: LayoutDirection,
         layout_flex_sizes: list[str] | None = None,
+        server: Server | None = None,
     ):
-        layout_class = "flex-row" if layout_direction == LayoutDirection.Horizontal else "flex-column"
-        super().__init__(
-            classes=f"layout-grid-container d-flex {layout_class}",
-            style="flex: 1;",
-        )
-        self._build_ui(layout_items, layout_flex_sizes)
+        from trame_client.widgets.adapter import ClientAdapter
 
-    def _build_ui(self, layout_items, layout_flex_sizes):
+        adapter = ClientAdapter(server)
+        direction = "row" if layout_direction == LayoutDirection.Horizontal else "column"
+        super().__init__(
+            classes="layout-grid-container",
+            style=adapter.style({"display": "flex", "flex-direction": direction, "flex": "1"}),
+        )
+        self._build_ui(layout_items, layout_flex_sizes, adapter)
+
+    def _build_ui(self, layout_items, layout_flex_sizes, adapter: ClientAdapter):
         with self:
             for i_item, item in enumerate(layout_items):
                 flex_size = (
                     f"{layout_flex_sizes[i_item]}" if layout_flex_sizes and len(layout_flex_sizes) > i_item else "1"
                 )
 
-                with html.Div(classes="d-flex", style=f"flex: {flex_size};"):
+                with html.Div(style=adapter.style({"display": "flex", "flex": flex_size})):
                     if isinstance(item, Layout):
-                        LayoutGrid(item.items, item.direction, item.flex_sizes)
+                        LayoutGrid(item.items, item.direction, item.flex_sizes, server=adapter.server)
                     else:
                         with html.Div(
                             classes="layout-grid-item",
-                            style="display: flex; flex: 1; border: 1px solid #222;",
+                            style=adapter.style({"display": "flex", "flex": "1", "border": "1px solid #222"}),
                         ):
                             client.ServerTemplate(name=self.server.translator.translate_key(item.singleton_tag))
 
     @classmethod
-    def create_root_grid_ui(cls, layout: Layout):
+    def create_root_grid_ui(cls, layout: Layout, server: Server | None = None):
+        from trame_client.widgets.adapter import ClientAdapter
+
+        adapter = ClientAdapter(server)
         with html.Div(
-            classes="d-flex flex-column flex-grow-1 fill-height",
-            style="background-color:black;",
+            classes="layout-grid-container",
+            style=adapter.style(
+                {
+                    "display": "flex",
+                    "flex-direction": "column",
+                    "flex-grow": "1",
+                    "height": "100%",
+                    "background-color": "black",
+                }
+            ),
         ):
-            cls(layout.items, layout.direction, layout.flex_sizes)
+            cls(layout.items, layout.direction, layout.flex_sizes, server=adapter.server)
 
 
 def pretty_xml(xml_str: str) -> str:

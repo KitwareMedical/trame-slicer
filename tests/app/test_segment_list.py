@@ -9,7 +9,7 @@ from trame_slicer.app.ui import (
 )
 
 
-def test_can_be_displayed(a_server, a_server_port):
+def test_can_be_displayed(a_server, unused_tcp_port):
     typed_state = TypedState(a_server.state, SegmentListState)
     typed_state.data.segments = [
         SegmentState(is_visible=True, name="heart", color="#FF0000", segment_id="1"),
@@ -24,4 +24,4 @@ def test_can_be_displayed(a_server, a_server_port):
         segment_list.delete_segment_clicked.connect(lambda *x: print("delete clicked:", *x))
         segment_list.select_segment_clicked.connect(lambda *x: print("select clicked:", *x))
 
-    a_server.start(port=a_server_port)
+    a_server.start(port=unused_tcp_port)

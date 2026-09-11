@@ -58,7 +58,7 @@ def run_slice_slider_benchmark(benchmark, port, benchmark_path):
 async def test_medical_viewer_slice_slider_benchmark(
     benchmark,
     async_server,
-    a_server_port,
+    unused_tcp_port,
     a_nrrd_volume_file_path,
     tmpdir,
     capsys,
@@ -66,7 +66,7 @@ async def test_medical_viewer_slice_slider_benchmark(
     app = MedicalViewerApp(async_server)
     app._logic._load_files_logic._on_load_volume_files([a_nrrd_volume_file_path.as_posix()])
     app._logic.layout_manager.set_layout("Quad View")
-    async_server.start(port=a_server_port, thread=True, exec_mode="task")
+    async_server.start(port=unused_tcp_port, exec_mode="task")
     await async_server.ready
 
     yappi_path = Path(tmpdir) / "slider_benchmark.ystat"

@@ -107,7 +107,7 @@ def test_view_manager_with_default_factories_created_nodes_are_added_to_slicer_s
     a_2d_view,
     a_3d_view,
     a_server,
-    a_server_port,
+    unused_tcp_port,
 ):
     a_view_manager.register_factory(RemoteSliceViewFactory(a_server))
     a_view_manager.register_factory(RemoteThreeDViewFactory(a_server))
@@ -122,10 +122,10 @@ def test_view_manager_with_default_factories_created_nodes_are_added_to_slicer_s
     threed_nodes: vtkCollection = a_slicer_app.scene.GetNodesByClass("vtkMRMLViewNode")
     assert threed_nodes.GetNumberOfItems() == 1
     assert threed_nodes.GetItemAsObject(0) == threed_view.get_view_node()
-    a_server.start(port=a_server_port)
+    a_server.start(port=unused_tcp_port)
 
 
-def test_view_manager_created_views_are_added_to_template(a_view_manager, a_3d_view, a_server, a_server_port):
+def test_view_manager_created_views_are_added_to_template(a_view_manager, a_3d_view, a_server, unused_tcp_port):
     a_view_manager.register_factory(RemoteThreeDViewFactory(a_server))
 
     view = a_view_manager.create_view(a_3d_view)
@@ -133,7 +133,7 @@ def test_view_manager_created_views_are_added_to_template(a_view_manager, a_3d_v
     with VAppLayout(a_server):
         client.ServerTemplate(name=a_3d_view.singleton_tag)
 
-    a_server.start(port=a_server_port)
+    a_server.start(port=unused_tcp_port)
 
 
 def test_a_2d_view_factory_creates_views_with_the_right_properties(
@@ -158,7 +158,7 @@ def test_2d_factory_views_have_sliders_and_reset_camera_connected_to_slicer(
     a_server,
     a_2d_view,
     a_volume_node,
-    a_server_port,
+    unused_tcp_port,
 ):
     factory = RemoteSliceViewFactory(a_server, populate_view_ui_f=create_vertical_slice_view_gutter_ui)
     a_view_manager.register_factory(factory)
@@ -188,17 +188,17 @@ def test_2d_factory_views_have_sliders_and_reset_camera_connected_to_slicer(
     view.set_slice_value(42)
     assert slider_state.data.value == 42.0
 
-    a_server.start(port=a_server_port)
+    a_server.start(port=unused_tcp_port)
 
 
-def test_3d_view_factory_has_reset_camera_button(a_view_manager, a_server, a_3d_view, a_server_port):
+def test_3d_view_factory_has_reset_camera_button(a_view_manager, a_server, a_3d_view, unused_tcp_port):
     factory = RemoteThreeDViewFactory(a_server, populate_view_ui_f=create_vertical_view_gutter_ui)
     a_view_manager.register_factory(factory)
     a_view_manager.create_view(a_3d_view)
     view = factory.get_factory_view(a_3d_view.singleton_tag)
     vuetify_view_str = str(view.vuetify_view)
     assert "VBtn" in vuetify_view_str
-    a_server.start(port=a_server_port)
+    a_server.start(port=unused_tcp_port)
 
 
 @pytest.mark.parametrize(
@@ -276,7 +276,7 @@ def test_view_manager_is_compatible_with_non_slicer_views(
     a_server,
     a_slicer_app,
     a_volume_node,
-    a_server_port,
+    unused_tcp_port,
 ):
     # Register view factories
     a_view_manager.register_factory(RemoteSliceViewFactory(a_server))
@@ -302,7 +302,7 @@ def test_view_manager_is_compatible_with_non_slicer_views(
     display_manager.show_volume(a_volume_node)
 
     # Start server
-    a_server.start(port=a_server_port)
+    a_server.start(port=unused_tcp_port)
 
 
 def test_get_view_is_compatible_with_view_node_instance(a_view_manager, a_server, a_2d_view):
