@@ -13,7 +13,6 @@ from slicer import vtkMRMLApplicationLogic, vtkMRMLScene
 from trame.app import TrameApp
 from trame.widgets import client, plotly
 from trame_client.widgets.core import AbstractElement
-from trame_client.widgets.trame import SizeObserver
 from trame_vuetify.ui.vuetify3 import SinglePageLayout
 
 from trame_slicer.core import LayoutManager, SlicerApp
@@ -107,7 +106,7 @@ class PlotlyViewFactory(IViewFactory):
 
             self._server.controller.update_polar(create_polar_fig(**polar_size.get("size")))
 
-        with ViewLayout(self._server, template_name=view_id) as vuetify_view, SizeObserver("polar_size"):
+        with ViewLayout(self._server, template_name=view_id) as vuetify_view, client.SizeObserver("polar_size"):
             self._server.controller.update_polar = plotly.Figure(
                 display_mode_bar=("false",),
             ).update
