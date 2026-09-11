@@ -1,5 +1,4 @@
 from trame.app import TrameApp
-
 from trame_slicer.app.logic import MedicalViewerLogic
 from trame_slicer.app.ui import MedicalViewerUI
 from trame_slicer.core import SlicerApp

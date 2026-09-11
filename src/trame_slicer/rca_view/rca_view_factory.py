@@ -151,7 +151,7 @@ class RemoteViewFactory(IViewFactory):
         view_ctor: Callable,
         view_type: Enum,
         *,
-        populate_view_ui_f: Callable[[Server, str, AbstractViewChild], None] | None = None,
+        populate_view_ui_f: (Callable[[Server, str, AbstractViewChild], None] | None) = None,
         target_fps: float | None = None,
         blur_fps: float | None = None,
         interactive_quality: int | None = None,
@@ -211,7 +211,9 @@ class RemoteViewFactory(IViewFactory):
         active_view_cursor = f"{view_id}_active_view_cursor"
         self._server.state.setdefault(active_view_cursor, CursorId.DEFAULT.value)
         rca_window = RcaWindow(
-            slicer_view.render_window(), state=self._server.state, active_view_cursor=active_view_cursor
+            slicer_view.render_window(),
+            state=self._server.state,
+            active_view_cursor=active_view_cursor,
         )
 
         if self._is_rca_image_encoder(self._rca_encoder):
@@ -229,7 +231,12 @@ class RemoteViewFactory(IViewFactory):
 
         trame_view_id = get_view_trame_id(self._server, slicer_view)
         with ViewLayout(self._server, template_name=trame_view_id) as vuetify_view:
-            self._create_vuetify_ui(trame_view_id, slicer_view, rca_scheduler, active_view_cursor=active_view_cursor)
+            self._create_vuetify_ui(
+                trame_view_id,
+                slicer_view,
+                rca_scheduler,
+                active_view_cursor=active_view_cursor,
+            )
 
         rca_view_adapter = RcaViewAdapter(
             window=rca_window,
@@ -263,6 +270,8 @@ class RemoteViewFactory(IViewFactory):
         *,
         active_view_cursor: str,
     ):
+        from trame_client.widgets.adapter import ClientAdapter
+
         def set_scheduler_fps(fps: float | None) -> None:
             """
             Update the view target FPS to the given input value if the value is not None.
@@ -280,21 +289,25 @@ class RemoteViewFactory(IViewFactory):
         # As views are not yet displayed, configure the views in blur FPS until first hover
         set_blur_fps()
 
+        adapter = ClientAdapter(self._server)
         with Div(
-            style=(
-                "{position: 'relative', width: '100%', height: '100%', overflow: 'hidden', cursor: `${"
-                + f"{active_view_cursor}"
-                + "}`}",
+            style=adapter.style(
+                {
+                    "position": "relative",
+                    "width": "100%",
+                    "height": "100%",
+                    "overflow": "hidden",
+                    "cursor": adapter.expression(f"`${{{active_view_cursor}}}`"),
+                }
             ),
-            mouseenter=set_focus_fps,
-            mouseleave=set_blur_fps,
+            **adapter.events(mouseenter=set_focus_fps, mouseleave=set_blur_fps),
         ):
             RemoteControlledArea(
                 name=view_id,
-                display="video-decoder" if isinstance(rca_scheduler, RcaVideoRenderScheduler) else "image",
-                style="position: relative; width: 100%; height: 100%;",
+                display=("video-decoder" if isinstance(rca_scheduler, RcaVideoRenderScheduler) else "image"),
+                style=adapter.style({"position": "relative", "width": "100%", "height": "100%"}),
                 send_mouse_move=True,
-                event_throttle_ms=(f"Math.ceil(1000.0 * {self._rca_event_throttle_s})",),
+                event_throttle_ms=adapter.expression(f"Math.ceil(1000.0 * {self._rca_event_throttle_s})"),
             )
 
             if self._populate_view_ui_f is not None:

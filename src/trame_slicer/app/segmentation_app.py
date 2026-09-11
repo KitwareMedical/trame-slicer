@@ -1,5 +1,4 @@
 from trame.app import TrameApp
-
 from trame_slicer.app.logic import SegmentationAppLogic
 from trame_slicer.app.ui import SegmentationAppUI
 from trame_slicer.core import SlicerApp

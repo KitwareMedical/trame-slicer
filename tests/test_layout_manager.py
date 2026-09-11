@@ -7,12 +7,12 @@ from PIL import Image
 from pixelmatch.contrib.PIL import pixelmatch
 from playwright.async_api import async_playwright
 from slicer import vtkMRMLScene
-from trame.widgets import client, html
 from trame_client.ui.core import AbstractLayout
 from trame_client.widgets.core import VirtualNode
 from trame_server import Server
 from trame_vuetify.ui.vuetify3 import SinglePageLayout, VAppLayout
 
+from trame.widgets import client, html
 from trame_slicer.core import LayoutManager, SlicerApp, ViewManager
 from trame_slicer.rca_view.rca_view_factory import register_rca_factories
 from trame_slicer.views import (
@@ -296,9 +296,9 @@ def assert_images_differ(img_buffer1: str, img_buffer2: str, threshold: float = 
 
 
 @pytest.mark.asyncio
-async def test_layout_manager_is_compatible_with_child_server_pattern(async_server, a_server_port):
+async def test_layout_manager_is_compatible_with_child_server_pattern(async_server, unused_tcp_port):
     server_with_child(async_server)
-    async_server.start(port=a_server_port, exec_mode="task", thread=True)
+    async_server.start(port=unused_tcp_port, exec_mode="task")
 
     async with timeout(30), async_playwright() as p:
         assert await async_server.ready

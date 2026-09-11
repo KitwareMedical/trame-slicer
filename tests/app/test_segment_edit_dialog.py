@@ -32,9 +32,9 @@ def logic(a_server, a_slicer_app, segment_edit, segment_edit_state, a_segment_id
     return segment_edit_logic
 
 
-def test_can_be_displayed(a_server, a_server_port, segment_edit):
+def test_can_be_displayed(a_server, unused_tcp_port, segment_edit):
     assert segment_edit
-    a_server.start(port=a_server_port)
+    a_server.start(port=unused_tcp_port)
 
 
 def test_on_validate_color_dialog(a_segmentation_editor, segment_edit, segment_edit_state, logic):
