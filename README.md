@@ -11,7 +11,7 @@ available with the [trame framework](https://github.com/Kitware/trame/).
 
 ![Test and Release](https://github.com/KitwareMedical/trame-slicer/actions/workflows/release.yml/badge.svg)
 ![PyPI](https://img.shields.io/pypi/v/trame-slicer?label=pypi%20package)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/trame-slicer)
+![PyPI - Downloads](https://kitware.github.io/trame/downloads/trame-slicer.svg)
 ![GitHub stars](https://img.shields.io/github/stars/kitwareMedical/trame-slicer)
 [![Documentation Status](https://readthedocs.org/projects/trame-slicer/badge/?version=latest)](https://trame-slicer.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/KitwareMedical/trame-slicer/branch/main/graph/badge.svg)](https://codecov.io/gh/KitwareMedical/trame-slicer)
