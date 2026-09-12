@@ -296,9 +296,9 @@ def assert_images_differ(img_buffer1: str, img_buffer2: str, threshold: float = 
 
 
 @pytest.mark.asyncio
-async def test_layout_manager_is_compatible_with_child_server_pattern(async_server, a_server_port):
+async def test_layout_manager_is_compatible_with_child_server_pattern(async_server, unused_tcp_port):
     server_with_child(async_server)
-    async_server.start(port=a_server_port, exec_mode="task", thread=True)
+    async_server.start(port=unused_tcp_port, exec_mode="task")
 
     async with timeout(30), async_playwright() as p:
         assert await async_server.ready

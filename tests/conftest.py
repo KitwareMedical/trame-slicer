@@ -1,6 +1,5 @@
 import asyncio
 import inspect
-import socket
 import uuid
 from pathlib import Path
 
@@ -238,19 +237,6 @@ def render_interactive(pytestconfig):
 
 
 @pytest.fixture
-def a_server_port():
-    """
-    Reserve free port to be sure the port will be bound to server before accessing it with other tools
-    (such as playwright) regardless of startup sequence.
-    """
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(("", 0))
-        port = s.getsockname()[1]
-        s.close()
-        yield port
-
-
-@pytest.fixture
 def a_server(render_interactive, sync_test_event_loop):
     assert sync_test_event_loop
 
@@ -287,8 +273,11 @@ def a_state(a_server):
 
 
 @pytest_asyncio.fixture()
-async def async_server():
-    server = get_server(f"test_server_{uuid.uuid4()}", client_type="vue3")
+async def async_server(request):
+    # Indirectly parametrizable with a client_type (default vue3), optionally
+    # paired with another argument through its tuple value.
+    client_type = getattr(request, "param", None) or "vue3"
+    server = get_server(f"test_server_{uuid.uuid4()}", client_type=client_type)
     try:
         yield server
     finally:

@@ -11,8 +11,13 @@ class ViewLayout(AbstractLayout):
         :param server: Server to bound the layout to
         :param template_name: Name of the template (default: main)
         """
+        from trame_client.widgets.adapter import ClientAdapter
+
         super().__init__(
             server,
-            html.Div(trame_server=server, style="height:100%; width:100%;"),
+            html.Div(
+                trame_server=server,
+                style=ClientAdapter(server).style({"height": "100%", "width": "100%"}),
+            ),
             template_name=template_name,
         )

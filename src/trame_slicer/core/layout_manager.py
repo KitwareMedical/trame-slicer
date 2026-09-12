@@ -42,6 +42,7 @@ class LayoutManager:
     ):
         self._layouts: dict[str, Layout] = {}
         self._view_manager = view_manager
+        self._server = server
         self._virtual_node = virtual_node or VirtualNode(server)
         self._current_layout: str | None = None
         self._scene_node = scene.AddNewNodeByClass("vtkMRMLScriptedModuleNode", "layout_node")
@@ -89,7 +90,7 @@ class LayoutManager:
         self.create_layout_views_if_needed(self._current_layout)
         self._set_current_views_as_active(layout)
         with self._virtual_node.clear():
-            LayoutGrid.create_root_grid_ui(layout)
+            LayoutGrid.create_root_grid_ui(layout, self._server)
         self._save_layout_to_scene(self._current_layout, layout)
 
     def _create_views_if_needed(self, layout: Layout) -> None:

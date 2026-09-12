@@ -67,7 +67,7 @@ def test_can_apply_threshold(
         a_sagittal_view.interactor().Start()
 
 
-def test_threshold_is_updated_in_async(a_slicer_app, a_segmentation_editor, a_server, a_server_port, a_volume_node):
+def test_threshold_is_updated_in_async(a_slicer_app, a_segmentation_editor, a_server, unused_tcp_port, a_volume_node):
     a_server.state.ready()
 
     register_rca_factories(a_slicer_app.view_manager, a_server)
@@ -87,4 +87,4 @@ def test_threshold_is_updated_in_async(a_slicer_app, a_segmentation_editor, a_se
     with SinglePageLayout(a_server) as ui, ui.content:
         layout_manager.initialize_layout_grid(ui)
 
-    a_server.start(port=a_server_port)
+    a_server.start(port=unused_tcp_port)

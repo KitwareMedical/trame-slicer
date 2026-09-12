@@ -7,10 +7,10 @@ from trame_slicer.app.ui import (
 )
 
 
-def test_can_be_displayed(a_server, a_server_port):
+def test_can_be_displayed(a_server, unused_tcp_port):
     typed_state = TypedState(a_server.state, SegmentDisplayState)
 
     with ViewerLayout(a_server, is_drawer_visible=True) as ui, ui.drawer:
         SegmentDisplayUI(typed_state)
 
-    a_server.start(port=a_server_port)
+    a_server.start(port=unused_tcp_port)

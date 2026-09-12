@@ -15,6 +15,6 @@ def effect_logic(a_server, a_slicer_app):
     return VolumeIntensityRangeMaskEffectLogic(a_server, a_slicer_app)
 
 
-def test_can_be_displayed(a_server, a_server_port, effect_ui):
+def test_can_be_displayed(a_server, unused_tcp_port, effect_ui):
     assert effect_ui
-    a_server.start(port=a_server_port)
+    a_server.start(port=unused_tcp_port)
