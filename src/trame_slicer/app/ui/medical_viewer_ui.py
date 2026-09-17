@@ -6,6 +6,7 @@ from trame_slicer.core import LayoutManager
 from .control_button import ControlButton
 from .download_scene_button import DownloadSceneButton
 from .flex_container import FlexContainer
+from .gcs_load_volume_ui import GCSLoadVolumeUI
 from .layout_button import LayoutButton
 from .load_volume_ui import LoadVolumeUI
 from .markups_button import MarkupsButton
@@ -26,6 +27,7 @@ class MedicalViewerUI:
             self.layout.title.set_text("Medical Viewer")
             with self.layout.appbar, Template(v_slot_prepend=True):
                 self.load_volume_items_buttons = LoadVolumeUI()
+                self.gcs_load_volume_button = GCSLoadVolumeUI()
                 self.download_scene_button = DownloadSceneButton()
 
             with self.layout.drawer:

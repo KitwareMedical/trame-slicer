@@ -24,10 +24,8 @@ class Text(Div):
 
 class TextField(VTextField):
     def __init__(self, **kwargs):
-        super().__init__(
-            variant="solo",
-            hide_details=True,
-            flat=True,
-            bg_color="transparent",
-            **kwargs,
-        )
+        kwargs.setdefault("variant", "solo")
+        kwargs.setdefault("hide_details", True)
+        kwargs.setdefault("flat", True)
+        kwargs.setdefault("bg_color", "transparent")
+        super().__init__(**kwargs)

@@ -6,6 +6,7 @@ from trame_slicer.rca_view import register_rca_factories
 from ..ui import MedicalViewerUI, SegmentEditorUI, ViewerLayoutState, VolumePropertyUI
 from .base_logic import BaseLogic
 from .download_scene_logic import DownloadSceneLogic
+from .gcs_load_volume_logic import GCSLoadVolumeLogic
 from .layout_button_logic import LayoutButtonLogic
 from .load_volume_logic import LoadVolumeLogic
 from .markups_button_logic import MarkupsButtonLogic
@@ -28,6 +29,7 @@ class MedicalViewerLogic(BaseLogic[ViewerLayoutState]):
         self._layout_button_logic = LayoutButtonLogic(server, slicer_app)
         self._markups_logic = MarkupsButtonLogic(server, slicer_app)
         self._load_files_logic = LoadVolumeLogic(server, slicer_app)
+        self._gcs_load_files_logic = GCSLoadVolumeLogic(server, slicer_app, self._load_files_logic)
         self._download_scene_logic = DownloadSceneLogic(server, slicer_app)
         self._slab_logic = SlabLogic(server, slicer_app)
         self._mpr_logic = MprInteractionButtonLogic(server, slicer_app)
@@ -53,6 +55,7 @@ class MedicalViewerLogic(BaseLogic[ViewerLayoutState]):
         self._layout_button_logic.set_ui(ui.layout_button)
         self._markups_logic.set_ui(ui.markups_button)
         self._load_files_logic.set_ui(ui.load_volume_items_buttons)
+        self._gcs_load_files_logic.set_ui(ui.gcs_load_volume_button)
         self._download_scene_logic.set_ui(ui.download_scene_button)
         self._slab_logic.set_ui(ui.slab_button)
         self._mpr_logic.set_ui(ui.mpr_interaction_button)
