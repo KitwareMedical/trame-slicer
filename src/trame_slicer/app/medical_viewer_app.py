@@ -8,9 +8,14 @@ from trame_slicer.core import SlicerApp
 class MedicalViewerApp(TrameApp):
     def __init__(self, server=None, rca_encoder=None):
         super().__init__(server)
+
+        self.server.cli.add_argument("-gcs", "--gcs-bucket", help="GCS bucket name", default=None)
+        args, _ = self.server.cli.parse_known_args()
+        gcs_bucket = args.gcs_bucket
+
         self._slicer_app = SlicerApp()
-        self._logic = MedicalViewerLogic(self.server, self._slicer_app, rca_encoder=rca_encoder)
-        self._ui = MedicalViewerUI(self.server, self._logic.layout_manager)
+        self._logic = MedicalViewerLogic(self.server, self._slicer_app, rca_encoder=rca_encoder, gcs_bucket=gcs_bucket)
+        self._ui = MedicalViewerUI(self.server, self._logic.layout_manager, gcs_bucket=gcs_bucket)
         self._logic.set_ui(self._ui)
 
     @property

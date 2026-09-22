@@ -21,13 +21,15 @@ from .volume_property_ui import VolumePropertyUI
 
 
 class MedicalViewerUI:
-    def __init__(self, server: Server, layout_manager: LayoutManager):
+    def __init__(self, server: Server, layout_manager: LayoutManager, gcs_bucket: str | None = None):
         self.tool_registry = {}
         with ViewerLayout(server) as self.layout:
             self.layout.title.set_text("Medical Viewer")
             with self.layout.appbar, Template(v_slot_prepend=True):
-                self.load_volume_items_buttons = LoadVolumeUI()
-                self.gcs_load_volume_button = GCSLoadVolumeUI()
+                if gcs_bucket is not None:
+                    self.load_volume_ui = GCSLoadVolumeUI()
+                else:
+                    self.load_volume_ui = LoadVolumeUI()
                 self.download_scene_button = DownloadSceneButton()
 
             with self.layout.drawer:

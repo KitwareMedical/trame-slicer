@@ -138,13 +138,13 @@ class VolumesReader:
 
     @classmethod
     def split_volumes(cls, volume_files: list[str]) -> list[list[str]]:
-        if len(volume_files) < 1:
-            return []
-
         # Remove unsupported files
         volume_files = cls._filter_files_without_pixel_values(
             cls._filter_unreadable_dcm_files(cls._filter_dcm_files(volume_files))
         )
+
+        if len(volume_files) < 1:
+            return []
 
         # make sub series volumes based on tag differences
         sub_series_tags = [
