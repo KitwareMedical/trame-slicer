@@ -24,6 +24,7 @@ class VolumePropertyLogic(BaseLogic[VolumePropertyState]):
                 self.name.window_level_slider.value: self._set_window_level_value,
                 self.name.preset_2d_name: self._set_preset_2d,
                 self.name.preset_3d_name: self._set_preset_3d,
+                self.name.volume_crop_active: self._set_volume_crop_active,
             }
         )
 
@@ -74,17 +75,17 @@ class VolumePropertyLogic(BaseLogic[VolumePropertyState]):
         self.data.window_level_slider.value = list(VolumeWindowLevel.get_volume_auto_min_max_range(self._volume_node))
 
     def _toggle_vr_crop(self):
-        was_active = self._typed_state.data.volume_crop_active
         if not self._volume_node:
             return
 
+        self._typed_state.data.volume_crop_active = not self._typed_state.data.volume_crop_active
+
+    def _set_volume_crop_active(self, active: bool) -> None:
         display_node = self._volume_rendering.get_vr_display_node(self._volume_node)
         roi_node = display_node.GetROINode()
-
         roi_node = self._volume_rendering.set_cropping_enabled(self._volume_node, roi_node, True)
-        is_active = not was_active
-        roi_node.SetDisplayVisibility(is_active)
-        self.data.volume_crop_active = is_active
+        roi_node.SetDisplayVisibility(active)
+        self.data.volume_crop_active = active
 
     def _init_window_level_slider(self):
         if not self._volume_node:
