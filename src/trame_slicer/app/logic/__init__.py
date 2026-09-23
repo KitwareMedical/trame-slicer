@@ -1,6 +1,7 @@
 from .base_logic import BaseLogic
 from .download_scene_logic import DownloadSceneLogic
 from .dynamic_select_logic import AbstractDynamicSelectLogic, IDynamicSelectItem
+from .gcs_load_volume_logic import GCSLoadVolumeLogic
 from .layout_button_logic import LayoutButtonLogic
 from .load_volume_logic import LoadVolumeLogic
 from .markups_button_logic import MarkupsButtonLogic
@@ -42,6 +43,7 @@ __all__ = [
     "DownloadSceneLogic",
     "DrawEffectLogic",
     "EraseEffectLogic",
+    "GCSLoadVolumeLogic",
     "IDynamicSelectItem",
     "IslandsEffectLogic",
     "LayoutButtonLogic",
