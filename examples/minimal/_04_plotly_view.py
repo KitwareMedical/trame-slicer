@@ -10,11 +10,11 @@ from typing import Generic
 import pandas as pd
 import plotly.graph_objects as go
 from slicer import vtkMRMLApplicationLogic, vtkMRMLScene
-from trame.app import TrameApp
-from trame.widgets import client, plotly
 from trame_client.widgets.core import AbstractElement
 from trame_vuetify.ui.vuetify3 import SinglePageLayout
 
+from trame.app import TrameApp
+from trame.widgets import client, plotly
 from trame_slicer.core import LayoutManager, SlicerApp
 from trame_slicer.rca_view import register_rca_factories
 from trame_slicer.views import (

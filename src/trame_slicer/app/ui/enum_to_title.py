@@ -1,7 +1,8 @@
 from enum import Enum
 
-from trame.widgets import vuetify3 as vuetify
 from trame_server.utils.typed_state import TypedState
+
+from trame.widgets import vuetify3 as vuetify
 
 
 def enum_to_title(enum: Enum) -> str:

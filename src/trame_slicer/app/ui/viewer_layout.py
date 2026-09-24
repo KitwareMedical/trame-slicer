@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 
+from trame_server import Server
+from trame_server.utils.typed_state import TypedState
+
 from trame.ui.vuetify3 import VAppLayout
 from trame.widgets import client
 from trame.widgets.vuetify3 import (
@@ -14,8 +17,6 @@ from trame.widgets.vuetify3 import (
     VSpacer,
     VToolbarTitle,
 )
-from trame_server import Server
-from trame_server.utils.typed_state import TypedState
 
 from .flex_container import FlexContainer
 

@@ -1,5 +1,8 @@
 from dataclasses import dataclass, field
 
+from trame_server.utils.typed_state import TypedState
+from undo_stack import Signal
+
 from trame.widgets import client
 from trame.widgets.vuetify3 import (
     Template,
@@ -8,8 +11,6 @@ from trame.widgets.vuetify3 import (
     VListItem,
     VMenu,
 )
-from trame_server.utils.typed_state import TypedState
-from undo_stack import Signal
 
 from ..control_button import ControlButton
 from ..text_components import Text, TextField

@@ -1,5 +1,5 @@
 from trame.app import TrameApp
-
+from trame_slicer import module as trame_slicer_module
 from trame_slicer.app.logic import SegmentationAppLogic
 from trame_slicer.app.ui import SegmentationAppUI
 from trame_slicer.core import SlicerApp
@@ -8,6 +8,7 @@ from trame_slicer.core import SlicerApp
 class SegmentationApp(TrameApp):
     def __init__(self, server=None, rca_encoder=None):
         super().__init__(server)
+        self.server.enable_module(trame_slicer_module)
         self._slicer_app = SlicerApp()
         self._logic = SegmentationAppLogic(self.server, self._slicer_app, rca_encoder=rca_encoder)
         self._ui = SegmentationAppUI(self.server, self._logic.layout_manager)

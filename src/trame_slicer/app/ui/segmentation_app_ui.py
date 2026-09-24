@@ -1,6 +1,6 @@
-from trame.widgets.vuetify3 import Template
 from trame_server import Server
 
+from trame.widgets.vuetify3 import Template
 from trame_slicer.core import LayoutManager
 
 from .control_button import ControlButton

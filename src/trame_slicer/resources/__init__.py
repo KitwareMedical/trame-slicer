@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from slicer import vtkSlicerVolumesLogic
-from trame.assets.local import LocalFileManager
 
+from trame.assets.local import LocalFileManager
 from trame_slicer.core import VolumeRendering
 
 

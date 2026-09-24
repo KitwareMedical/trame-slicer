@@ -1,9 +1,10 @@
 from dataclasses import dataclass, field
 
-from trame.widgets.html import Span
-from trame.widgets.vuetify3 import Template, VCard, VCardText, VImg, VListItem, VSelect
 from trame_server.utils.typed_state import TypedState
 from undo_stack import Signal
+
+from trame.widgets.html import Span
+from trame.widgets.vuetify3 import Template, VCard, VCardText, VImg, VListItem, VSelect
 
 from .control_button import ControlButton
 from .flex_container import FlexContainer

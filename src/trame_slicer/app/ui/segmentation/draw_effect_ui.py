@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from trame.widgets import vuetify3 as vuetify
 from trame_server.utils.typed_state import TypedState
 
+from trame.widgets import vuetify3 as vuetify
 from trame_slicer.segmentation.scissors_effect_parameters import BrushInteractionMode
 
 from ..enum_to_title import enum_to_radio_buttons

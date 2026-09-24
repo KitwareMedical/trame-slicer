@@ -1,8 +1,9 @@
 from collections.abc import Callable
 from math import floor
 
-from trame.widgets.html import Span
 from trame_vuetify.widgets.vuetify3 import VBtn, VIcon, VTooltip
+
+from trame.widgets.html import Span
 
 
 class ControlButton(VBtn):
