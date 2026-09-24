@@ -1,7 +1,10 @@
 const EXIT_SUCCESS = true;
 const EXIT_FAILURE = false;
 
-export async function load_files_by_chunks(files, inputs) {
+window.load_files_by_chunks = async function load_files_by_chunks(
+  files,
+  inputs,
+) {
   const trigger_name = inputs.trigger_name;
   if (files === undefined) {
     return {
@@ -39,4 +42,4 @@ export async function load_files_by_chunks(files, inputs) {
     status: errorMsg === null ? EXIT_SUCCESS : EXIT_FAILURE,
     errorMsg,
   };
-}
+};

@@ -95,6 +95,7 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = [
     "src/trame_slicer",
+    "src/trame",
 ]
 
 [tool.hatch.metadata]
