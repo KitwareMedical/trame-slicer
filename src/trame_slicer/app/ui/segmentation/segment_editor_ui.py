@@ -1,6 +1,10 @@
 from dataclasses import dataclass, field
 from typing import Any
 
+from trame_client.widgets.core import Template
+from trame_server.utils.typed_state import TypedState
+from undo_stack import Signal
+
 from trame.widgets import html
 from trame.widgets.vuetify3 import (
     VBtn,
@@ -12,10 +16,6 @@ from trame.widgets.vuetify3 import (
     VSpacer,
     VTooltip,
 )
-from trame_client.widgets.core import Template
-from trame_server.utils.typed_state import TypedState
-from undo_stack import Signal
-
 from trame_slicer.segmentation import (
     SegmentationEffect,
     SegmentationEffectDraw,

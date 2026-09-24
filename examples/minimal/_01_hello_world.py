@@ -3,10 +3,10 @@ Minimal hello world with no features.
 Creates the minimal trame-slicer classes and starts the server.
 """
 
-from trame.app import TrameApp
-from trame.widgets import client
 from trame_vuetify.ui.vuetify3 import SinglePageLayout
 
+from trame.app import TrameApp
+from trame.widgets import client
 from trame_slicer.core import LayoutManager, SlicerApp
 from trame_slicer.rca_view import register_rca_factories
 

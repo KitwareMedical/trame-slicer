@@ -6,12 +6,12 @@ Uses a VFileInput for uploading data and loading data into the UI.
 from tempfile import TemporaryDirectory
 from typing import Any
 
-from trame.app import TrameApp
-from trame.widgets import client
 from trame_client.widgets.html import Div
 from trame_vuetify.ui.vuetify3 import SinglePageLayout
 from trame_vuetify.widgets.vuetify3 import VFileInput
 
+from trame.app import TrameApp
+from trame.widgets import client
 from trame_slicer.core import LayoutManager, SlicerApp
 from trame_slicer.rca_view import register_rca_factories
 from trame_slicer.utils import write_client_files_to_dir
