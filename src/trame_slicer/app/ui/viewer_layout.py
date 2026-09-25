@@ -18,12 +18,14 @@ from trame.widgets.vuetify3 import (
     VToolbarTitle,
 )
 
+from .about_dialog import AboutDialog
 from .flex_container import FlexContainer
 
 
 @dataclass
 class ViewerLayoutState:
     is_drawer_visible: bool = False
+    is_about_visible: bool = False
     active_tool: str | None = None
     is_volume_loaded: bool = False
 
@@ -40,6 +42,7 @@ class ViewerLayout(VAppLayout):
         super().__init__(server, template_name=template_name)
         self.typed_state = TypedState(self.state, ViewerLayoutState)
         self.typed_state.data.is_drawer_visible = is_drawer_visible
+        self.about_dialog = AboutDialog(self.typed_state)
 
         self.root.theme = theme
 
@@ -47,6 +50,10 @@ class ViewerLayout(VAppLayout):
             client.Style("html { overflow-y: auto; }")
             with VAppBar() as self.appbar:
                 self.title = VToolbarTitle(title, style="user-select: none;")
+                VSpacer()
+                self.about_dialog.create_button()
+
+            self.about_dialog.create_dialog()
 
             with VFooter(app=True, classes="my-0 py-0", border=True) as self.footer:
                 VProgressCircular(
@@ -68,7 +75,6 @@ class ViewerLayout(VAppLayout):
                         size="x-small",
                         density="compact",
                         icon=True,
-                        # border=True,
                         elevation=0,
                         click=self.on_server_reload,
                         classes="mx-2",
