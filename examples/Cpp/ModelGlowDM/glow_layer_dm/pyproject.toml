@@ -1,0 +1,20 @@
+[build-system]
+requires = [
+  "scikit-build-core",
+  "vtk-sdk-python-wheel-helper",
+  "vtk-sdk==9.6.2",
+  "slicer-core-sdk==5.11.0.*",
+  "slicer-layer-dm-sdk"
+]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "glow_layer_dm"
+version = "1.0.0"
+authors = [
+  { name = "Lucie Macron", email = "lucie.macron@kitware.com" }
+]
+dependencies = ["slicer-layer-dm"]
+
+[tool.scikit-build]
+build-dir = "build"
