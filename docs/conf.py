@@ -64,6 +64,19 @@ html_css_files = [
     "css/custom.css",
 ]
 
+# -- Mermaid configuration ---------------------------------------------------
+mermaid_version = "12.0.0"
+
+# Force light theme to match RTD light background
+mermaid_light_theme = "redux-color"
+mermaid_dark_theme = "redux-color"
+
+# Mermaid initialization settings
+mermaid_init_config = {
+    "theme": "redux-color",
+    "look": "neo",
+}
+
 # -- Hooks for sphinx events -------------------------------------------------
 
 

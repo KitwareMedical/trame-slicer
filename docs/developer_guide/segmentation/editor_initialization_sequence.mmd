@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant App
+    participant Editor as Segmentation Editor
+    participant Scene
+    participant Modifier as Segment Modifier
+    participant UndoStack
+
+    Note over App, UndoStack: Editor creation
+    App ->> Editor: SegmentationEditor(scene, logic, view_manager)
+    Editor ->> Scene: Add segment editor node (singleton)
+    Editor ->> Editor: Create segment editor logic
+    loop For each builtin effect
+        Editor ->> Editor: Register effect type
+    end
+    Editor ->> Editor: Register pipeline creator
+
+    Note over App, UndoStack: Set active segmentation
+    App ->> Editor: set_active_segmentation(segmentation_node, volume_node)
+    Editor ->> Scene: Set reference image geometry from volume node
+    Editor ->> Modifier: Create(Segmentation(segmentation_node, volume_node))
+    Editor ->> Editor: Connect segmentation modified
+    Editor ->> Editor: Set first segment as active
+    Editor ->> UndoStack: Clear (if an undo stack is set)
+    Editor ->> Editor: Deactivate active effect (NoTool)
+    Editor ->> App: Trigger all signals
