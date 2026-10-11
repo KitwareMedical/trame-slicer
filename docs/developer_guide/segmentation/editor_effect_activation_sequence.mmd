@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant App
+    participant Editor as Segmentation Editor
+    participant Effect as New Effect
+    participant PrevEffect as Active Effect
+    participant Scene
+    participant LayerDM as Layer Displayable Manager
+    participant Pipeline as Effect Pipeline
+
+    App ->> Editor: set_active_effect_type(effect_type)
+    opt Effect type not registered
+        Editor ->> Effect: Create + set scene / editor
+    end
+    Editor ->> PrevEffect: Deactivate
+    Editor ->> Scene: Add effect parameter node
+    Scene ->> LayerDM: Node added
+    LayerDM ->> Editor: Try create pipeline(view, parameter)
+    Editor ->> Effect: create_pipeline(view, parameter)
+    Effect ->> Pipeline: Create
+    Editor ->> Pipeline: Set view
+    Editor ->> Effect: Activate
+    Editor ->> App: active_effect_name_changed

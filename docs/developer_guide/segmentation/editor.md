@@ -28,6 +28,28 @@ editor. Some interactions are left out to avoid cluttering the diagram.
    :align: center
 ```
 
+### Segmentation initialization
+
+The diagram below shows how the segmentation editor is created and how the
+active segmentation is set.
+
+```{eval-rst}
+.. mermaid:: editor_initialization_sequence.mmd
+   :caption: Segmentation initialization sequence
+   :align: center
+```
+
+### Effect activation
+
+The diagram below shows how an effect is activated and how its feedback
+pipelines are created on demand.
+
+```{eval-rst}
+.. mermaid:: editor_effect_activation_sequence.mmd
+   :caption: Effect activation sequence
+   :align: center
+```
+
 The Segmentation Editor is responsible for handling the following objects :
 
 - Segmentation effects: the list of effects which can be activated and modify
@@ -73,3 +95,46 @@ directly from the effect instance.
 
 The following example shows an example of wiring the threshold effect with
 trame:
+
+```python
+from dataclasses import dataclass
+
+from trame_server.utils.typed_state import TypedState
+
+from trame_slicer.core import SegmentationEditor
+from trame_slicer.segmentation import SegmentationEffectThreshold
+
+
+@dataclass
+class ThresholdState:
+    value: tuple[float, float] = (0, 1)
+
+
+class ThresholdLogic:
+    def __init__(
+        self, editor: SegmentationEditor, typed_state: TypedState[ThresholdState]
+    ):
+        self._editor = editor
+        self._typed_state = typed_state
+        self._effect = editor.get_effect(SegmentationEffectThreshold)
+
+        # Bind the UI state to the effect parameters
+        self._typed_state.bind_changes(
+            {self._typed_state.name.value: self._on_threshold_changed}
+        )
+
+    def _on_threshold_changed(self, value: tuple[float, float]) -> None:
+        # Effects should only act when they are the active one
+        if self._editor.active_effect is not self._effect:
+            return
+        self._effect.set_threshold_min_max_values(value)
+
+    def activate(self) -> None:
+        self._editor.set_active_effect_type(SegmentationEffectThreshold)
+
+    def apply(self) -> None:
+        if self._editor.active_effect is not self._effect:
+            return
+        self._effect.apply()
+        self._editor.deactivate_effect()
+```
