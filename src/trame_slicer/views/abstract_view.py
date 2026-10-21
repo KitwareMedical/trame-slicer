@@ -185,7 +185,7 @@ class AbstractView:
             return
 
         with self.trigger_modified_once():
-            self._event_observer.UpdateObserver(self._view_node, node)
+            self._event_observer.UpdateObservation(self._view_node, node)
             self._view_node = node
             self._displayable_manager_group.SetMRMLDisplayableNode(node)
             self._reset_node_view_properties()
@@ -225,7 +225,7 @@ class AbstractView:
         if self._scene == scene:
             return
 
-        self._event_observer.UpdateObserver(self._scene, scene, vtkMRMLScene.EndCloseEvent)
+        self._event_observer.UpdateObservation(self._scene, scene, vtkMRMLScene.EndCloseEvent)
         self._scene = scene
         if self._view_node and self._view_node.GetScene() != scene:
             self._view_node = None

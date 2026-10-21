@@ -135,7 +135,7 @@ class SliceView(AbstractView):
         # Create slice logic
         self._logic = vtkMRMLSliceLogic()
         self._logic.SetMRMLApplicationLogic(app_logic)
-        self._event_observer.UpdateObserver(None, self._logic)
+        self._event_observer.UpdateObservation(None, self._logic)
         app_logic.GetSliceLogics().AddItem(self._logic)
         self._interactor_observer.SetSliceLogic(self._logic)
         self._interactor_observer.SetDisplayableManagers(self._displayable_manager_group)

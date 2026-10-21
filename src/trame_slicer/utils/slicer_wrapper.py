@@ -53,7 +53,7 @@ class SlicerWrapper(Generic[T]):
         self.set_wrapped_obj(slicer_obj)
 
     def set_wrapped_obj(self, slicer_obj: object | None):
-        self._observer.UpdateObserver(self._slicer_obj, slicer_obj)
+        self._observer.UpdateObservation(self._slicer_obj, slicer_obj)
         self._slicer_obj = slicer_obj
 
     def __getattribute__(self, attr: str):
