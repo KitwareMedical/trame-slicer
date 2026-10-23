@@ -107,7 +107,7 @@ class ModelGlowPipeline(vtkMRMLLayerDMScriptedPipeline):
     def GetRenderOrder(self) -> int:
         return 1
 
-    def UpdatePipeline(self):
+    def UpdateFromMRML(self):
         self._UpdateMapperConnection()
         self._UpdateActorVisibility()
         self.RequestRender()
@@ -116,7 +116,7 @@ class ModelGlowPipeline(vtkMRMLLayerDMScriptedPipeline):
         if obj == self._modelNode:
             self._ObserveModelTransformNode()
 
-        self.ResetDisplay()
+        self.UpdateDisplay()
 
     def SetDisplayNode(self, node):
         super().SetDisplayNode(node)
@@ -196,7 +196,7 @@ class ModelGlowPipeline(vtkMRMLLayerDMScriptedPipeline):
         if self._modelNode == self._GetModelNode():
             return
 
-        self.UpdateObserver(self._modelNode, self._GetModelNode())
+        self.UpdateObservation(self._modelNode, self._GetModelNode())
         self._modelNode = self._GetModelNode()
         self._ObserveModelTransformNode()
 
@@ -205,7 +205,7 @@ class ModelGlowPipeline(vtkMRMLLayerDMScriptedPipeline):
         if self._modelTransform == transformNode:
             return
 
-        self.UpdateObserver(self._modelTransform, transformNode, vtkMRMLTransformNode.TransformModifiedEvent)
+        self.UpdateObservation(self._modelTransform, transformNode, vtkMRMLTransformNode.TransformModifiedEvent)
         self._modelTransform = transformNode
 
     @classmethod

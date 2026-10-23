@@ -59,7 +59,7 @@ class SegmentationEffect(ABC):
         return self._is_active
 
     def set_scene(self, scene: vtkMRMLScene):
-        self._obs.UpdateObserver(self._scene, scene, vtkMRMLScene.EndCloseEvent)
+        self._obs.UpdateObservation(self._scene, scene, vtkMRMLScene.EndCloseEvent)
         self._scene = scene
 
     def set_mode(self, mode: ModificationMode):
@@ -96,7 +96,7 @@ class SegmentationEffect(ABC):
     def get_parameter_node(self):
         if self._param_node is None:
             self._param_node = self._create_parameter_node()
-            self._obs.UpdateObserver(None, self._param_node)
+            self._obs.UpdateObservation(None, self._param_node)
         return self._param_node
 
     def is_effect_parameter(self, parameter: vtkMRMLNode) -> bool:
