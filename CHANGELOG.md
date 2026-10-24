@@ -2,6 +2,53 @@
 
 <!-- version list -->
 
+## v2.0.0 (2026-10-24)
+
+### Bug Fixes
+
+- Make vtk-streaming an optional dependencies
+  ([`3f3398f`](https://github.com/KitwareMedical/trame-slicer/commit/3f3398f395f98a9795316ad40055fc5f74d93e2f))
+
+- **app**: Move chunk loader to the serve folder
+  ([`7ce72b6`](https://github.com/KitwareMedical/trame-slicer/commit/7ce72b6f56e5a0cf8170328355778a5ae6cd96cc))
+
+- **examples**: Fix sizeObserver import in plotly example
+  ([`3988cb0`](https://github.com/KitwareMedical/trame-slicer/commit/3988cb0cbbd091a947b85337a999a3f0ff310158))
+
+- **VolumePropertyLogic**: Watch state value of volume_crop_active
+  ([`4fe02a5`](https://github.com/KitwareMedical/trame-slicer/commit/4fe02a53beb52a1e952e47f47214a049c90753b2))
+
+### Chores
+
+- Update pre-commit to lint all repository
+  ([`9c567df`](https://github.com/KitwareMedical/trame-slicer/commit/9c567df62a2a4c8ededdf918cf9ba4b2dad8c971))
+
+- **deps**: Bump codecov/codecov-action in the actions group
+  ([`4a2aad7`](https://github.com/KitwareMedical/trame-slicer/commit/4a2aad7b174f33c90b3a00f42e612ee422ade233))
+
+- **deps**: Bump python-semantic-release/python-semantic-release
+  ([`6d3731a`](https://github.com/KitwareMedical/trame-slicer/commit/6d3731a72679dfdc9ceb0c87b8b6cb07992a7223))
+
+### Documentation
+
+- Update download badge url
+  ([`8f4954d`](https://github.com/KitwareMedical/trame-slicer/commit/8f4954d9b851604ca85346449161aaa7232aaed2))
+
+- **segmentation**: Add editor sequence diagrams and threshold example
+  ([`02b0359`](https://github.com/KitwareMedical/trame-slicer/commit/02b03591cd70c41e4067a35d2562a429635865a3))
+
+### Features
+
+- Add support for the react client
+  ([`2ab4f6e`](https://github.com/KitwareMedical/trame-slicer/commit/2ab4f6edd861c90b189841ed54f476ebbecac22b))
+
+- Update trame-slicer to layer-dm 2.0
+  ([`a3b06bf`](https://github.com/KitwareMedical/trame-slicer/commit/a3b06bf69c322304e29bfa484e78e3f4691e86fb))
+
+- **app**: Add about dialog
+  ([`4a3aa4a`](https://github.com/KitwareMedical/trame-slicer/commit/4a3aa4a676bb5b3ee5a4a54639a75df1e3206f9d))
+
+
 ## v1.12.3 (2026-09-03)
 
 ### Bug Fixes
