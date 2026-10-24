@@ -138,7 +138,6 @@ class ReactMuiTrameSlicerApp(TrameApp):
         register_rca_factories(
             self._slicer_app.view_manager,
             self._server,
-            rca_encoder="video",
             slice_view_ui_f=create_vertical_slice_view_gutter_ui,
             three_d_view_ui_f=create_vertical_view_gutter_ui,
         )

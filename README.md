@@ -21,11 +21,6 @@ available with the [trame framework](https://github.com/Kitware/trame/).
 The [API Reference](https://trame-slicer.readthedocs.io/en/latest/index.html)
 documentation provides API-level documentation.
 
-## Warning
-
-The API has not been stabilized / reviewed by the 3D Slicer core developers so
-please use this library with caution.
-
 ## Installing
 
 The library can be installed in a Python environment as follows:
@@ -40,6 +35,24 @@ The library can be installed in a Python environment as follows:
     along it's dependencies
 - For optimal performances, you should install
   [turbo-jpeg](<[url](https://github.com/Kitware/trame-rca?tab=readme-ov-file#optional-dependencies)>)
+
+### Optional dependencies
+
+- `vtkstreaming`: install `trame-slicer[vtkstreaming]` to enable RCA video
+  encoding. Without it, requesting the video encoder (with
+  `rca_encoder="video"`) will fall back to JPEG image encoding.
+
+## Encoding
+
+Views are streamed to the browser using the encoder given to
+`register_rca_factories` / `RemoteViewFactory` through the `rca_encoder`
+parameter:
+
+| `rca_encoder`                          | Transport | Requires                                  | Notes                                                                                          |
+| -------------------------------------- | --------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `None` / `"turbo-jpeg"`                | image     | turbo-jpeg (Pillow fallback)              | Default, lowest latency                                                                        |
+| `"jpeg"`, `"png"`, `"webp"`, `"avif"`  | image     | Pillow (`avif` also `pillow-avif-plugin`) | PNG is lossless, AVIF is smallest but CPU heavier                                              |
+| `"video"` (any non-image encoder name) | video     | `trame-slicer[vtkstreaming]`              | H.264/H.265/VP9/AV1 negotiated with the browser, falls back to TurboJPEG without vtk-streaming |
 
 ## Getting started
 
