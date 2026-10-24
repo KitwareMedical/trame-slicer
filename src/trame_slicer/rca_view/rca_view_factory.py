@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
+from functools import lru_cache
 from typing import Generic
 
 from slicer import vtkMRMLApplicationLogic, vtkMRMLLayerDisplayableManager, vtkMRMLScene
@@ -12,7 +14,6 @@ from trame_rca.rca import VtkRemoteControlledArea
 from trame_rca.schedulers import (
     RcaImageRenderScheduler,
     RcaRenderSchedulerProtocol,
-    RcaVideoRenderScheduler,
 )
 from trame_rca.utils import RcaViewAdapter
 from trame_rca.widgets.rca import RemoteControlledArea
@@ -36,6 +37,13 @@ from trame_slicer.views import (
     ViewLayoutDefinition,
     ViewType,
 )
+
+try:
+    from trame_rca.schedulers import RcaVideoRenderScheduler
+except ImportError:
+    RcaVideoRenderScheduler = None
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -167,7 +175,8 @@ class RemoteViewFactory(IViewFactory):
         :param blur_fps: Out of focus rendering speed.
         :param interactive_quality: Interactive RCA image encoding quality.
         :param rca_encoder: Encoder type to use for RCA encoding. When None, defaults to TurboJPEG. Values that are
-            not in the supported image encode list default to the auto video encoder.
+            not in the supported image encode list default to the auto video encoder when vtk-streaming is installed,
+            or to TurboJPEG otherwise.
         :param rca_event_throttle_s: Number of wait seconds in between two process events. (default = 10ms / 100FPS)
             The rca_event_throttle_s can be made reactive on a trame state to vary throttle depending on the application
             use case. For instance, for segmentation effects, the throttle should be 10ms but for interactions blocking
@@ -181,9 +190,43 @@ class RemoteViewFactory(IViewFactory):
         self._target_fps = target_fps or 30
         self._blur_fps = blur_fps
         self._interactive_quality = interactive_quality or 50
-        self._rca_encoder = rca_encoder or RcaImageEncoder.TURBO_JPEG
+        self._rca_encoder = self._resolve_rca_encoder(rca_encoder)
         self._populate_view_ui_f = populate_view_ui_f
         self._rca_event_throttle_s = rca_event_throttle_s if rca_event_throttle_s is not None else 0.01
+
+    @staticmethod
+    def is_vtk_streaming_available() -> bool:
+        return RcaVideoRenderScheduler is not None
+
+    @staticmethod
+    @lru_cache(maxsize=1)
+    def _warn_missing_vtk_streaming_once(fallback_encoder: RcaImageEncoder):
+        logger.warning(
+            "vtk-streaming is not installed: RCA video encoding is unavailable, falling back to %s.",
+            fallback_encoder.value,
+        )
+
+    @staticmethod
+    def _resolve_rca_encoder(rca_encoder: RcaImageEncoder | str | None) -> RcaImageEncoder | str:
+        """
+        Resolve the RCA encoder to use, falling back on TurboJPEG when video encoding is unavailable.
+        Warn if trying to use video encoder with missing vtkStreaming dependency.
+        """
+        default_encoder = RcaImageEncoder.TURBO_JPEG
+
+        if rca_encoder is None:
+            return default_encoder
+
+        try:
+            return RcaImageEncoder(rca_encoder)
+        except ValueError:
+            pass
+
+        if not RemoteViewFactory.is_vtk_streaming_available():
+            RemoteViewFactory._warn_missing_vtk_streaming_once(default_encoder)
+            return default_encoder
+
+        return rca_encoder
 
     def _get_slicer_view(self, view: RcaView) -> AbstractView:
         return view.slicer_view
@@ -216,7 +259,7 @@ class RemoteViewFactory(IViewFactory):
             active_view_cursor=active_view_cursor,
         )
 
-        if self._is_rca_image_encoder(self._rca_encoder):
+        if isinstance(self._rca_encoder, RcaImageEncoder):
             rca_scheduler = RcaImageRenderScheduler(
                 window=rca_window,
                 interactive_quality=self._interactive_quality,
@@ -253,14 +296,6 @@ class RemoteViewFactory(IViewFactory):
 
         create_task(init_rca())
         return RcaView(vuetify_view, slicer_view, rca_view_adapter)
-
-    @classmethod
-    def _is_rca_image_encoder(cls, rca_encoder):
-        try:
-            RcaImageEncoder(rca_encoder)
-            return True
-        except ValueError:
-            return False
 
     def _create_vuetify_ui(
         self,
@@ -304,7 +339,7 @@ class RemoteViewFactory(IViewFactory):
         ):
             RemoteControlledArea(
                 name=view_id,
-                display=("video-decoder" if isinstance(rca_scheduler, RcaVideoRenderScheduler) else "image"),
+                display=("image" if isinstance(rca_scheduler, RcaImageRenderScheduler) else "video-decoder"),
                 style=adapter.style({"position": "relative", "width": "100%", "height": "100%"}),
                 send_mouse_move=True,
                 event_throttle_ms=adapter.expression(f"Math.ceil(1000.0 * {self._rca_event_throttle_s})"),

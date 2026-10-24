@@ -5,6 +5,7 @@
 
 introduction
 features
+streaming
 design_recipes
 segmentation/index
 examples

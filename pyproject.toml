@@ -13,7 +13,7 @@ dependencies = [
     "trame-client >= 4.1.0",
     "trame-server >= 3.14.1",
     "trame-vuetify >= 3.2.6",
-    "trame-rca[vtkstreaming] >= 2.10.2",
+    "trame-rca >= 2.10.2",
     "lxml",
     "pydicom",
     "webcolors",
@@ -49,6 +49,9 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+vtkstreaming = [
+    "trame-rca[vtkstreaming] >= 2.10.2",
+]
 dev = [
     "async-timeout",
     "pandas",
@@ -64,6 +67,7 @@ dev = [
     "trame-mui",
     "trame-plotly",
     "yappi",
+    "trame-rca[vtkstreaming] >= 2.10.2",
 ]
 docs = [
     "sphinx>=8,<9",
