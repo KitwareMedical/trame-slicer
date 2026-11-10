@@ -4,13 +4,13 @@ from contextlib import suppress
 from pathlib import Path
 
 from slicer import (
-    vtkMRMLColorLogic,
     vtkMRMLCrosshairNode,
     vtkMRMLScene,
     vtkMRMLSliceNode,
     vtkMRMLSliceViewDisplayableManagerFactory,
     vtkMRMLThreeDViewDisplayableManagerFactory,
     vtkSlicerApplicationLogic,
+    vtkSlicerColorLogic,
     vtkSlicerDataModuleLogic,
     vtkSlicerModuleLogic,
     vtkSlicerSegmentationsModuleLogic,
@@ -54,9 +54,7 @@ class SlicerApp:
         # Create application logic
         self.app_logic = vtkSlicerApplicationLogic()
         self.app_logic.SetMRMLScene(self.scene)
-        self.app_logic.GetColorLogic().SetMRMLScene(self.scene)
-        self.app_logic.GetColorLogic().AddDefaultColorNodes()
-
+        self.app_logic.SetShareDirectory(self.share_directory.as_posix())
         self.app_logic.SetSliceLogics(vtkCollection())
         self.app_logic.SetViewLogics(vtkCollection())
 
@@ -91,7 +89,11 @@ class SlicerApp:
         from .markups_logic import MarkupsLogic
         from .volume_rendering import VolumeRendering
 
-        self.color_logic = self.register_module_logic(vtkMRMLColorLogic(), logic_name="Colors")
+        self.color_logic = self.register_module_logic(vtkSlicerColorLogic(), logic_name="Colors")
+        self.color_logic.SetUserColorFilePaths((self.share_directory / "ColorFiles").as_posix())
+        self.color_logic.AddDefaultColorNodes()
+        self.app_logic.SetColorLogic(self.color_logic)
+
         self.volume_rendering = VolumeRendering(self)
         self.markups_logic = MarkupsLogic(self)
         self.volumes_logic = self.register_module_logic(vtkSlicerVolumesLogic())
