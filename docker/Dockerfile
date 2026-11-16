@@ -6,7 +6,7 @@ WORKDIR /app
 ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && apt-get -y upgrade && \
-    apt-get install -y libgl1-mesa-dri mesa-utils libegl1 libgles2 libosmesa6-dev python3-pip python3.12-venv
+    apt-get install -y libjpeg-turbo-official libgl1-mesa-dri mesa-utils libegl1 libgles2 libosmesa6-dev python3-pip python3.12-venv
 
 # Prevent apt from prompting us about various decisions
 ENV DEBIAN_FRONTEND=noninteractive
