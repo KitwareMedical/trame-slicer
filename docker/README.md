@@ -16,13 +16,13 @@ The command to run it depends on the platform and the rendering backend used.
 For EGL:
 
 ```
-docker run -it -p 8080:8080 --init -v /usr/lib/wsl:/usr/lib/wsl:ro -e MESA_D3D12_DEFAULT_ADAPTER_NAME="NVIDIA" -e VTK_DEFAULT_OPENGL_WINDOW=vtkEGLRenderWindow -e GALLIUM_DRIVER=d3d12 trame-slicer
+docker run -it -p 8080:8080 --init -v /usr/lib/wsl:/usr/lib/wsl:ro --device=/dev/dxg -e LD_LIBRARY_PATH=/usr/lib/wsl/lib -e MESA_D3D12_DEFAULT_ADAPTER_NAME="NVIDIA" -e VTK_DEFAULT_OPENGL_WINDOW=vtkEGLRenderWindow -e GALLIUM_DRIVER=d3d12 trame-slicer
 ```
 
 For X:
 
 ```
-docker run -it -p 8080:8080 --init -v /tmp/.X11-unix:/tmp/.X11-unix -v /usr/lib/wsl:/usr/lib/wsl:ro -e DISPLAY=$DISPLAY -e MESA_D3D12_DEFAULT_ADAPTER_NAME="NVIDIA" -e VTK_DEFAULT_OPENGL_WINDOW=vtkXOpenGLRenderWindow -e GALLIUM_DRIVER=d3d12 trame-slicer
+docker run -it -p 8080:8080 --init -v /tmp/.X11-unix:/tmp/.X11-unix -v /usr/lib/wsl:/usr/lib/wsl:ro --device=/dev/dxg -e DISPLAY=$DISPLAY -e LD_LIBRARY_PATH=/usr/lib/wsl/lib -e MESA_D3D12_DEFAULT_ADAPTER_NAME="NVIDIA" -e VTK_DEFAULT_OPENGL_WINDOW=vtkXOpenGLRenderWindow -e GALLIUM_DRIVER=d3d12 trame-slicer
 ```
 
 For CPU:
