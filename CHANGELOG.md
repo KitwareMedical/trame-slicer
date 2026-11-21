@@ -2,6 +2,22 @@
 
 <!-- version list -->
 
+## v2.1.0 (2026-11-21)
+
+### Bug Fixes
+
+- **colors**: Fix default color loading
+  ([`94a57be`](https://github.com/KitwareMedical/trame-slicer/commit/94a57be940143977da933fc80ed07943ac9b7d31))
+
+- **deps**: Install turbo-jpeg by default
+  ([`6da4960`](https://github.com/KitwareMedical/trame-slicer/commit/6da4960847a71ab3591e966c9960bf246caf98d1))
+
+### Features
+
+- **docker**: Update docker image to use turbo-jpeg and documentation
+  ([`d29a7a0`](https://github.com/KitwareMedical/trame-slicer/commit/d29a7a0caa73b9142502c965152aa5ebf7c67cd7))
+
+
 ## v2.0.0 (2026-10-24)
 
 ### Bug Fixes
