@@ -128,3 +128,24 @@ def test_threed_view_can_set_layout_color(a_threed_view):
 def test_view_provide_access_to_their_displayable_manager(a_threed_view, dm_class):
     displayable_manager = a_threed_view.get_displayable_manager_by_class(dm_class)
     assert isinstance(displayable_manager, vtkMRMLModelDisplayableManager)
+
+
+def test_threed_view_can_set_orientation_marker_to_human(a_threed_view, render_interactive):
+    # Change the marker to human
+    a_threed_view.set_orientation_marker(
+        vtkMRMLAbstractViewNode.OrientationMarkerTypeHuman, vtkMRMLAbstractViewNode.OrientationMarkerSizeLarge
+    )
+
+    # Check that marker has valid bounds
+    marker_renderer = max(a_threed_view.renderers(), key=lambda r: r.GetLayer())
+    assert marker_renderer.GetLayer() == 2
+    props = marker_renderer.GetViewProps()
+    assert props.GetNumberOfItems() == 1
+    actor = props.GetItemAsObject(0)
+    bounds = actor.GetBounds()
+    assert bounds[1] > bounds[0]
+    assert bounds[3] > bounds[2]
+    assert bounds[5] > bounds[4]
+
+    if render_interactive:
+        a_threed_view.start_interactor()
