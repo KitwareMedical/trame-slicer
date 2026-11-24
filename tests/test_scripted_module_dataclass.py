@@ -94,11 +94,12 @@ class DataWithTypes:
     my_date: date
     my_time: time
     my_path: Path
-    my_model_node: vtkMRMLModelNode
+    my_model_node: vtkMRMLModelNode | None
 
 
 def test_scripted_proxy_is_compatible_with_complex_types(a_scene):
     node = vtkMRMLScriptedModuleNode()
+    node = a_scene.AddNode(node)
 
     proxy = create_scripted_module_dataclass_proxy(DataWithTypes, node, a_scene)
     name = create_scripted_module_dataclass_proxy_name(DataWithTypes)
@@ -138,7 +139,7 @@ def test_scripted_proxy_is_compatible_with_complex_types(a_scene):
     assert node.GetParameter(name.my_date) == json.dumps(dt.date().isoformat())
     assert node.GetParameter(name.my_time) == json.dumps(dt.time().isoformat())
     assert node.GetParameter(name.my_path) == json.dumps(Path(__file__).as_posix())
-    assert node.GetParameter(name.my_model_node) == json.dumps(model_node.GetID())
+    assert node.GetNodeReferenceID(name.my_model_node) == model_node.GetID()
 
 
 def test_proxy_over_non_scripted_module_returns_none_value(a_scene):

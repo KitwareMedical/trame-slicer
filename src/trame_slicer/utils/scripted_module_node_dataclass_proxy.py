@@ -6,7 +6,7 @@ from datetime import date, datetime, time, timezone
 from decimal import Decimal
 from enum import Enum
 from pathlib import Path
-from typing import TypeVar
+from typing import Any, TypeVar
 from uuid import UUID
 
 from slicer import vtkMRMLNode, vtkMRMLScene, vtkMRMLScriptedModuleNode
@@ -114,13 +114,28 @@ class _ScriptedProxyField:
         if not isinstance(self._node, vtkMRMLScriptedModuleNode):
             return None
 
+        # Use the node ref ID when available for state (updated with the scene)
+        value = self._node.GetNodeReferenceID(self._state_id)
+        if value is not None:
+            return self._encoder.decode(value, self._type)
+
         if self._state_id not in self._node.GetParameterNames():
-            return self._default if self._default != MISSING else None
+            return self._get_default()
 
         value = json.loads(self._node.GetParameter(self._state_id))
         return self._encoder.decode(value, self._type)
 
+    def _get_default(self) -> Any | None:
+        return self._default if self._default != MISSING else None
+
     def set_value(self, value):
+        # Try to use reference node ID to store vtkMRMLNodes when possible
+        # (scene will automatically update IDs when needed)
+        self._node.SetAndObserveNodeReferenceID(
+            self._state_id, value.GetID() if isinstance(value, vtkMRMLNode) else None
+        )
+
+        # As a fallback, store the parameter value
         encoded = json.dumps(self._encoder.encode(value))
         self._node.SetParameter(self._state_id, encoded)
 
